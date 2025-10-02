@@ -1,4 +1,9 @@
 export interface OnboardingHelperNotificationService {
-  send(email: string, message: string): Promise<void>;
+  send(data: {
+    email: string;
+    firstname: string;
+    lastname: string;
+  }): Promise<void>;
   hasSentTo(email: string): Promise<boolean>;
+  getNotificationContent(email: string): Promise<string | null>;
 }

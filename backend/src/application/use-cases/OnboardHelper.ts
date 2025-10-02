@@ -7,9 +7,13 @@ import Firstname from "../../domain/value-objects/Firstname.js";
 import Lastname from "../../domain/value-objects/Lastname.js";
 import { Result } from "../../shared/Result.js";
 import ValidationError from "../../domain/errors/ValidationError.js";
+import { OnboardingHelperNotificationService } from "../../domain/services/OnboardingHelperNotificationService.js";
 
 export class OnboardHelper {
-  constructor(private readonly helperRepository: HelperRepository) {}
+  constructor(
+    private readonly helperRepository: HelperRepository,
+    private readonly notif: OnboardingHelperNotificationService
+  ) {}
 
   async execute({
     email,
@@ -39,6 +43,8 @@ export class OnboardHelper {
     };
 
     await this.helperRepository.save(helper);
+
+    this.notif.send({ email, firstname, lastname });
 
     return Result.ok(helper.id);
   }

@@ -9,21 +9,23 @@ export default class OnboardHelperUnderTest {
   private useCase!: OnboardHelper;
 
   setup(): void {
-    // Initialize infrastructure
     this.helperRepository = new InMemoryHelperRepository();
-    this.notificationService =
-      new InMemoryOnboardingHelperNotificationService();
+    this.notificationService = new InMemoryOnboardingHelperNotificationService({
+      companyName: "Tries",
+      supportEmailContact: "tries@support.fr",
+      passwordSetupUrl: "https://tries.fr/setup-password",
+    });
 
-    // Create use case
-    this.useCase = new OnboardHelper(this.helperRepository);
+    this.useCase = new OnboardHelper(
+      this.helperRepository,
+      this.notificationService
+    );
   }
 
-  // Actions
   async onboardUser(user: User) {
     return await this.useCase.execute(user);
   }
 
-  // Queries - Domain-focused
   async isHelperOnboarded(email: string): Promise<boolean> {
     const helper = await this.helperRepository.findByEmail(email);
     return helper !== null;
@@ -31,5 +33,9 @@ export default class OnboardHelperUnderTest {
 
   async hasReceivedNotification(email: string): Promise<boolean> {
     return await this.notificationService.hasSentTo(email);
+  }
+
+  async getNotificationContent(email: string): Promise<string | null> {
+    return await this.notificationService.getNotificationContent(email);
   }
 }

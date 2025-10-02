@@ -99,3 +99,14 @@ Feature: Onboarding a new helper
     When I onboard the user
     Then the user should be onboarded as a helper
     And the user should receive a notification
+
+  Scenario: Admin onboards helper and receives personalized notification
+    Given the user's email is "sarah.connor@example.com"
+    And the user's first name is "Sarah"
+    And the user's last name is "Connor"
+    When I onboard the user
+    Then the user should receive a notification
+    And the notification should contain "Hi Sarah Connor"
+    And the notification should contain "Welcome to Tries"
+    And the notification should contain "https://tries.fr/setup-password"
+    And the notification should contain "tries@support.fr"

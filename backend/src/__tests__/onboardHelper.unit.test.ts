@@ -39,8 +39,7 @@ describeFeature(
         });
 
         And(`the user should receive a notification`, async () => {
-          // Notification will be sent by controller/API layer via events
-          // For now, this test is a placeholder
+          expect(await sut.hasReceivedNotification(email)).toBe(true);
         });
       }
     );
@@ -64,6 +63,7 @@ describeFeature(
 
         And("the helper is not onboarded", async () => {
           expect(await sut.isHelperOnboarded(email)).toBe(false);
+          expect(await sut.hasReceivedNotification(email)).toBe(false);
         });
       }
     );
@@ -169,6 +169,61 @@ describeFeature(
 
         And(`the user should receive a notification`, async () => {
           // Notification will be sent by controller/API layer via events
+        });
+      }
+    );
+
+    Scenario(
+      `Admin onboards helper and receives personalized notification`,
+      ({ Given, When, Then, And }) => {
+        Given(`the user's email is "sarah.connor@example.com"`, () => {});
+        And(`the user's first name is "Sarah"`, () => {});
+        And(`the user's last name is "Connor"`, () => {});
+
+        When(`I onboard the user`, async () => {
+          const user: User = {
+            email: "sarah.connor@example.com",
+            firstname: "Sarah",
+            lastname: "Connor",
+          };
+          await sut.onboardUser(user);
+        });
+
+        Then(`the user should receive a notification`, async () => {
+          expect(
+            await sut.hasReceivedNotification("sarah.connor@example.com")
+          ).toBe(true);
+        });
+
+        And(`the notification should contain "Hi Sarah Connor"`, async () => {
+          const content = await sut.getNotificationContent(
+            "sarah.connor@example.com"
+          );
+          expect(content).toContain("Hi Sarah Connor");
+        });
+
+        And(`the notification should contain "Welcome to Tries"`, async () => {
+          const content = await sut.getNotificationContent(
+            "sarah.connor@example.com"
+          );
+          expect(content).toContain("Welcome to Tries");
+        });
+
+        And(
+          `the notification should contain "https://tries.fr/setup-password"`,
+          async () => {
+            const content = await sut.getNotificationContent(
+              "sarah.connor@example.com"
+            );
+            expect(content).toContain("https://tries.fr/setup-password");
+          }
+        );
+
+        And(`the notification should contain "tries@support.fr"`, async () => {
+          const content = await sut.getNotificationContent(
+            "sarah.connor@example.com"
+          );
+          expect(content).toContain("tries@support.fr");
         });
       }
     );
