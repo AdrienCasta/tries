@@ -1,4 +1,4 @@
-export class HelperId {
+export default class HelperId {
   readonly value: string;
 
   private constructor(value: string) {

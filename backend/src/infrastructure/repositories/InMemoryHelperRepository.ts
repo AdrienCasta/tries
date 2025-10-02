@@ -12,7 +12,7 @@ export class InMemoryHelperRepository implements HelperRepository {
   async findByEmail(email: string): Promise<Helper | null> {
     return (
       Array.from(this.helpers.values()).find(
-        (helper) => helper.email === email
+        (helper) => helper.email.value === email
       ) || null
     );
   }

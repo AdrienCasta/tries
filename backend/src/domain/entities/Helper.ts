@@ -1,8 +1,11 @@
-import { HelperId } from "../value-objects/HelperId.js";
+import HelperEmail from "../value-objects/HelperEmail.js";
+import HelperId from "../value-objects/HelperId.js";
+import Firstname from "../value-objects/Firstname.js";
+import Lastname from "../value-objects/Lastname.js";
 
 export type Helper = {
   id: HelperId;
-  email: string;
-  lastname: string;
-  firstname: string;
+  email: HelperEmail;
+  lastname: Lastname;
+  firstname: Firstname;
 };
