@@ -49,6 +49,10 @@ export class InMemoryOnboardingHelperNotificationService
     return this.notifications.get(email) || null;
   }
 
+  async clear() {
+    this.notifications = new Map();
+  }
+
   private generateTemplate({
     firstname,
     lastname,

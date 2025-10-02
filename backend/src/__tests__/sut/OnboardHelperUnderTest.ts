@@ -1,7 +1,10 @@
+import { expect } from "vitest";
+
 import { User } from "../../domain/entities/User.js";
 import { OnboardHelper } from "../../application/use-cases/OnboardHelper.js";
 import { InMemoryHelperRepository } from "../../infrastructure/repositories/InMemoryHelperRepository.js";
 import { InMemoryOnboardingHelperNotificationService } from "../../infrastructure/services/InMemoryOnboardingHelperNotificationService.js";
+import { Helper } from "../../domain/entities/Helper.js";
 
 export default class OnboardHelperUnderTest {
   private helperRepository!: InMemoryHelperRepository;
@@ -37,5 +40,12 @@ export default class OnboardHelperUnderTest {
 
   async getNotificationContent(email: string): Promise<string | null> {
     return await this.notificationService.getNotificationContent(email);
+  }
+  async findHelperByEmail(email: string): Promise<Helper | null> {
+    return this.helperRepository.findByEmail(email);
+  }
+
+  clearNotification() {
+    this.notificationService.clear();
   }
 }

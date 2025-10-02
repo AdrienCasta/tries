@@ -7,6 +7,7 @@ import Firstname from "../../domain/value-objects/Firstname.js";
 import Lastname from "../../domain/value-objects/Lastname.js";
 import { Result } from "../../shared/Result.js";
 import ValidationError from "../../domain/errors/ValidationError.js";
+import DuplicateHelperError from "../../domain/errors/DuplicateHelperError.js";
 import { OnboardingHelperNotificationService } from "../../domain/services/OnboardingHelperNotificationService.js";
 
 export class OnboardHelper {
@@ -19,7 +20,7 @@ export class OnboardHelper {
     email,
     firstname,
     lastname,
-  }: User): Promise<Result<HelperId, ValidationError>> {
+  }: User): Promise<Result<HelperId, ValidationError | DuplicateHelperError>> {
     const emailResult = HelperEmail.create(email);
     if (Result.isFailure(emailResult)) {
       return Result.fail(emailResult.error);
@@ -33,6 +34,12 @@ export class OnboardHelper {
     const lastnameResult = Lastname.create(lastname);
     if (Result.isFailure(lastnameResult)) {
       return Result.fail(lastnameResult.error);
+    }
+
+    // Check for duplicate helper
+    const existingHelper = await this.helperRepository.findByEmail(email);
+    if (existingHelper) {
+      return Result.fail(DuplicateHelperError.forEmail(email));
     }
 
     const helper: Helper = {
