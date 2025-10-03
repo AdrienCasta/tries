@@ -13,8 +13,11 @@ config({ path: ".env.test" });
 describe("Integration: OnboardHelper with Supabase", () => {
   let supabase: SupabaseClient;
   let useCase: OnboardHelper;
+  let helperRepository: SupabaseHelperRepository;
+  let helperAccountRepository: SupabaseHelperAccountRepository;
   let notificationService: FakeOnboardedHelperNotificationService;
   let clock: SystemClock;
+  let createdHelperId: string | null = null;
   const testEmail = `test-${Date.now()}@example.com`;
 
   beforeAll(() => {
@@ -33,10 +36,8 @@ describe("Integration: OnboardHelper with Supabase", () => {
       passwordSetupUrl: "https://tries.fr/setup-password",
     });
 
-    const helperRepository = new SupabaseHelperRepository(supabase);
-    const helperAccountRepository = new SupabaseHelperAccountRepository(
-      supabase
-    );
+    helperRepository = new SupabaseHelperRepository(supabase);
+    helperAccountRepository = new SupabaseHelperAccountRepository(supabase);
 
     useCase = new OnboardHelper(
       helperRepository,
@@ -47,12 +48,11 @@ describe("Integration: OnboardHelper with Supabase", () => {
   });
 
   afterEach(async () => {
-    const { data } = await supabase.auth.admin.listUsers();
-    const user = data?.users.find((u) => u.email === testEmail);
-    if (user) {
-      await supabase.auth.admin.deleteUser(user.id);
+    if (createdHelperId) {
+      await supabase.auth.admin.deleteUser(createdHelperId);
+      await supabase.from("helpers").delete().eq("id", createdHelperId);
+      createdHelperId = null;
     }
-    await supabase.from("helpers").delete().eq("email", testEmail);
   });
 
   it("should successfully onboard a helper and store in Supabase", async () => {
@@ -66,25 +66,23 @@ describe("Integration: OnboardHelper with Supabase", () => {
 
     expect(result.success).toBe(true);
 
-    const { data: helper } = await supabase
-      .from("helpers")
-      .select("*")
-      .eq("email", testEmail)
-      .single();
+    if (result.success) {
+      createdHelperId = result.value.value;
+    }
+
+    // Use repository methods instead of raw queries
+    const helper = await helperRepository.findByEmail(testEmail);
 
     expect(helper).toBeDefined();
-    expect(helper.email).toBe(testEmail);
-    expect(helper.firstname).toBe("John");
-    expect(helper.lastname).toBe("Doe");
+    expect(helper?.email.value).toBe(testEmail);
+    expect(helper?.firstname.value).toBe("John");
+    expect(helper?.lastname.value).toBe("Doe");
 
-    const { data: authData } = await supabase.auth.admin.listUsers();
-    const authUser = authData?.users.find((u) => u.email === testEmail);
+    const helperAccount = await helperAccountRepository.findByEmail(testEmail);
 
-    expect(authUser).toBeDefined();
-    expect(authUser?.email).toBe(testEmail);
-    expect(authUser?.user_metadata?.password_setup_token).toBeDefined();
-    expect(
-      authUser?.user_metadata?.password_setup_token_expires_at
-    ).toBeDefined();
+    expect(helperAccount).toBeDefined();
+    expect(helperAccount?.email.value).toBe(testEmail);
+    expect(helperAccount?.passwordSetupToken).toBeDefined();
+    expect(helperAccount?.passwordSetupToken?.expiration).toBeDefined();
   });
 });
