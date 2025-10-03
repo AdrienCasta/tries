@@ -1,4 +1,5 @@
 import { randomBytes } from "crypto";
+import { Clock } from "../services/Clock.js";
 
 export default class PasswordSetupToken {
   private constructor(
@@ -14,9 +15,12 @@ export default class PasswordSetupToken {
     return this.expiresAt;
   }
 
-  static create(expirationHours: number = 48): PasswordSetupToken {
+  static create(
+    clock: Clock,
+    expirationHours: number = 48
+  ): PasswordSetupToken {
     const token = randomBytes(32).toString("hex");
-    const expiresAt = new Date();
+    const expiresAt = clock.now();
     expiresAt.setHours(expiresAt.getHours() + expirationHours);
 
     return new PasswordSetupToken(token, expiresAt);
@@ -26,8 +30,8 @@ export default class PasswordSetupToken {
     return new PasswordSetupToken(token, expiresAt);
   }
 
-  isExpired(): boolean {
-    return new Date() > this.expiresAt;
+  isExpired(clock: Clock): boolean {
+    return clock.now() > this.expiresAt;
   }
 
   equals(other: PasswordSetupToken): boolean {

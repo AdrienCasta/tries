@@ -6,11 +6,13 @@ import { InMemoryHelperRepository } from "../../infrastructure/repositories/InMe
 import { InMemoryHelperAccountRepository } from "../../infrastructure/repositories/InMemoryHelperAccountRepository.js";
 import { InMemoryOnboardingHelperNotificationService } from "../../infrastructure/services/InMemoryOnboardingHelperNotificationService.js";
 import { Helper } from "../../domain/entities/Helper.js";
+import { FixedClock } from "../doubles/FixedClock.js";
 
 export default class OnboardHelperUnderTest {
   private helperRepository!: InMemoryHelperRepository;
   private helperAccountRepository!: InMemoryHelperAccountRepository;
   private notificationService!: InMemoryOnboardingHelperNotificationService;
+  private clock!: FixedClock;
   private useCase!: OnboardHelper;
 
   setup(): void {
@@ -21,11 +23,13 @@ export default class OnboardHelperUnderTest {
       supportEmailContact: "tries@support.fr",
       passwordSetupUrl: "https://tries.fr/setup-password",
     });
+    this.clock = new FixedClock();
 
     this.useCase = new OnboardHelper(
       this.helperRepository,
       this.helperAccountRepository,
-      this.notificationService
+      this.notificationService,
+      this.clock
     );
   }
 

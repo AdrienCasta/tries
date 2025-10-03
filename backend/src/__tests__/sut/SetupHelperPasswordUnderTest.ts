@@ -8,6 +8,7 @@ import { InMemoryOnboardingHelperNotificationService } from "../../infrastructur
 import { User } from "../../domain/entities/User.js";
 import PasswordSetupToken from "../../domain/value-objects/PasswordSetupToken.js";
 import Password from "../../domain/value-objects/Password.js";
+import { FixedClock } from "../doubles/FixedClock.js";
 
 export default class SetupHelperPasswordUnderTest {
   private helperRepository!: InMemoryHelperRepository;
@@ -15,6 +16,7 @@ export default class SetupHelperPasswordUnderTest {
   private onboardHelperUseCase!: OnboardHelper;
   private setupHelperPasswordUseCase!: SetupHelperPassword;
   private notificationService!: InMemoryOnboardingHelperNotificationService;
+  private clock!: FixedClock;
 
   setup(): void {
     this.helperRepository = new InMemoryHelperRepository();
@@ -24,13 +26,16 @@ export default class SetupHelperPasswordUnderTest {
       supportEmailContact: "tries@support.fr",
       passwordSetupUrl: "https://tries.fr/setup-password",
     });
+    this.clock = new FixedClock();
     this.onboardHelperUseCase = new OnboardHelper(
       this.helperRepository,
       this.helperAccountRepository,
-      this.notificationService
+      this.notificationService,
+      this.clock
     );
     this.setupHelperPasswordUseCase = new SetupHelperPassword(
-      this.helperAccountRepository
+      this.helperAccountRepository,
+      this.clock
     );
   }
 
@@ -86,7 +91,7 @@ export default class SetupHelperPasswordUnderTest {
         const tokenValue = helperAccount.passwordSetupToken?.value || null;
 
         helperAccount.password = passwordResult.value;
-        helperAccount.passwordSetAt = new Date();
+        helperAccount.passwordSetAt = this.clock.now();
         await this.helperAccountRepository.save(helperAccount);
 
         return tokenValue;
@@ -100,7 +105,7 @@ export default class SetupHelperPasswordUnderTest {
     if (helper) {
       const helperAccount = await this.helperAccountRepository.findByEmail(user.email);
       if (helperAccount && helperAccount.passwordSetupToken) {
-        const expiredDate = new Date();
+        const expiredDate = this.clock.now();
         expiredDate.setHours(expiredDate.getHours() - hoursAgo);
         helperAccount.passwordSetupToken = PasswordSetupToken.fromValues(
           helperAccount.passwordSetupToken.value,

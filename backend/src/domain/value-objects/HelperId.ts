@@ -1,3 +1,5 @@
+import { Clock } from "../services/Clock.js";
+
 export default class HelperId {
   readonly value: string;
 
@@ -8,8 +10,8 @@ export default class HelperId {
     this.value = value;
   }
 
-  static create(): HelperId {
-    return new HelperId(new Date().toISOString());
+  static create(clock: Clock): HelperId {
+    return new HelperId(clock.now().toISOString());
   }
 
   toValue(): string {

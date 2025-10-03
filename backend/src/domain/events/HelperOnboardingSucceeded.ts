@@ -1,5 +1,6 @@
 import DomainEvent from "./DomainEvent.js";
 import HelperId from "../value-objects/HelperId.js";
+import { Clock } from "../services/Clock.js";
 
 export default interface HelperOnboardingSucceeded extends DomainEvent {
   readonly eventName: "HelperOnboardingSucceeded";
@@ -10,6 +11,7 @@ export default interface HelperOnboardingSucceeded extends DomainEvent {
 }
 
 export function createHelperOnboardingSucceeded(
+  clock: Clock,
   helperId: HelperId,
   email: string,
   firstname: string,
@@ -17,7 +19,7 @@ export function createHelperOnboardingSucceeded(
 ): HelperOnboardingSucceeded {
   return {
     eventName: "HelperOnboardingSucceeded",
-    occurredAt: new Date(),
+    occurredAt: clock.now(),
     helperId,
     email,
     firstname,

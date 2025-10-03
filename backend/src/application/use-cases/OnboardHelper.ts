@@ -12,12 +12,14 @@ import { Result } from "../../shared/Result.js";
 import ValidationError from "../../domain/errors/ValidationError.js";
 import DuplicateHelperError from "../../domain/errors/DuplicateHelperError.js";
 import { OnboardingHelperNotificationService } from "../../domain/services/OnboardingHelperNotificationService.js";
+import { Clock } from "../../domain/services/Clock.js";
 
 export class OnboardHelper {
   constructor(
     private readonly helperRepository: HelperRepository,
     private readonly helperAccountRepository: HelperAccountRepository,
-    private readonly notif: OnboardingHelperNotificationService
+    private readonly notif: OnboardingHelperNotificationService,
+    private readonly clock: Clock
   ) {}
 
   async execute({
@@ -45,7 +47,7 @@ export class OnboardHelper {
       return Result.fail(DuplicateHelperError.forEmail(email));
     }
 
-    const helperId = HelperId.create();
+    const helperId = HelperId.create(this.clock);
 
     const helper: Helper = {
       id: helperId,
@@ -54,13 +56,13 @@ export class OnboardHelper {
       lastname: lastnameResult.value,
     };
 
-    const passwordSetupToken = PasswordSetupToken.create(48);
+    const passwordSetupToken = PasswordSetupToken.create(this.clock, 48);
 
     const helperAccount: HelperAccount = {
       helperId,
       email: emailResult.value,
       passwordSetupToken,
-      createdAt: new Date(),
+      createdAt: this.clock.now(),
     };
 
     await this.helperRepository.save(helper);
