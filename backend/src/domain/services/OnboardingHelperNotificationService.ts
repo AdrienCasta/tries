@@ -1,4 +1,4 @@
-export interface OnboardingHelperNotificationService {
+export interface OnboardedHelperNotificationService {
   send(data: {
     email: string;
     firstname: string;

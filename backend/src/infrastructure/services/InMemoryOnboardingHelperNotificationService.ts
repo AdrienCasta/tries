@@ -1,7 +1,7 @@
-import { OnboardingHelperNotificationService } from "../../domain/services/OnboardingHelperNotificationService.js";
+import { OnboardedHelperNotificationService } from "../../domain/services/OnboardingHelperNotificationService.js";
 
-export class InMemoryOnboardingHelperNotificationService
-  implements OnboardingHelperNotificationService
+export class FakeOnboardedHelperNotificationService
+  implements OnboardedHelperNotificationService
 {
   companyName: string;
   passwordSetupUrl: string;

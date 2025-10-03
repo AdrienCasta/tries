@@ -11,14 +11,14 @@ import PasswordSetupToken from "../../domain/value-objects/PasswordSetupToken.js
 import { Result } from "../../shared/Result.js";
 import ValidationError from "../../domain/errors/ValidationError.js";
 import DuplicateHelperError from "../../domain/errors/DuplicateHelperError.js";
-import { OnboardingHelperNotificationService } from "../../domain/services/OnboardingHelperNotificationService.js";
+import { OnboardedHelperNotificationService } from "../../domain/services/OnboardingHelperNotificationService.js";
 import { Clock } from "../../domain/services/Clock.js";
 
 export class OnboardHelper {
   constructor(
     private readonly helperRepository: HelperRepository,
     private readonly helperAccountRepository: HelperAccountRepository,
-    private readonly notif: OnboardingHelperNotificationService,
+    private readonly notif: OnboardedHelperNotificationService,
     private readonly clock: Clock
   ) {}
 
@@ -47,14 +47,7 @@ export class OnboardHelper {
       return Result.fail(DuplicateHelperError.forEmail(email));
     }
 
-    const helperId = HelperId.create(this.clock);
-
-    const helper: Helper = {
-      id: helperId,
-      email: emailResult.value,
-      firstname: firstnameResult.value,
-      lastname: lastnameResult.value,
-    };
+    const helperId = HelperId.generate();
 
     const passwordSetupToken = PasswordSetupToken.create(this.clock, 48);
 
@@ -65,8 +58,15 @@ export class OnboardHelper {
       createdAt: this.clock.now(),
     };
 
-    await this.helperRepository.save(helper);
+    const helper: Helper = {
+      id: helperId,
+      email: emailResult.value,
+      firstname: firstnameResult.value,
+      lastname: lastnameResult.value,
+    };
+
     await this.helperAccountRepository.save(helperAccount);
+    await this.helperRepository.save(helper);
 
     this.notif.send({ email, firstname, lastname });
 

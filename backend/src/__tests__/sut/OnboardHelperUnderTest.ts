@@ -4,21 +4,21 @@ import { User } from "../../domain/entities/User.js";
 import { OnboardHelper } from "../../application/use-cases/OnboardHelper.js";
 import { InMemoryHelperRepository } from "../../infrastructure/repositories/InMemoryHelperRepository.js";
 import { InMemoryHelperAccountRepository } from "../../infrastructure/repositories/InMemoryHelperAccountRepository.js";
-import { InMemoryOnboardingHelperNotificationService } from "../../infrastructure/services/InMemoryOnboardingHelperNotificationService.js";
+import { FakeOnboardedHelperNotificationService } from "../../infrastructure/services/InMemoryOnboardingHelperNotificationService.js";
 import { Helper } from "../../domain/entities/Helper.js";
 import { FixedClock } from "../doubles/FixedClock.js";
 
 export default class OnboardHelperUnderTest {
   private helperRepository!: InMemoryHelperRepository;
   private helperAccountRepository!: InMemoryHelperAccountRepository;
-  private notificationService!: InMemoryOnboardingHelperNotificationService;
+  private notificationService!: FakeOnboardedHelperNotificationService;
   private clock!: FixedClock;
   private useCase!: OnboardHelper;
 
   setup(): void {
     this.helperRepository = new InMemoryHelperRepository();
     this.helperAccountRepository = new InMemoryHelperAccountRepository();
-    this.notificationService = new InMemoryOnboardingHelperNotificationService({
+    this.notificationService = new FakeOnboardedHelperNotificationService({
       companyName: "Tries",
       supportEmailContact: "tries@support.fr",
       passwordSetupUrl: "https://tries.fr/setup-password",

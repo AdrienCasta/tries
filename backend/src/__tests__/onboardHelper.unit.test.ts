@@ -171,7 +171,10 @@ describeFeature(
         const email =
           "very.long.email.address.that.is.still.valid@extremely-long-domain-name.com";
 
-        Given(`the user's email is "very.long.email.address.that.is.still.valid@extremely-long-domain-name.com"`, () => {});
+        Given(
+          `the user's email is "very.long.email.address.that.is.still.valid@extremely-long-domain-name.com"`,
+          () => {}
+        );
         And(`the user's first name is "Bartholomew"`, () => {});
         And(`the user's last name is "Montgomery-Smythe"`, () => {});
 

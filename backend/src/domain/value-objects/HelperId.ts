@@ -1,4 +1,4 @@
-import { Clock } from "../services/Clock.js";
+import { randomUUID } from "crypto";
 
 export default class HelperId {
   readonly value: string;
@@ -10,8 +10,12 @@ export default class HelperId {
     this.value = value;
   }
 
-  static create(clock: Clock): HelperId {
-    return new HelperId(clock.now().toISOString());
+  static generate(): HelperId {
+    return new HelperId(randomUUID());
+  }
+
+  static create(id: string): HelperId {
+    return new HelperId(id);
   }
 
   toValue(): string {
