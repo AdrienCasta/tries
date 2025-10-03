@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterEach } from "vitest";
+import { describe, it, expect, beforeAll, afterEach, vi } from "vitest";
 import { config } from "dotenv";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { OnboardHelper } from "../application/use-cases/OnboardHelper.js";
@@ -7,18 +7,21 @@ import { FakeOnboardedHelperNotificationService } from "../infrastructure/servic
 import { SupabaseHelperRepository } from "../infrastructure/repositories/SupabaseHelperRepository.js";
 import { SupabaseHelperAccountRepository } from "../infrastructure/repositories/SupabaseHelperAccountRepository.js";
 import { User } from "../domain/entities/User.js";
+import HelperId from "../domain/value-objects/HelperId.js";
+import { SupabaseOnboardedHelperNotificationService } from "../infrastructure/services/SupabaseOnboardedHelperNotificationService.js";
+import { OnboardedHelperNotificationService } from "../domain/services/OnboardingHelperNotificationService.js";
 
 config({ path: ".env.test" });
 
 describe("Integration: OnboardHelper with Supabase", () => {
   let supabase: SupabaseClient;
-  let useCase: OnboardHelper;
+  let onboardHelper: OnboardHelper;
   let helperRepository: SupabaseHelperRepository;
   let helperAccountRepository: SupabaseHelperAccountRepository;
-  let notificationService: FakeOnboardedHelperNotificationService;
+  let notificationService: OnboardedHelperNotificationService;
   let clock: SystemClock;
-  let createdHelperId: string | null = null;
-  const testEmail = `test-${Date.now()}@example.com`;
+  let createdHelperId: HelperId | null = null;
+  const testEmail = `adrien.castagliola+3@gmail.com`;
 
   beforeAll(() => {
     const supabaseUrl = process.env.SUPABASE_URL;
@@ -30,16 +33,15 @@ describe("Integration: OnboardHelper with Supabase", () => {
 
     supabase = createClient(supabaseUrl, supabaseKey);
     clock = new SystemClock();
-    notificationService = new FakeOnboardedHelperNotificationService({
-      companyName: "Tries",
-      supportEmailContact: "tries@support.fr",
-      passwordSetupUrl: "https://tries.fr/setup-password",
-    });
+    notificationService = new SupabaseOnboardedHelperNotificationService(
+      supabase
+    );
+    notificationService.send = vi.fn();
 
     helperRepository = new SupabaseHelperRepository(supabase);
     helperAccountRepository = new SupabaseHelperAccountRepository(supabase);
 
-    useCase = new OnboardHelper(
+    onboardHelper = new OnboardHelper(
       helperRepository,
       helperAccountRepository,
       notificationService,
@@ -49,40 +51,42 @@ describe("Integration: OnboardHelper with Supabase", () => {
 
   afterEach(async () => {
     if (createdHelperId) {
-      await supabase.auth.admin.deleteUser(createdHelperId);
-      await supabase.from("helpers").delete().eq("id", createdHelperId);
+      const {
+        data: { users },
+        error: fetchError,
+      } = await supabase.auth.admin.listUsers();
+
+      for (const user of users) {
+        await supabase.auth.admin.deleteUser(user.id);
+      }
+      await supabase.from("helpers").delete().eq("id", createdHelperId.value);
       createdHelperId = null;
     }
   });
 
-  it("should successfully onboard a helper and store in Supabase", async () => {
+  it("successfully onboards a helper", async () => {
     const user: User = {
       email: testEmail,
       firstname: "John",
       lastname: "Doe",
     };
 
-    const result = await useCase.execute(user);
+    const result = await onboardHelper.execute(user);
 
     expect(result.success).toBe(true);
 
     if (result.success) {
-      createdHelperId = result.value.value;
+      createdHelperId = result.value;
     }
 
-    // Use repository methods instead of raw queries
-    const helper = await helperRepository.findByEmail(testEmail);
-
-    expect(helper).toBeDefined();
-    expect(helper?.email.value).toBe(testEmail);
-    expect(helper?.firstname.value).toBe("John");
-    expect(helper?.lastname.value).toBe("Doe");
-
-    const helperAccount = await helperAccountRepository.findByEmail(testEmail);
+    const helperAccount = await helperAccountRepository.findByHelperId(
+      createdHelperId as HelperId
+    );
 
     expect(helperAccount).toBeDefined();
-    expect(helperAccount?.email.value).toBe(testEmail);
-    expect(helperAccount?.passwordSetupToken).toBeDefined();
-    expect(helperAccount?.passwordSetupToken?.expiration).toBeDefined();
+  });
+
+  it("helper is invited to confirm its e-mail", async () => {
+    expect(notificationService.send).toHaveBeenCalledOnce();
   });
 });

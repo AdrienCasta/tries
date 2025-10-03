@@ -1,15 +1,16 @@
-import bcrypt from "bcryptjs";
+import { randomBytes } from "crypto";
 import { Result } from "../../shared/Result.js";
 import ValidationError from "../errors/ValidationError.js";
 
 export default class Password {
-  private constructor(private readonly hashedValue: string) {}
+  readonly value: string;
 
-  get hash(): string {
-    return this.hashedValue;
+  private constructor(value: string) {
+    this.value = value;
   }
-
-  static async create(plainPassword: string): Promise<Result<Password, ValidationError>> {
+  static async create(
+    plainPassword: string
+  ): Promise<Result<Password, ValidationError>> {
     if (!plainPassword || plainPassword.trim().length === 0) {
       return Result.fail(new ValidationError("Password is required"));
     }
@@ -19,11 +20,15 @@ export default class Password {
     }
 
     if (!/[A-Z]/.test(plainPassword)) {
-      return Result.fail(new ValidationError("Password must contain uppercase"));
+      return Result.fail(
+        new ValidationError("Password must contain uppercase")
+      );
     }
 
     if (!/[a-z]/.test(plainPassword)) {
-      return Result.fail(new ValidationError("Password must contain lowercase"));
+      return Result.fail(
+        new ValidationError("Password must contain lowercase")
+      );
     }
 
     if (!/[0-9]/.test(plainPassword)) {
@@ -34,17 +39,16 @@ export default class Password {
       return Result.fail(new ValidationError("Password must contain special"));
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(plainPassword, salt);
-
-    return Result.ok(new Password(hashedPassword));
+    return Result.ok(new Password(plainPassword));
   }
+  static async generateTemporary(): Promise<Password> {
+    const password = randomBytes(12).toString("base64") + "Aa1!";
+    const result = await Password.create(password);
 
-  static fromHash(hash: string): Password {
-    return new Password(hash);
-  }
+    if (Result.isFailure(result)) {
+      throw new Error("Failed to generate temporary password");
+    }
 
-  async compare(plainPassword: string): Promise<boolean> {
-    return await bcrypt.compare(plainPassword, this.hashedValue);
+    return result.value;
   }
 }

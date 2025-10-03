@@ -5,5 +5,4 @@ export interface OnboardedHelperNotificationService {
     lastname: string;
   }): Promise<void>;
   hasSentTo(email: string): Promise<boolean>;
-  getNotificationContent(email: string): Promise<string | null>;
 }

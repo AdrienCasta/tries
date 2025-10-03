@@ -7,12 +7,12 @@ import { HelperAccountRepository } from "../../domain/repositories/HelperAccount
 import HelperEmail from "../../domain/value-objects/HelperEmail.js";
 import Firstname from "../../domain/value-objects/Firstname.js";
 import Lastname from "../../domain/value-objects/Lastname.js";
-import PasswordSetupToken from "../../domain/value-objects/PasswordSetupToken.js";
 import { Result } from "../../shared/Result.js";
 import ValidationError from "../../domain/errors/ValidationError.js";
 import DuplicateHelperError from "../../domain/errors/DuplicateHelperError.js";
 import { OnboardedHelperNotificationService } from "../../domain/services/OnboardingHelperNotificationService.js";
 import { Clock } from "../../domain/services/Clock.js";
+import Password from "../../domain/value-objects/Password.js";
 
 export class OnboardHelper {
   constructor(
@@ -49,12 +49,10 @@ export class OnboardHelper {
 
     const helperId = HelperId.generate();
 
-    const passwordSetupToken = PasswordSetupToken.create(this.clock, 48);
-
     const helperAccount: HelperAccount = {
       helperId,
+      password: await Password.generateTemporary(),
       email: emailResult.value,
-      passwordSetupToken,
       createdAt: this.clock.now(),
     };
 
@@ -65,10 +63,14 @@ export class OnboardHelper {
       lastname: lastnameResult.value,
     };
 
-    await this.helperAccountRepository.save(helperAccount);
-    await this.helperRepository.save(helper);
+    const { success } = await this.helperAccountRepository.create(
+      helperAccount
+    );
 
-    this.notif.send({ email, firstname, lastname });
+    if (success) {
+      this.notif.send({ email, firstname, lastname });
+    }
+    await this.helperRepository.save(helper);
 
     return Result.ok(helper.id);
   }
