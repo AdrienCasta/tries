@@ -1,27 +1,33 @@
-import { HelperRepository } from "../../domain/repositories/HelperRepository.js";
+import { HelperAccountRepository } from "../../domain/repositories/HelperAccountRepository.js";
 import Password from "../../domain/value-objects/Password.js";
 import { Result } from "../../shared/Result.js";
 import ValidationError from "../../domain/errors/ValidationError.js";
 import PasswordSetupError from "../../domain/errors/PasswordSetupError.js";
 
 export class SetupHelperPassword {
-  constructor(private readonly helperRepository: HelperRepository) {}
+  constructor(
+    private readonly helperAccountRepository: HelperAccountRepository
+  ) {}
 
   async execute(
     token: string,
     plainPassword: string
   ): Promise<Result<void, ValidationError | PasswordSetupError>> {
-    const helper = await this.helperRepository.findByPasswordSetupToken(token);
+    const helperAccount =
+      await this.helperAccountRepository.findByPasswordSetupToken(token);
 
-    if (!helper) {
+    if (!helperAccount) {
       return Result.fail(PasswordSetupError.tokenInvalid());
     }
 
-    if (helper.password) {
+    if (helperAccount.password) {
       return Result.fail(PasswordSetupError.passwordAlreadySet());
     }
 
-    if (helper.passwordSetupToken && helper.passwordSetupToken.isExpired()) {
+    if (
+      helperAccount.passwordSetupToken &&
+      helperAccount.passwordSetupToken.isExpired()
+    ) {
       return Result.fail(PasswordSetupError.tokenExpired());
     }
 
@@ -30,11 +36,11 @@ export class SetupHelperPassword {
       return Result.fail(passwordResult.error);
     }
 
-    helper.password = passwordResult.value;
-    helper.passwordSetAt = new Date();
-    helper.passwordSetupToken = undefined;
+    helperAccount.password = passwordResult.value;
+    helperAccount.passwordSetAt = new Date();
+    helperAccount.passwordSetupToken = undefined;
 
-    await this.helperRepository.save(helper);
+    await this.helperAccountRepository.save(helperAccount);
 
     return Result.ok(undefined);
   }

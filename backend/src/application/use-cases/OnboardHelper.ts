@@ -1,7 +1,9 @@
 import { User } from "../../domain/entities/User.js";
 import { Helper } from "../../domain/entities/Helper.js";
+import { HelperAccount } from "../../domain/entities/HelperAccount.js";
 import HelperId from "../../domain/value-objects/HelperId.js";
 import { HelperRepository } from "../../domain/repositories/HelperRepository.js";
+import { HelperAccountRepository } from "../../domain/repositories/HelperAccountRepository.js";
 import HelperEmail from "../../domain/value-objects/HelperEmail.js";
 import Firstname from "../../domain/value-objects/Firstname.js";
 import Lastname from "../../domain/value-objects/Lastname.js";
@@ -14,6 +16,7 @@ import { OnboardingHelperNotificationService } from "../../domain/services/Onboa
 export class OnboardHelper {
   constructor(
     private readonly helperRepository: HelperRepository,
+    private readonly helperAccountRepository: HelperAccountRepository,
     private readonly notif: OnboardingHelperNotificationService
   ) {}
 
@@ -42,17 +45,26 @@ export class OnboardHelper {
       return Result.fail(DuplicateHelperError.forEmail(email));
     }
 
-    const passwordSetupToken = PasswordSetupToken.create(48);
+    const helperId = HelperId.create();
 
     const helper: Helper = {
-      id: HelperId.create(),
+      id: helperId,
       email: emailResult.value,
       firstname: firstnameResult.value,
       lastname: lastnameResult.value,
+    };
+
+    const passwordSetupToken = PasswordSetupToken.create(48);
+
+    const helperAccount: HelperAccount = {
+      helperId,
+      email: emailResult.value,
       passwordSetupToken,
+      createdAt: new Date(),
     };
 
     await this.helperRepository.save(helper);
+    await this.helperAccountRepository.save(helperAccount);
 
     this.notif.send({ email, firstname, lastname });
 

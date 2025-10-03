@@ -16,12 +16,4 @@ export class InMemoryHelperRepository implements HelperRepository {
       ) || null
     );
   }
-
-  async findByPasswordSetupToken(token: string): Promise<Helper | null> {
-    return (
-      Array.from(this.helpers.values()).find(
-        (helper) => helper.passwordSetupToken?.value === token
-      ) || null
-    );
-  }
 }

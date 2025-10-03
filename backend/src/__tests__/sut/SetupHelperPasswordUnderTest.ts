@@ -1,5 +1,7 @@
 import { Helper } from "../../domain/entities/Helper.js";
+import { HelperAccount } from "../../domain/entities/HelperAccount.js";
 import { InMemoryHelperRepository } from "../../infrastructure/repositories/InMemoryHelperRepository.js";
+import { InMemoryHelperAccountRepository } from "../../infrastructure/repositories/InMemoryHelperAccountRepository.js";
 import { OnboardHelper } from "../../application/use-cases/OnboardHelper.js";
 import { SetupHelperPassword } from "../../application/use-cases/SetupHelperPassword.js";
 import { InMemoryOnboardingHelperNotificationService } from "../../infrastructure/services/InMemoryOnboardingHelperNotificationService.js";
@@ -9,12 +11,14 @@ import Password from "../../domain/value-objects/Password.js";
 
 export default class SetupHelperPasswordUnderTest {
   private helperRepository!: InMemoryHelperRepository;
+  private helperAccountRepository!: InMemoryHelperAccountRepository;
   private onboardHelperUseCase!: OnboardHelper;
   private setupHelperPasswordUseCase!: SetupHelperPassword;
   private notificationService!: InMemoryOnboardingHelperNotificationService;
 
   setup(): void {
     this.helperRepository = new InMemoryHelperRepository();
+    this.helperAccountRepository = new InMemoryHelperAccountRepository();
     this.notificationService = new InMemoryOnboardingHelperNotificationService({
       companyName: "Tries",
       supportEmailContact: "tries@support.fr",
@@ -22,10 +26,11 @@ export default class SetupHelperPasswordUnderTest {
     });
     this.onboardHelperUseCase = new OnboardHelper(
       this.helperRepository,
+      this.helperAccountRepository,
       this.notificationService
     );
     this.setupHelperPasswordUseCase = new SetupHelperPassword(
-      this.helperRepository
+      this.helperAccountRepository
     );
   }
 
@@ -47,8 +52,8 @@ export default class SetupHelperPasswordUnderTest {
     return { success: false, error: result.error.message };
   }
 
-  async getHelperByToken(token: string): Promise<Helper | null> {
-    return await this.helperRepository.findByPasswordSetupToken(token);
+  async getHelperByToken(token: string): Promise<HelperAccount | null> {
+    return await this.helperAccountRepository.findByPasswordSetupToken(token);
   }
 
   async getHelperByEmail(email: string): Promise<Helper | null> {
@@ -56,33 +61,33 @@ export default class SetupHelperPasswordUnderTest {
   }
 
   async verifyPassword(email: string, plainPassword: string): Promise<boolean> {
-    const helper = await this.helperRepository.findByEmail(email);
-    if (!helper || !helper.password) {
+    const helperAccount = await this.helperAccountRepository.findByEmail(email);
+    if (!helperAccount || !helperAccount.password) {
       return false;
     }
-    return await helper.password.compare(plainPassword);
+    return await helperAccount.password.compare(plainPassword);
   }
 
   async hasPasswordSet(email: string): Promise<boolean> {
-    const helper = await this.helperRepository.findByEmail(email);
-    return helper?.password !== undefined;
+    const helperAccount = await this.helperAccountRepository.findByEmail(email);
+    return helperAccount?.password !== undefined;
   }
 
   async getPasswordSetupToken(email: string): Promise<string | null> {
-    const helper = await this.helperRepository.findByEmail(email);
-    return helper?.passwordSetupToken?.value || null;
+    const helperAccount = await this.helperAccountRepository.findByEmail(email);
+    return helperAccount?.passwordSetupToken?.value || null;
   }
 
   async setHelperPasswordDirectly(email: string, password: string): Promise<string | null> {
-    const helper = await this.helperRepository.findByEmail(email);
-    if (helper) {
+    const helperAccount = await this.helperAccountRepository.findByEmail(email);
+    if (helperAccount) {
       const passwordResult = await Password.create(password);
       if (passwordResult.success) {
-        const tokenValue = helper.passwordSetupToken?.value || null;
+        const tokenValue = helperAccount.passwordSetupToken?.value || null;
 
-        helper.password = passwordResult.value;
-        helper.passwordSetAt = new Date();
-        await this.helperRepository.save(helper);
+        helperAccount.password = passwordResult.value;
+        helperAccount.passwordSetAt = new Date();
+        await this.helperAccountRepository.save(helperAccount);
 
         return tokenValue;
       }
@@ -92,15 +97,17 @@ export default class SetupHelperPasswordUnderTest {
 
   async createHelperWithExpiredToken(user: User, hoursAgo: number): Promise<Helper | null> {
     const helper = await this.onboardHelper(user);
-    if (helper && helper.passwordSetupToken) {
-      // Create token that expired in the past
-      const expiredDate = new Date();
-      expiredDate.setHours(expiredDate.getHours() - hoursAgo);
-      helper.passwordSetupToken = PasswordSetupToken.fromValues(
-        helper.passwordSetupToken.value,
-        expiredDate
-      );
-      await this.helperRepository.save(helper);
+    if (helper) {
+      const helperAccount = await this.helperAccountRepository.findByEmail(user.email);
+      if (helperAccount && helperAccount.passwordSetupToken) {
+        const expiredDate = new Date();
+        expiredDate.setHours(expiredDate.getHours() - hoursAgo);
+        helperAccount.passwordSetupToken = PasswordSetupToken.fromValues(
+          helperAccount.passwordSetupToken.value,
+          expiredDate
+        );
+        await this.helperAccountRepository.save(helperAccount);
+      }
       return helper;
     }
     return null;

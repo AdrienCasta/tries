@@ -3,16 +3,19 @@ import { expect } from "vitest";
 import { User } from "../../domain/entities/User.js";
 import { OnboardHelper } from "../../application/use-cases/OnboardHelper.js";
 import { InMemoryHelperRepository } from "../../infrastructure/repositories/InMemoryHelperRepository.js";
+import { InMemoryHelperAccountRepository } from "../../infrastructure/repositories/InMemoryHelperAccountRepository.js";
 import { InMemoryOnboardingHelperNotificationService } from "../../infrastructure/services/InMemoryOnboardingHelperNotificationService.js";
 import { Helper } from "../../domain/entities/Helper.js";
 
 export default class OnboardHelperUnderTest {
   private helperRepository!: InMemoryHelperRepository;
+  private helperAccountRepository!: InMemoryHelperAccountRepository;
   private notificationService!: InMemoryOnboardingHelperNotificationService;
   private useCase!: OnboardHelper;
 
   setup(): void {
     this.helperRepository = new InMemoryHelperRepository();
+    this.helperAccountRepository = new InMemoryHelperAccountRepository();
     this.notificationService = new InMemoryOnboardingHelperNotificationService({
       companyName: "Tries",
       supportEmailContact: "tries@support.fr",
@@ -21,6 +24,7 @@ export default class OnboardHelperUnderTest {
 
     this.useCase = new OnboardHelper(
       this.helperRepository,
+      this.helperAccountRepository,
       this.notificationService
     );
   }
