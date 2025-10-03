@@ -5,6 +5,7 @@ import { HelperRepository } from "../../domain/repositories/HelperRepository.js"
 import HelperEmail from "../../domain/value-objects/HelperEmail.js";
 import Firstname from "../../domain/value-objects/Firstname.js";
 import Lastname from "../../domain/value-objects/Lastname.js";
+import PasswordSetupToken from "../../domain/value-objects/PasswordSetupToken.js";
 import { Result } from "../../shared/Result.js";
 import ValidationError from "../../domain/errors/ValidationError.js";
 import DuplicateHelperError from "../../domain/errors/DuplicateHelperError.js";
@@ -36,17 +37,19 @@ export class OnboardHelper {
       return Result.fail(lastnameResult.error);
     }
 
-    // Check for duplicate helper
     const existingHelper = await this.helperRepository.findByEmail(email);
     if (existingHelper) {
       return Result.fail(DuplicateHelperError.forEmail(email));
     }
+
+    const passwordSetupToken = PasswordSetupToken.create(48);
 
     const helper: Helper = {
       id: HelperId.create(),
       email: emailResult.value,
       firstname: firstnameResult.value,
       lastname: lastnameResult.value,
+      passwordSetupToken,
     };
 
     await this.helperRepository.save(helper);

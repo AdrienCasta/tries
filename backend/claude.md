@@ -907,7 +907,7 @@ const createUserUseCase = new CreateUserUseCase(userRepository, emailService);
 - **Business Logic in Controllers**: Keep controllers thin
 - **Mixed Concerns**: One class doing validation, persistence, and business logic
 - **Throwing Exceptions**: Use Result pattern for expected errors
-- **Code Comments**: Write self-documenting code instead
+- **No code Comments**: Write self-documenting code instead
 - **Testing Implementation Details**: Test behavior, not internal structure
 - **Skipping Tests**: Always write tests first (TDD)
 - **Technical Language in BDD**: Use ubiquitous language in Gherkin scenarios

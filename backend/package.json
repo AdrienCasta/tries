@@ -7,7 +7,11 @@
   },
   "devDependencies": {
     "@amiceli/vitest-cucumber": "^5.2.1",
+    "@types/bcryptjs": "^2.4.6",
     "typescript": "~5.8.3",
     "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2"
   }
 }
