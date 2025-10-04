@@ -145,6 +145,56 @@ describeFeature(
         });
       }
     );
+
+    ScenarioOutline(
+      `Admin cannot onboard a helper who is already registered`,
+      (
+        { Given, When, Then, And },
+        { email, firstname, lastname, otherUserFirstname, otherUserLastname }
+      ) => {
+        let lastError: Error | null = null;
+
+        Given(
+          `a helper "<firstname>" "<lastname>" with email "<email>" is already onboarded`,
+          async () => {
+            testEmails.push(email);
+            await onboardHelper.execute(createUser(email, firstname, lastname));
+          }
+        );
+
+        When(
+          `I attempt to onboard another helper "<otherUserFirstname>" "<otherUserLastname>" with same email`,
+          async () => {
+            const result = await onboardHelper.execute(
+              createUser(email, otherUserFirstname, otherUserLastname)
+            );
+            if (!result.success) {
+              lastError = result.error;
+            }
+          }
+        );
+
+        Then(`the onboarding should fail`, async () => {
+          await verifyOnboardingFailedWithDuplicateEmail(lastError);
+        });
+
+        And(`the helper should not be duplicated`, async () => {
+          await verifyHelperDetailsNotChanged(
+            supabase,
+            email,
+            firstname,
+            lastname
+          );
+        });
+
+        And(
+          `no notification should be sent for the duplicate attempt`,
+          async () => {
+            await verifyOnlyOneNotificationSent(notificationService);
+          }
+        );
+      }
+    );
   }
 );
 
@@ -248,4 +298,34 @@ const verifyNoHelperAccountInAuth = async (
   const authUser = authData.users.find((u) => u.email === email);
 
   expect(authUser).toBeUndefined();
+};
+
+const verifyOnboardingFailedWithDuplicateEmail = async (
+  error: Error | null
+) => {
+  expect(error).toBeDefined();
+  expect(error?.message).toBe("Helper with this email already exists");
+};
+
+const verifyHelperDetailsNotChanged = async (
+  supabase: SupabaseClient,
+  email: string,
+  expectedFirstname: string,
+  expectedLastname: string
+) => {
+  const { data: helper } = await supabase
+    .from("helpers")
+    .select("*")
+    .eq("email", email)
+    .single();
+
+  expect(helper).toBeDefined();
+  expect(helper.firstname).toBe(expectedFirstname);
+  expect(helper.lastname).toBe(expectedLastname);
+};
+
+const verifyOnlyOneNotificationSent = async (
+  notificationService: SupabaseOnboardedHelperNotificationService
+) => {
+  expect(notificationService.send).toHaveBeenCalledOnce();
 };

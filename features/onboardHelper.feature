@@ -70,16 +70,16 @@ Feature: Onboarding a new helper
 
   # Rule: Each helper must have a unique email address
 
-  # Scenario Outline: Admin cannot onboard a helper who is already registered
-  #   Given a helper "<firstname>" "<lastname>" with email "<email>" is already onboarded
-  #   When I attempt to onboard another helper "<otherUserFirstname>" "<otherUserLastname>" with same email
-  #   Then the onboarding should fail
-  #   And the helper should not be duplicated
-  #   And no notification should be sent for the duplicate attempt
+  Scenario Outline: Admin cannot onboard a helper who is already registered
+    Given a helper "<firstname>" "<lastname>" with email "<email>" is already onboarded
+    When I attempt to onboard another helper "<otherUserFirstname>" "<otherUserLastname>" with same email
+    Then the onboarding should fail
+    And the helper should not be duplicated
+    And no notification should be sent for the duplicate attempt
 
-  #   Examples: Duplicate helper
-  #     | email           | firstname | lastname | otherUserFirstname | otherUserLastname |
-  #     | john@domain.com | John      | Doe      | Michel             | Denis             |
+    Examples: Duplicate helper
+      | email           | firstname | lastname | otherUserFirstname | otherUserLastname |
+      | john@domain.com | John      | Doe      | Michel             | Denis             |
 
   # Rule: System must handle edge cases gracefully
 

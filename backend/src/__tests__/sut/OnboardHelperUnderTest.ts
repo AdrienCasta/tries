@@ -100,4 +100,25 @@ export default class OnboardHelperUnderTest {
     const notificationSent = await this.notificationService.hasSentTo(email);
     expect(notificationSent).toBe(false);
   }
+
+  async assertOnboardingFailedWithDuplicateEmail(): Promise<void> {
+    expect(this.lastError).toBeDefined();
+    expect(this.lastError?.message).toBe("Helper with this email already exists");
+  }
+
+  async assertHelperDetailsNotChanged(
+    email: string,
+    expectedFirstname: string,
+    expectedLastname: string
+  ): Promise<void> {
+    const helper = await this.helperRepository.findByEmail(email);
+    expect(helper).toBeDefined();
+    expect(helper?.firstname.value).toBe(expectedFirstname);
+    expect(helper?.lastname.value).toBe(expectedLastname);
+  }
+
+  async assertOnlyOneNotificationSentTo(email: string): Promise<void> {
+    const notificationCount = await this.notificationService.getNotificationCount(email);
+    expect(notificationCount).toBe(1);
+  }
 }

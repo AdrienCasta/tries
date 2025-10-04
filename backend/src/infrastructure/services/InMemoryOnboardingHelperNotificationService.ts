@@ -22,6 +22,7 @@ export class FakeOnboardedHelperNotificationService
   }
 
   private notifications: Map<string, string> = new Map();
+  private notificationCounts: Map<string, number> = new Map();
 
   async send({
     email,
@@ -39,6 +40,9 @@ export class FakeOnboardedHelperNotificationService
         lastname,
       })
     );
+
+    const currentCount = this.notificationCounts.get(email) || 0;
+    this.notificationCounts.set(email, currentCount + 1);
   }
 
   async hasSentTo(email: string): Promise<boolean> {
@@ -49,8 +53,13 @@ export class FakeOnboardedHelperNotificationService
     return this.notifications.get(email) || null;
   }
 
+  async getNotificationCount(email: string): Promise<number> {
+    return this.notificationCounts.get(email) || 0;
+  }
+
   async clear() {
     this.notifications = new Map();
+    this.notificationCounts = new Map();
   }
 
   private generateTemplate({

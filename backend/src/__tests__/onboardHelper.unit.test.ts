@@ -96,4 +96,43 @@ describeFeature(feature, ({ BeforeEachScenario, ScenarioOutline }) => {
       });
     }
   );
+
+  ScenarioOutline(
+    `Admin cannot onboard a helper who is already registered`,
+    (
+      { Given, When, Then, And },
+      { email, firstname, lastname, otherUserFirstname, otherUserLastname }
+    ) => {
+      Given(
+        `a helper "<firstname>" "<lastname>" with email "<email>" is already onboarded`,
+        async () => {
+          await sut.onboardUser(createUser(email, firstname, lastname));
+        }
+      );
+
+      When(
+        `I attempt to onboard another helper "<otherUserFirstname>" "<otherUserLastname>" with same email`,
+        async () => {
+          await sut.onboardUser(
+            createUser(email, otherUserFirstname, otherUserLastname)
+          );
+        }
+      );
+
+      Then(`the onboarding should fail`, async () => {
+        await sut.assertOnboardingFailedWithDuplicateEmail();
+      });
+
+      And(`the helper should not be duplicated`, async () => {
+        await sut.assertHelperDetailsNotChanged(email, firstname, lastname);
+      });
+
+      And(
+        `no notification should be sent for the duplicate attempt`,
+        async () => {
+          await sut.assertOnlyOneNotificationSentTo(email);
+        }
+      );
+    }
+  );
 });
