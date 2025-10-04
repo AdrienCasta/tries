@@ -15,7 +15,7 @@ Feature: Onboarding a new helper
 
     Examples: Standard names
       | email                        | firstname | lastname  |
-      | adrien.castagliola@gmail.com | John      | Doe       |
+      | john@doe.com                 | John      | Doe       |
       | jane.smith@acme.co           | Jane      | Smith     |
 
     Examples: International and special characters
@@ -26,7 +26,7 @@ Feature: Onboarding a new helper
 
     Examples: Names with hyphens and apostrophes
       | email                        | firstname | lastname    |
-      | adrien.castagliola@gmail.com | Mary-Jane | Watson      |
+      | carole.turin@example.com     | Mary-Jane | Watson      |
       | patrick@example.com          | Patrick   | O'Brien     |
 
   Scenario Outline: Admin cannot onboard helper with invalid email address

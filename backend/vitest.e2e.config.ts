@@ -6,7 +6,10 @@ dotenv.config({ path: ".env.test" });
 
 export default defineConfig({
   test: {
-    include: ["src/__tests__/**/*.e2e.test.ts"],
+    include: [
+      "src/__tests__/**/*.e2e.test.ts",
+      "src/features/**/*.e2e.test.ts"
+    ],
     testTimeout: 30000,
   },
 });

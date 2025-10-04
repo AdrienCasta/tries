@@ -1,5 +1,5 @@
-import DomainEvent from "../../domain/events/DomainEvent.js";
-import EventBus, { EventHandler } from "../../domain/events/EventBus.js";
+import DomainEvent from "../../shared/infrastructure/DomainEvent.js";
+import EventBus, { EventHandler } from "../../shared/infrastructure/EventBus.js";
 
 export default class InMemoryEventBus implements EventBus {
   private handlers: Map<string, EventHandler<any>[]> = new Map();

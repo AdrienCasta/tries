@@ -4,7 +4,7 @@ import {
   HttpRequest,
   HttpResponse,
   RouteHandler,
-} from "../../presentation/http/HttpServer.js";
+} from "./HttpServer.js";
 
 /**
  * Fastify adapter implementing the framework-agnostic HttpServer interface
