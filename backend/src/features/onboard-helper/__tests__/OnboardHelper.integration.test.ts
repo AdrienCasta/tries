@@ -1,7 +1,5 @@
-import { loadFeature, describeFeature } from "@amiceli/vitest-cucumber";
+import { loadFeatureFromText, describeFeature } from "@amiceli/vitest-cucumber";
 import OnboardHelperIntegrationTest from "./OnboardHelperIntegrationTest.js";
-import { fileURLToPath } from "url";
-import path from "path";
 
 /**
  * INTEGRATION TESTS - Business Logic Integration (No Real Infrastructure)
@@ -17,17 +15,11 @@ import path from "path";
  * E2E tests use real Fastify + Supabase for critical scenarios.
  */
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const feature = await loadFeature(
-  path.resolve(__dirname, "../../../../../features/onboardHelper.feature")
-);
+// @ts-ignore
+import featureContent from "../../../../../features/onboardHelper.feature?raw";
+const feature = await loadFeatureFromText(featureContent);
 
-const createUser = (
-  email: string,
-  firstname: string,
-  lastname: string
-) => ({
+const createUser = (email: string, firstname: string, lastname: string) => ({
   email,
   firstname,
   lastname,

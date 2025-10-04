@@ -5,6 +5,7 @@ Feature: Onboarding a new helper
 
   # Rule: Helper information must be valid and complete
 
+  @e2e
   Scenario Outline: Admin successfully onboards a new helper with valid information
     Given the user's email is "<email>"
     And the user's first name is "<firstname>"
@@ -69,7 +70,8 @@ Feature: Onboarding a new helper
       | John      | D        | Last name too short    |
 
   # Rule: Each helper must have a unique email address
-
+  
+  @e2e
   Scenario Outline: Admin cannot onboard a helper who is already registered
     Given a helper "<firstname>" "<lastname>" with email "<email>" is already onboarded
     When I attempt to onboard another helper "<otherUserFirstname>" "<otherUserLastname>" with same email
