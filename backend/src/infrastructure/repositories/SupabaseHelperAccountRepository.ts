@@ -39,10 +39,4 @@ export class SupabaseHelperAccountRepository
 
     return data.user;
   }
-
-  async findByEmail(email: string): Promise<HelperAccount | null> {}
-
-  async findByPasswordSetupToken(token: string) {
-    return null;
-  }
 }

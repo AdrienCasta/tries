@@ -1,45 +1,94 @@
-import { describe, it, expect, beforeAll, afterEach, vi } from "vitest";
-import { config } from "dotenv";
+import { loadFeature, describeFeature } from "@amiceli/vitest-cucumber";
+import { expect, vi } from "vitest";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { OnboardHelper } from "../application/use-cases/OnboardHelper.js";
-import { SystemClock } from "../infrastructure/services/SystemClock.js";
-import { FakeOnboardedHelperNotificationService } from "../infrastructure/services/InMemoryOnboardingHelperNotificationService.js";
 import { SupabaseHelperRepository } from "../infrastructure/repositories/SupabaseHelperRepository.js";
 import { SupabaseHelperAccountRepository } from "../infrastructure/repositories/SupabaseHelperAccountRepository.js";
-import { User } from "../domain/entities/User.js";
-import HelperId from "../domain/value-objects/HelperId.js";
 import { SupabaseOnboardedHelperNotificationService } from "../infrastructure/services/SupabaseOnboardedHelperNotificationService.js";
-import { OnboardedHelperNotificationService } from "../domain/services/OnboardingHelperNotificationService.js";
+import { FixedClock } from "./doubles/FixedClock.js";
+import { User } from "../domain/entities/User.js";
+import { fileURLToPath } from "url";
+import path from "path";
 
-config({ path: ".env.test" });
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const feature = await loadFeature(
+  path.resolve(__dirname, "../../../features/onboardHelper.feature")
+);
 
-describe("Integration: OnboardHelper with Supabase", () => {
+const createUser = (email: string, firstname: string, lastname: string): User => ({
+  email,
+  firstname,
+  lastname,
+});
+
+const createSupabaseClient = () =>
+  createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+const cleanupHelper = async (supabase: SupabaseClient, email: string) => {
+  try {
+    const { data } = await supabase.auth.admin.listUsers();
+    const user = data.users.find((u) => u.email === email);
+    if (user) {
+      await supabase.auth.admin.deleteUser(user.id);
+    }
+  } catch (error) {
+    console.error(`Cleanup Auth failed for ${email}:`, error);
+  }
+
+  try {
+    await supabase.from("helpers").delete().eq("email", email);
+  } catch (error) {
+    console.error(`Cleanup helpers table failed for ${email}:`, error);
+  }
+};
+
+const verifyHelperInDatabase = async (
+  supabase: SupabaseClient,
+  email: string,
+  firstname: string,
+  lastname: string
+) => {
+  const { data: helper } = await supabase
+    .from("helpers")
+    .select("*")
+    .eq("email", email)
+    .single();
+
+  expect(helper).toBeDefined();
+  expect(helper.email).toBe(email);
+  expect(helper.firstname).toBe(firstname);
+  expect(helper.lastname).toBe(lastname);
+};
+
+const verifyHelperAccountInAuth = async (
+  supabase: SupabaseClient,
+  email: string
+) => {
+  const { data: authData } = await supabase.auth.admin.listUsers();
+  const authUser = authData.users.find((u) => u.email === email);
+
+  expect(authUser).toBeDefined();
+  expect(authUser?.email).toBe(email);
+};
+
+describeFeature(feature, ({ BeforeEachScenario, AfterEachScenario, ScenarioOutline }) => {
   let supabase: SupabaseClient;
   let onboardHelper: OnboardHelper;
-  let helperRepository: SupabaseHelperRepository;
-  let helperAccountRepository: SupabaseHelperAccountRepository;
-  let notificationService: OnboardedHelperNotificationService;
-  let clock: SystemClock;
-  let createdHelperId: HelperId | null = null;
-  const testEmail = `adrien.castagliola+3@gmail.com`;
+  let notificationService: SupabaseOnboardedHelperNotificationService;
+  let testEmails: string[] = [];
 
-  beforeAll(() => {
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  BeforeEachScenario(() => {
+    supabase = createSupabaseClient();
 
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error("Missing Supabase credentials in .env.test");
-    }
-
-    supabase = createClient(supabaseUrl, supabaseKey);
-    clock = new SystemClock();
-    notificationService = new SupabaseOnboardedHelperNotificationService(
-      supabase
-    );
+    const helperRepository = new SupabaseHelperRepository(supabase);
+    const helperAccountRepository = new SupabaseHelperAccountRepository(supabase);
+    notificationService = new SupabaseOnboardedHelperNotificationService(supabase);
     notificationService.send = vi.fn();
-
-    helperRepository = new SupabaseHelperRepository(supabase);
-    helperAccountRepository = new SupabaseHelperAccountRepository(supabase);
+    const clock = new FixedClock(new Date("2025-01-15T10:00:00Z"));
 
     onboardHelper = new OnboardHelper(
       helperRepository,
@@ -49,44 +98,39 @@ describe("Integration: OnboardHelper with Supabase", () => {
     );
   });
 
-  afterEach(async () => {
-    if (createdHelperId) {
-      const {
-        data: { users },
-        error: fetchError,
-      } = await supabase.auth.admin.listUsers();
-
-      for (const user of users) {
-        await supabase.auth.admin.deleteUser(user.id);
-      }
-      await supabase.from("helpers").delete().eq("id", createdHelperId.value);
-      createdHelperId = null;
+  AfterEachScenario(async () => {
+    for (const email of testEmails) {
+      await cleanupHelper(supabase, email);
     }
+    testEmails = [];
   });
 
-  it("successfully onboards a helper", async () => {
-    const user: User = {
-      email: testEmail,
-      firstname: "John",
-      lastname: "Doe",
-    };
+  ScenarioOutline(
+    `Admin successfully onboards a new helper with valid information`,
+    ({ Given, When, Then, And }, { email, lastname, firstname }) => {
+      let result: any;
 
-    const result = await onboardHelper.execute(user);
+      Given(`the user's email is "<email>"`, () => {
+        testEmails.push(email);
+      });
 
-    expect(result.success).toBe(true);
+      And(`the user's first name is "<firstname>"`, () => {});
+      And(`the user's last name is "<lastname>"`, () => {});
 
-    if (result.success) {
-      createdHelperId = result.value;
+      When(`I onboard the user`, async () => {
+        result = await onboardHelper.execute(createUser(email, firstname, lastname));
+      });
+
+      Then(`the user should be onboarded as a helper`, async () => {
+        expect(result.success).toBe(true);
+        expect(result.value).toBeDefined();
+        await verifyHelperInDatabase(supabase, email, firstname, lastname);
+      });
+
+      And(`the user should receive a notification`, async () => {
+        await verifyHelperAccountInAuth(supabase, email);
+        expect(notificationService.send).toHaveBeenCalledOnce();
+      });
     }
-
-    const helperAccount = await helperAccountRepository.findByHelperId(
-      createdHelperId as HelperId
-    );
-
-    expect(helperAccount).toBeDefined();
-  });
-
-  it("helper is invited to confirm its e-mail", async () => {
-    expect(notificationService.send).toHaveBeenCalledOnce();
-  });
+  );
 });
