@@ -71,4 +71,29 @@ describeFeature(feature, ({ BeforeEachScenario, ScenarioOutline }) => {
       });
     }
   );
+
+  ScenarioOutline(
+    `Admin cannot onboard helper with invalid name information`,
+    ({ Given, When, Then, And }, { firstname, lastname, error }) => {
+      const email = "john@domain.com";
+
+      Given(`I am onboarding a new helper`, () => {});
+      And(`the email address is "john@domain.com"`, () => {});
+      And(`the first name is "<firstname>"`, () => {});
+      And(`the last name is "<lastname>"`, () => {});
+
+      When(`I onboard the user`, async () => {
+        await sut.onboardUser(createUser(email, firstname, lastname));
+      });
+
+      Then(`the onboarding fails with error "<error>"`, async () => {
+        await sut.assertOnboardingFailedWithNameValidationError(error);
+      });
+
+      And(`the helper is not onboarded`, async () => {
+        await sut.assertHelperNotOnboarded(email);
+        await sut.assertNotificationNotSent(email);
+      });
+    }
+  );
 });

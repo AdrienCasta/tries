@@ -49,33 +49,24 @@ Feature: Onboarding a new helper
       | email | error            |
       |       | Email is required|
 
-  # Scenario Outline: Admin cannot onboard helper with invalid name information
-  #   Given I am onboarding a new helper
-  #   And the email address is "john@domain.com"
-  #   And the first name is "<firstname>"
-  #   And the last name is "<lastname>"
-  #   When I onboard the user
-  #   Then the onboarding fails with error "<error>"
-  #   And the helper is not onboarded
+  Scenario Outline: Admin cannot onboard helper with invalid name information
+    Given I am onboarding a new helper
+    And the email address is "john@domain.com"
+    And the first name is "<firstname>"
+    And the last name is "<lastname>"
+    When I onboard the user
+    Then the onboarding fails with error "<error>"
+    And the helper is not onboarded
 
-  #   Examples: Missing required fields
-  #     | firstname | lastname | error                    |
-  #     |           | Doe      | First name is required   |
-  #     | John      |          | Last name is required    |
+    Examples: Missing required fields
+      | firstname | lastname | error                    |
+      |           | Doe      | First name is required   |
+      | John      |          | Last name is required    |
 
-  #   Examples: Names too short
-  #     | firstname | lastname | error                  |
-  #     | J         | Doe      | First name too short   |
-  #     | John      | D        | Last name too short    |
-
-  # Scenario: Admin cannot onboard helper with whitespace-only names
-  #   Given I am onboarding a new helper
-  #   And the email address is "john@domain.com"
-  #   And the first name is "   "
-  #   And the last name is "Doe"
-  #   When I onboard the user
-  #   Then the onboarding fails with error "First name is required"
-  #   And the helper is not onboarded
+    Examples: Names too short
+      | firstname | lastname | error                  |
+      | J         | Doe      | First name too short   |
+      | John      | D        | Last name too short    |
 
   # Rule: Each helper must have a unique email address
 

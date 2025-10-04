@@ -8,6 +8,9 @@ import { FakeOnboardedHelperNotificationService } from "../../infrastructure/ser
 import { Helper } from "../../domain/entities/Helper.js";
 import { FixedClock } from "../doubles/FixedClock.js";
 import InvalidEmailError from "../../domain/errors/InvalidEmailError.js";
+import ValidationError from "../../domain/errors/ValidationError.js";
+import LastameError from "../../domain/errors/LastameError.js";
+import FirstameError from "../../domain/errors/FirstameError.js";
 
 export default class OnboardHelperUnderTest {
   private helperRepository!: InMemoryHelperRepository;
@@ -74,6 +77,13 @@ export default class OnboardHelperUnderTest {
     expectedErrorMessage: string
   ): Promise<void> {
     expect(this.lastError).toBeInstanceOf(InvalidEmailError);
+  }
+
+  async assertOnboardingFailedWithNameValidationError(
+    expectedErrorMessage: string
+  ): Promise<void> {
+    expect(this.lastError).toBeInstanceOf(ValidationError);
+    expect(this.lastError?.message).toBe(expectedErrorMessage);
   }
 
   async assertHelperNotOnboarded(email: string): Promise<void> {

@@ -8,6 +8,7 @@ import { SupabaseOnboardedHelperNotificationService } from "../infrastructure/se
 import { FixedClock } from "./doubles/FixedClock.js";
 import { User } from "../domain/entities/User.js";
 import InvalidEmailError from "../domain/errors/InvalidEmailError.js";
+import ValidationError from "../domain/errors/ValidationError.js";
 import { fileURLToPath } from "url";
 import path from "path";
 
@@ -110,6 +111,40 @@ describeFeature(
         });
       }
     );
+
+    ScenarioOutline(
+      `Admin cannot onboard helper with invalid name information`,
+      ({ Given, When, Then, And }, { firstname, lastname, error }) => {
+        const email = "john@domain.com";
+        let lastError: Error | null = null;
+
+        Given(`I am onboarding a new helper`, () => {});
+        And(`the email address is "john@domain.com"`, () => {
+          testEmails.push(email);
+        });
+        And(`the first name is "<firstname>"`, () => {});
+        And(`the last name is "<lastname>"`, () => {});
+
+        When(`I onboard the user`, async () => {
+          const result = await onboardHelper.execute(
+            createUser(email, firstname, lastname)
+          );
+          if (!result.success) {
+            lastError = result.error;
+          }
+        });
+
+        Then(`the onboarding fails with error "<error>"`, async () => {
+          verifyOnboardingFailedWithNameValidation(lastError, error);
+        });
+
+        And(`the helper is not onboarded`, async () => {
+          await verifyHelperNotInDatabase(supabase, email);
+          await verifyNoHelperAccountInAuth(supabase, email);
+          expect(notificationService.send).not.toHaveBeenCalled();
+        });
+      }
+    );
   }
 );
 
@@ -181,6 +216,14 @@ const verifyOnboardingFailedWithInvalidEmail = (
   expectedErrorMessage: string
 ) => {
   expect(error).toBeInstanceOf(InvalidEmailError);
+  expect(error?.message).toBe(expectedErrorMessage);
+};
+
+const verifyOnboardingFailedWithNameValidation = (
+  error: Error | null,
+  expectedErrorMessage: string
+) => {
+  expect(error).toBeInstanceOf(ValidationError);
   expect(error?.message).toBe(expectedErrorMessage);
 };
 
