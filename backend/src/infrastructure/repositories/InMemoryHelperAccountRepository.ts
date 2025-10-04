@@ -2,15 +2,26 @@ import { HelperAccount } from "../../domain/entities/HelperAccount.js";
 import { HelperAccountRepository } from "../../domain/repositories/HelperAccountRepository.js";
 import HelperId from "../../domain/value-objects/HelperId.js";
 import { Result } from "../../shared/Result.js";
+import CreateHelperAccountException from "../../domain/exceptions/CreateHelperAccountException.js";
 
 export class InMemoryHelperAccountRepository
   implements HelperAccountRepository
 {
   private accounts: Map<string, HelperAccount> = new Map();
+  private shouldFail: boolean = false;
 
   async create(account: HelperAccount) {
+    if (this.shouldFail) {
+      return Result.fail(
+        new CreateHelperAccountException("Infrastructure failure simulated")
+      );
+    }
     this.accounts.set(account.helperId.toValue(), account);
     return Result.ok(account);
+  }
+
+  simulateFailure(): void {
+    this.shouldFail = true;
   }
 
   async findByHelperId(helperId: HelperId): Promise<HelperAccount | null> {

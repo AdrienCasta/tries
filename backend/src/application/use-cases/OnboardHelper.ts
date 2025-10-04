@@ -13,8 +13,8 @@ import DuplicateHelperError from "../../domain/errors/DuplicateHelperError.js";
 import { OnboardedHelperNotificationService } from "../../domain/services/OnboardingHelperNotificationService.js";
 import { Clock } from "../../domain/services/Clock.js";
 import Password from "../../domain/value-objects/Password.js";
-import DomainError from "../../domain/errors/DomainError.js";
 import InvalidEmailError from "../../domain/errors/InvalidEmailError.js";
+import CreateHelperAccountException from "../../domain/exceptions/CreateHelperAccountException.js";
 
 export class OnboardHelper {
   constructor(
@@ -29,7 +29,13 @@ export class OnboardHelper {
     firstname,
     lastname,
   }: User): Promise<
-    Result<HelperId, InvalidEmailError | ValidationError | DuplicateHelperError>
+    Result<
+      HelperId,
+      | InvalidEmailError
+      | ValidationError
+      | DuplicateHelperError
+      | CreateHelperAccountException
+    >
   > {
     const emailResult = HelperEmail.create(email);
 
@@ -68,14 +74,16 @@ export class OnboardHelper {
       lastname: lastnameResult.value,
     };
 
-    const { success } = await this.helperAccountRepository.create(
+    const accountResult = await this.helperAccountRepository.create(
       helperAccount
     );
 
-    if (success) {
-      this.notif.send({ email, firstname, lastname });
+    if (Result.isFailure(accountResult)) {
+      return Result.fail(accountResult.error);
     }
+
     await this.helperRepository.save(helper);
+    this.notif.send({ email, firstname, lastname });
 
     return Result.ok(helper.id);
   }

@@ -20,7 +20,7 @@ const createUser = (
   lastname,
 });
 
-describeFeature(feature, ({ BeforeEachScenario, ScenarioOutline }) => {
+describeFeature(feature, ({ BeforeEachScenario, ScenarioOutline, Scenario }) => {
   let sut: OnboardHelperUnderTest;
 
   BeforeEachScenario(() => {
@@ -133,6 +133,37 @@ describeFeature(feature, ({ BeforeEachScenario, ScenarioOutline }) => {
           await sut.assertOnlyOneNotificationSentTo(email);
         }
       );
+    }
+  );
+
+  Scenario(
+    `Admin cannot onboard helper when system is temporarily unavailable`,
+    ({ Given, When, Then, And }) => {
+      const email = "john@domain.com";
+      const firstname = "John";
+      const lastname = "Doe";
+
+      Given(`I am onboarding a new helper with valid information`, () => {});
+
+      And(`the system is temporarily unavailable`, () => {
+        sut.simulateInfrastructureFailure();
+      });
+
+      When(`I attempt to onboard the user`, async () => {
+        await sut.onboardUser(createUser(email, firstname, lastname));
+      });
+
+      Then(`the onboarding should fail`, async () => {
+        await sut.assertOnboardingFailedWithInfrastructureError();
+      });
+
+      And(`the helper should not be onboarded`, async () => {
+        await sut.assertHelperNotOnboarded(email);
+      });
+
+      And(`no notification should be sent`, async () => {
+        await sut.assertNotificationNotSent(email);
+      });
     }
   );
 });

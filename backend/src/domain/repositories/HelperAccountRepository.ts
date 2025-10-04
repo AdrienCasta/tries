@@ -1,9 +1,12 @@
 import { Result } from "../../shared/Result.js";
 import { HelperAccount } from "../entities/HelperAccount.js";
 import HelperId from "../value-objects/HelperId.js";
+import CreateHelperAccountException from "../exceptions/CreateHelperAccountException.js";
 
 export interface HelperAccountRepository {
-  create(account: HelperAccount): Promise<Result<HelperAccount>>;
+  create(
+    account: HelperAccount
+  ): Promise<Result<HelperAccount, CreateHelperAccountException>>;
   findByHelperId(helperId: HelperId): Promise<HelperAccount | null>;
   findByEmail(email: string): Promise<HelperAccount | null>;
   findByPasswordSetupToken(token: string): Promise<HelperAccount | null>;

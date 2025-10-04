@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "test": "npm run test:unit && npm run test:integration",
-    "test:unit": "vitest --config vitest.config.ts",
-    "test:integration": "vitest --config vitest.integration.config.ts"
+    "test": "npm run test:unit && npm run test:integration && npm run test:e2e",
+    "test:unit": "vitest --config vitest.unit.config.ts",
+    "test:integration": "vitest --config vitest.integration.config.ts",
+    "test:e2e": "vitest --config vitest.e2e.config.ts"
   },
   "devDependencies": {
     "@amiceli/vitest-cucumber": "^5.2.1",
@@ -15,7 +16,9 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.58.0",
+    "@types/node": "^24.6.2",
     "bcryptjs": "^3.0.2",
-    "dotenv": "^17.2.3"
+    "dotenv": "^17.2.3",
+    "fastify": "^5.6.1"
   }
 }

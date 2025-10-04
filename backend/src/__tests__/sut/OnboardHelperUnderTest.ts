@@ -11,6 +11,7 @@ import InvalidEmailError from "../../domain/errors/InvalidEmailError.js";
 import ValidationError from "../../domain/errors/ValidationError.js";
 import LastameError from "../../domain/errors/LastameError.js";
 import FirstameError from "../../domain/errors/FirstameError.js";
+import InfraException from "../../domain/exceptions/InfraException.js";
 
 export default class OnboardHelperUnderTest {
   private helperRepository!: InMemoryHelperRepository;
@@ -120,5 +121,14 @@ export default class OnboardHelperUnderTest {
   async assertOnlyOneNotificationSentTo(email: string): Promise<void> {
     const notificationCount = await this.notificationService.getNotificationCount(email);
     expect(notificationCount).toBe(1);
+  }
+
+  async assertOnboardingFailedWithInfrastructureError(): Promise<void> {
+    expect(this.lastError).toBeDefined();
+    expect(this.lastError).toBeInstanceOf(InfraException);
+  }
+
+  simulateInfrastructureFailure(): void {
+    this.helperAccountRepository.simulateFailure();
   }
 }

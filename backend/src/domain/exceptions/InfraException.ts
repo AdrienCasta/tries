@@ -1,4 +1,4 @@
-export default abstract class InfraError extends Error {
+export default abstract class InfraException extends Error {
   abstract readonly code: string;
   readonly details?: Record<string, unknown>;
 

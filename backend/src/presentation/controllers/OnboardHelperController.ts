@@ -8,11 +8,13 @@ import {
 import EventBus from "../../domain/events/EventBus.js";
 import { createHelperOnboardingFailed } from "../../domain/events/HelperOnboardingFailed.js";
 import { createHelperOnboardingSucceeded } from "../../domain/events/HelperOnboardingSucceeded.js";
+import { Clock } from "../../domain/services/Clock.js";
 
 export default class OnboardHelperController {
   constructor(
     private readonly onboardHelperUseCase: OnboardHelper,
-    private readonly eventBus: EventBus
+    private readonly eventBus: EventBus,
+    private readonly clock: Clock
   ) {}
 
   async handle(
@@ -27,6 +29,7 @@ export default class OnboardHelperController {
       // Publish success event
       await this.eventBus.publish(
         createHelperOnboardingSucceeded(
+          this.clock,
           result.value,
           request.email,
           request.firstname,
@@ -46,6 +49,7 @@ export default class OnboardHelperController {
     // Publish failure event
     await this.eventBus.publish(
       createHelperOnboardingFailed(
+        this.clock,
         request.email,
         request.firstname,
         request.lastname,

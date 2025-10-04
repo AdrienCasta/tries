@@ -14,9 +14,9 @@ Feature: Onboarding a new helper
     And the user should receive a notification
 
     Examples: Standard names
-      | email              | firstname | lastname  |
-      | john@doe.fr        | John      | Doe       |
-      | jane.smith@acme.co | Jane      | Smith     |
+      | email                        | firstname | lastname  |
+      | adrien.castagliola@gmail.com | John      | Doe       |
+      | jane.smith@acme.co           | Jane      | Smith     |
 
     Examples: International and special characters
       | email                 | firstname | lastname    |
@@ -82,6 +82,14 @@ Feature: Onboarding a new helper
       | john@domain.com | John      | Doe      | Michel             | Denis             |
 
   # Rule: System must handle edge cases gracefully
+
+  Scenario: Admin cannot onboard helper when system is temporarily unavailable
+    Given I am onboarding a new helper with valid information
+    And the system is temporarily unavailable
+    When I attempt to onboard the user
+    Then the onboarding should fail
+    And the helper should not be onboarded
+    And no notification should be sent
 
   # Scenario Outline: Admin onboards helper with edge case valid emails
   #   Given the user's email is "<email>"
