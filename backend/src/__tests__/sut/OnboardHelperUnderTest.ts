@@ -7,6 +7,7 @@ import { InMemoryHelperAccountRepository } from "../../infrastructure/repositori
 import { FakeOnboardedHelperNotificationService } from "../../infrastructure/services/InMemoryOnboardingHelperNotificationService.js";
 import { Helper } from "../../domain/entities/Helper.js";
 import { FixedClock } from "../doubles/FixedClock.js";
+import InvalidEmailError from "../../domain/errors/InvalidEmailError.js";
 
 export default class OnboardHelperUnderTest {
   private helperRepository!: InMemoryHelperRepository;
@@ -14,6 +15,7 @@ export default class OnboardHelperUnderTest {
   private notificationService!: FakeOnboardedHelperNotificationService;
   private clock!: FixedClock;
   private useCase!: OnboardHelper;
+  private lastError: Error | null = null;
 
   setup(): void {
     this.helperRepository = new InMemoryHelperRepository();
@@ -24,6 +26,7 @@ export default class OnboardHelperUnderTest {
       passwordSetupUrl: "https://tries.fr/setup-password",
     });
     this.clock = new FixedClock();
+    this.lastError = null;
 
     this.useCase = new OnboardHelper(
       this.helperRepository,
@@ -34,7 +37,17 @@ export default class OnboardHelperUnderTest {
   }
 
   async onboardUser(user: User) {
-    return await this.useCase.execute(user);
+    const result = await this.useCase.execute(user);
+    if (!result.success) {
+      this.lastError = result.error;
+    }
+    return result;
+  }
+
+  async assertHelperOnboarded(email: string): Promise<void> {
+    const helper = await this.helperRepository.findByEmail(email);
+    expect(helper).toBeDefined();
+    expect(helper).not.toBeNull();
   }
 
   async isHelperOnboarded(email: string): Promise<boolean> {
@@ -55,5 +68,26 @@ export default class OnboardHelperUnderTest {
 
   clearNotification() {
     this.notificationService.clear();
+  }
+
+  async assertOnboardingFailedWithError(
+    expectedErrorMessage: string
+  ): Promise<void> {
+    expect(this.lastError).toBeInstanceOf(InvalidEmailError);
+  }
+
+  async assertHelperNotOnboarded(email: string): Promise<void> {
+    const helper = await this.helperRepository.findByEmail(email);
+    expect(helper).toBeNull();
+  }
+
+  async assertNotificationSent(email: string): Promise<void> {
+    const notificationSent = await this.notificationService.hasSentTo(email);
+    expect(notificationSent).toBe(true);
+  }
+
+  async assertNotificationNotSent(email: string): Promise<void> {
+    const notificationSent = await this.notificationService.hasSentTo(email);
+    expect(notificationSent).toBe(false);
   }
 }

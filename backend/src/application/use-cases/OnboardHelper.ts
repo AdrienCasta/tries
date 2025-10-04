@@ -13,6 +13,8 @@ import DuplicateHelperError from "../../domain/errors/DuplicateHelperError.js";
 import { OnboardedHelperNotificationService } from "../../domain/services/OnboardingHelperNotificationService.js";
 import { Clock } from "../../domain/services/Clock.js";
 import Password from "../../domain/value-objects/Password.js";
+import DomainError from "../../domain/errors/DomainError.js";
+import InvalidEmailError from "../../domain/errors/InvalidEmailError.js";
 
 export class OnboardHelper {
   constructor(
@@ -26,8 +28,11 @@ export class OnboardHelper {
     email,
     firstname,
     lastname,
-  }: User): Promise<Result<HelperId, ValidationError | DuplicateHelperError>> {
+  }: User): Promise<
+    Result<HelperId, InvalidEmailError | ValidationError | DuplicateHelperError>
+  > {
     const emailResult = HelperEmail.create(email);
+
     if (Result.isFailure(emailResult)) {
       return Result.fail(emailResult.error);
     }

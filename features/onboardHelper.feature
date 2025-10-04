@@ -29,25 +29,25 @@ Feature: Onboarding a new helper
       | adrien.castagliola@gmail.com | Mary-Jane | Watson      |
       | patrick@example.com          | Patrick   | O'Brien     |
 
-  # Scenario Outline: Admin cannot onboard helper with invalid email address
-  #   Given I am onboarding a new helper
-  #   And the email address is "<email>"
-  #   And the first name is "John"
-  #   And the last name is "Doe"
-  #   When I onboard the user
-  #   Then the onboarding fails with error "<error>"
-  #   And the helper is not onboarded
+  Scenario Outline: Admin cannot onboard helper with invalid email address
+    Given I am onboarding a new helper
+    And the email address is "<email>"
+    And the first name is "John"
+    And the last name is "Doe"
+    When I onboard the user
+    Then the onboarding fails with error "<error>"
+    And the helper is not onboarded
 
-  #   Examples: Invalid email formats
-  #     | email           | error                    |
-  #     | john@invalid    | Invalid email format     |
-  #     | @example.com    | Invalid email format     |
-  #     | john.doe        | Invalid email format     |
-  #     | john@           | Invalid email format     |
+    Examples: Invalid email formats
+      | email           | error                    |
+      | john@invalid    | Invalid email format     |
+      | @example.com    | Invalid email format     |
+      | john.doe        | Invalid email format     |
+      | john@           | Invalid email format     |
 
-  #   Examples: Missing email
-  #     | email | error            |
-  #     |       | Email is required|
+    Examples: Missing email
+      | email | error            |
+      |       | Email is required|
 
   # Scenario Outline: Admin cannot onboard helper with invalid name information
   #   Given I am onboarding a new helper

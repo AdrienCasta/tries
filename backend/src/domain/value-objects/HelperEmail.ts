@@ -1,4 +1,5 @@
 import { Result } from "../../shared/Result.js";
+import InvalidEmailError from "../errors/InvalidEmailError.js";
 import ValidationError from "../errors/ValidationError.js";
 
 export default class HelperEmail {
@@ -8,12 +9,10 @@ export default class HelperEmail {
     this.value = value;
   }
 
-  static create(email: string): Result<HelperEmail, ValidationError> {
-    if (isEmailEmpty(email)) {
-      return Result.fail(ValidationError.emailRequired());
-    }
-    if (!isValidEmail(email)) {
-      return Result.fail(ValidationError.emailInvalid());
+  static create(email: string): Result<HelperEmail, InvalidEmailError> {
+    const validationResult = validateEmail(email);
+    if (!validationResult.isValid) {
+      return Result.fail(new InvalidEmailError(validationResult.errorMessage!));
     }
     return Result.ok(new HelperEmail(email));
   }
@@ -23,17 +22,22 @@ export default class HelperEmail {
   }
 }
 
-function isValidEmail(email: string) {
-  email = email?.trim();
+function validateEmail(email: string): { isValid: boolean; errorMessage?: string } {
+  const trimmedEmail = email?.trim();
 
-  if (!email || email.length > 254) return false;
+  if (!trimmedEmail || trimmedEmail === "") {
+    return { isValid: false, errorMessage: "Email is required" };
+  }
+
+  if (trimmedEmail.length > 254) {
+    return { isValid: false, errorMessage: "Invalid email format" };
+  }
 
   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  return regex.test(email);
-}
+  if (!regex.test(trimmedEmail)) {
+    return { isValid: false, errorMessage: "Invalid email format" };
+  }
 
-function isEmailEmpty(email: string) {
-  email = email?.trim();
-  return email === "";
+  return { isValid: true };
 }

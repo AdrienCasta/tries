@@ -7,6 +7,7 @@ import { SupabaseHelperAccountRepository } from "../infrastructure/repositories/
 import { SupabaseOnboardedHelperNotificationService } from "../infrastructure/services/SupabaseOnboardedHelperNotificationService.js";
 import { FixedClock } from "./doubles/FixedClock.js";
 import { User } from "../domain/entities/User.js";
+import InvalidEmailError from "../domain/errors/InvalidEmailError.js";
 import { fileURLToPath } from "url";
 import path from "path";
 
@@ -16,7 +17,107 @@ const feature = await loadFeature(
   path.resolve(__dirname, "../../../features/onboardHelper.feature")
 );
 
-const createUser = (email: string, firstname: string, lastname: string): User => ({
+describeFeature(
+  feature,
+  ({ BeforeEachScenario, AfterEachScenario, ScenarioOutline }) => {
+    let supabase: SupabaseClient;
+    let onboardHelper: OnboardHelper;
+    let notificationService: SupabaseOnboardedHelperNotificationService;
+    let testEmails: string[] = [];
+
+    BeforeEachScenario(() => {
+      supabase = createSupabaseClient();
+
+      const helperRepository = new SupabaseHelperRepository(supabase);
+      const helperAccountRepository = new SupabaseHelperAccountRepository(
+        supabase
+      );
+      notificationService = new SupabaseOnboardedHelperNotificationService(
+        supabase
+      );
+      notificationService.send = vi.fn();
+      const clock = new FixedClock(new Date("2025-01-15T10:00:00Z"));
+
+      onboardHelper = new OnboardHelper(
+        helperRepository,
+        helperAccountRepository,
+        notificationService,
+        clock
+      );
+    });
+
+    AfterEachScenario(async () => {
+      for (const email of testEmails) {
+        await cleanupHelper(supabase, email);
+      }
+      testEmails = [];
+    });
+
+    ScenarioOutline(
+      `Admin successfully onboards a new helper with valid information`,
+      ({ Given, When, Then, And }, { email, lastname, firstname }) => {
+        Given(`the user's email is "<email>"`, () => {
+          testEmails.push(email);
+        });
+
+        And(`the user's first name is "<firstname>"`, () => {});
+        And(`the user's last name is "<lastname>"`, () => {});
+
+        When(`I onboard the user`, async () => {
+          await onboardHelper.execute(createUser(email, firstname, lastname));
+        });
+
+        Then(`the user should be onboarded as a helper`, async () => {
+          await verifyHelperInDatabase(supabase, email, firstname, lastname);
+        });
+
+        And(`the user should receive a notification`, async () => {
+          await verifyHelperAccountInAuth(supabase, email);
+          expect(notificationService.send).toHaveBeenCalledOnce();
+        });
+      }
+    );
+
+    ScenarioOutline(
+      `Admin cannot onboard helper with invalid email address`,
+      ({ Given, When, Then, And }, { email, error }) => {
+        let lastError: Error | null = null;
+
+        Given(`I am onboarding a new helper`, () => {});
+        And(`the email address is "<email>"`, () => {
+          testEmails.push(email);
+        });
+        And(`the first name is "John"`, () => {});
+        And(`the last name is "Doe"`, () => {});
+
+        When(`I onboard the user`, async () => {
+          const result = await onboardHelper.execute(
+            createUser(email, "John", "Doe")
+          );
+          if (!result.success) {
+            lastError = result.error;
+          }
+        });
+
+        Then(`the onboarding fails with error "<error>"`, async () => {
+          verifyOnboardingFailedWithInvalidEmail(lastError, error);
+        });
+
+        And(`the helper is not onboarded`, async () => {
+          await verifyHelperNotInDatabase(supabase, email);
+          await verifyNoHelperAccountInAuth(supabase, email);
+          expect(notificationService.send).not.toHaveBeenCalled();
+        });
+      }
+    );
+  }
+);
+
+const createUser = (
+  email: string,
+  firstname: string,
+  lastname: string
+): User => ({
   email,
   firstname,
   lastname,
@@ -75,62 +176,33 @@ const verifyHelperAccountInAuth = async (
   expect(authUser?.email).toBe(email);
 };
 
-describeFeature(feature, ({ BeforeEachScenario, AfterEachScenario, ScenarioOutline }) => {
-  let supabase: SupabaseClient;
-  let onboardHelper: OnboardHelper;
-  let notificationService: SupabaseOnboardedHelperNotificationService;
-  let testEmails: string[] = [];
+const verifyOnboardingFailedWithInvalidEmail = (
+  error: Error | null,
+  expectedErrorMessage: string
+) => {
+  expect(error).toBeInstanceOf(InvalidEmailError);
+  expect(error?.message).toBe(expectedErrorMessage);
+};
 
-  BeforeEachScenario(() => {
-    supabase = createSupabaseClient();
+const verifyHelperNotInDatabase = async (
+  supabase: SupabaseClient,
+  email: string
+) => {
+  const { data: helper } = await supabase
+    .from("helpers")
+    .select("*")
+    .eq("email", email)
+    .single();
 
-    const helperRepository = new SupabaseHelperRepository(supabase);
-    const helperAccountRepository = new SupabaseHelperAccountRepository(supabase);
-    notificationService = new SupabaseOnboardedHelperNotificationService(supabase);
-    notificationService.send = vi.fn();
-    const clock = new FixedClock(new Date("2025-01-15T10:00:00Z"));
+  expect(helper).toBeNull();
+};
 
-    onboardHelper = new OnboardHelper(
-      helperRepository,
-      helperAccountRepository,
-      notificationService,
-      clock
-    );
-  });
+const verifyNoHelperAccountInAuth = async (
+  supabase: SupabaseClient,
+  email: string
+) => {
+  const { data: authData } = await supabase.auth.admin.listUsers();
+  const authUser = authData.users.find((u) => u.email === email);
 
-  AfterEachScenario(async () => {
-    for (const email of testEmails) {
-      await cleanupHelper(supabase, email);
-    }
-    testEmails = [];
-  });
-
-  ScenarioOutline(
-    `Admin successfully onboards a new helper with valid information`,
-    ({ Given, When, Then, And }, { email, lastname, firstname }) => {
-      let result: any;
-
-      Given(`the user's email is "<email>"`, () => {
-        testEmails.push(email);
-      });
-
-      And(`the user's first name is "<firstname>"`, () => {});
-      And(`the user's last name is "<lastname>"`, () => {});
-
-      When(`I onboard the user`, async () => {
-        result = await onboardHelper.execute(createUser(email, firstname, lastname));
-      });
-
-      Then(`the user should be onboarded as a helper`, async () => {
-        expect(result.success).toBe(true);
-        expect(result.value).toBeDefined();
-        await verifyHelperInDatabase(supabase, email, firstname, lastname);
-      });
-
-      And(`the user should receive a notification`, async () => {
-        await verifyHelperAccountInAuth(supabase, email);
-        expect(notificationService.send).toHaveBeenCalledOnce();
-      });
-    }
-  );
-});
+  expect(authUser).toBeUndefined();
+};

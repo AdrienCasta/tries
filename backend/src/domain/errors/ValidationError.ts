@@ -7,14 +7,6 @@ export default class ValidationError extends DomainError {
     super(message, details);
   }
 
-  static emailRequired(): ValidationError {
-    return new ValidationError("Email is required");
-  }
-
-  static emailInvalid(): ValidationError {
-    return new ValidationError("Invalid email format");
-  }
-
   static firstnameRequired(): ValidationError {
     return new ValidationError("First name is required");
   }
