@@ -1,4 +1,5 @@
 import { OnboardHelper } from "./OnboardHelper.usecase.js";
+import { OnboardHelperCommand } from "./OnboardHelper.command.js";
 import { Result } from "@shared/infrastructure/Result.js";
 import {
   OnboardHelperRequest,
@@ -25,7 +26,15 @@ export default class OnboardHelperController {
     | { status: 201; body: OnboardHelperSuccessResponse }
     | { status: 400; body: OnboardHelperErrorResponse }
   > {
-    const result = await this.onboardHelperUseCase.execute(request);
+    const command = new OnboardHelperCommand(
+      request.email,
+      request.firstname,
+      request.lastname,
+      request.phoneNumber,
+      request.professions
+    );
+
+    const result = await this.onboardHelperUseCase.execute(command);
 
     if (Result.isSuccess(result)) {
       // Publish success event

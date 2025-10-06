@@ -8,12 +8,7 @@ import { SupabaseHelperAccountRepository } from "@infrastructure/persistence/Sup
 import { SupabaseOnboardedHelperNotificationService } from "@infrastructure/notifications/SupabaseOnboardedHelperNotificationService.js";
 import { FixedClock } from "@infrastructure/time/FixedClock.js";
 import InMemoryEventBus from "@infrastructure/events/InMemoryEventBus.js";
-
-interface User {
-  email: string;
-  firstname: string;
-  lastname: string;
-}
+import { OnboardHelperCommand } from "../OnboardHelper.command.js";
 
 /**
  * E2E Test Helper for Onboard Helper Feature
@@ -88,7 +83,7 @@ export default class OnboardHelperE2ETest {
     }
   }
 
-  async onboardUser(user: User): Promise<void> {
+  async onboardUser(user: OnboardHelperCommand): Promise<void> {
     this.lastResponse = await this.server.inject({
       method: "POST",
       url: "/api/helpers/onboard",
@@ -96,6 +91,8 @@ export default class OnboardHelperE2ETest {
         email: user.email,
         firstname: user.firstname,
         lastname: user.lastname,
+        phone: user.phoneNumber,
+        profession: user.professions,
       },
     });
   }

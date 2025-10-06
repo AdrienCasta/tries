@@ -20,6 +20,7 @@ import OnboardHelperE2ETest from "./OnboardHelperE2ETest.js";
 
 // @ts-ignore
 import featureContent from "../../../../../features/onboardHelper.feature?raw";
+import { HelperCommandFixtures } from "./fixtures/HelperCommandFixtures.js";
 const feature = await loadFeatureFromText(featureContent);
 
 describeFeature(
@@ -38,7 +39,10 @@ describeFeature(
 
     ScenarioOutline(
       `Admin successfully onboards a new helper with valid information`,
-      ({ Given, When, Then, And }, { email, lastname, firstname }) => {
+      (
+        { Given, When, Then, And },
+        { email, lastname, firstname, phoneNumber, profession }
+      ) => {
         Given(`the user's email is "<email>"`, async () => {
           await sut.cleanupEmail(email);
           sut.registerEmailForCleanup(email);
@@ -46,9 +50,19 @@ describeFeature(
 
         And(`the user's first name is "<firstname>"`, () => {});
         And(`the user's last name is "<lastname>"`, () => {});
+        And(`the user's phone number is "<phoneNumber>"`, () => {});
+        And(`the user's profession is "<profession>"`, () => {});
 
         When(`I onboard the user`, async () => {
-          await sut.onboardUser({ email, firstname, lastname });
+          await sut.onboardUser(
+            HelperCommandFixtures.aValidCommand({
+              email,
+              firstname,
+              lastname,
+              phoneNumber,
+              professions: profession ? [profession] : undefined,
+            })
+          );
         });
 
         Then(`the user should be onboarded as a helper`, async () => {

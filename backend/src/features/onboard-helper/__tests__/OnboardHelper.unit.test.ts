@@ -1,24 +1,10 @@
 import { describeFeature, loadFeatureFromText } from "@amiceli/vitest-cucumber";
-import { User } from "@shared/types/User.js";
 import OnboardHelperUnderTest from "./OnboardHelperUnderTest.js";
+import { HelperCommandFixtures } from "./fixtures/HelperCommandFixtures.js";
 
 // @ts-ignore
 import featureContent from "../../../../../features/onboardHelper.feature?raw";
 const feature = await loadFeatureFromText(featureContent);
-
-const createUser = (
-  email: string,
-  firstname: string,
-  lastname: string,
-  phoneNumber?: string,
-  professions?: string[]
-): User => ({
-  email,
-  firstname,
-  lastname,
-  phoneNumber,
-  professions,
-});
 
 describeFeature(
   feature,
@@ -32,13 +18,26 @@ describeFeature(
 
     ScenarioOutline(
       `Admin successfully onboards a new helper with valid information`,
-      ({ Given, When, Then, And }, { email, lastname, firstname }) => {
+      (
+        { Given, When, Then, And },
+        { email, lastname, firstname, phoneNumber, profession }
+      ) => {
         Given(`the user's email is "<email>"`, () => {});
         And(`the user's first name is "<firstname>"`, () => {});
         And(`the user's last name is "<lastname>"`, () => {});
+        And(`the user's phone number is "<phoneNumber>"`, () => {});
+        And(`the user's profession is "<profession>"`, () => {});
 
         When(`I onboard the user`, async () => {
-          await sut.onboardUser(createUser(email, firstname, lastname));
+          await sut.onboardUser(
+            HelperCommandFixtures.aValidCommand({
+              email,
+              firstname,
+              lastname,
+              phoneNumber,
+              professions: profession ? [profession] : undefined,
+            })
+          );
         });
 
         Then(`the user should be onboarded as a helper`, async () => {
@@ -60,7 +59,7 @@ describeFeature(
         And(`the last name is "Doe"`, () => {});
 
         When(`I onboard the user`, async () => {
-          await sut.onboardUser(createUser(email, "John", "Doe"));
+          await sut.onboardUser(HelperCommandFixtures.withEmail(email));
         });
 
         Then(`the onboarding fails with error "<error>"`, async () => {
@@ -85,7 +84,9 @@ describeFeature(
         And(`the last name is "<lastname>"`, () => {});
 
         When(`I onboard the user`, async () => {
-          await sut.onboardUser(createUser(email, firstname, lastname));
+          await sut.onboardUser(
+            HelperCommandFixtures.aValidCommand({ firstname, lastname, email })
+          );
         });
 
         Then(`the onboarding fails with error "<error>"`, async () => {
@@ -101,14 +102,24 @@ describeFeature(
 
     ScenarioOutline(
       `Admin successfully onboards a new helper with phone number`,
-      ({ Given, When, Then, And }, { email, firstname, lastname, phoneNumber }) => {
+      (
+        { Given, When, Then, And },
+        { email, firstname, lastname, phoneNumber }
+      ) => {
         Given(`the user's email is "<email>"`, () => {});
         And(`the user's first name is "<firstname>"`, () => {});
         And(`the user's last name is "<lastname>"`, () => {});
         And(`the user's phone number is "<phoneNumber>"`, () => {});
 
         When(`I onboard the user`, async () => {
-          await sut.onboardUser(createUser(email, firstname, lastname, phoneNumber));
+          await sut.onboardUser(
+            HelperCommandFixtures.aValidCommand({
+              email,
+              firstname,
+              lastname,
+              phoneNumber,
+            })
+          );
         });
 
         Then(`the user should be onboarded as a helper`, async () => {
@@ -133,7 +144,9 @@ describeFeature(
         And(`the phone number is "<phoneNumber>"`, () => {});
 
         When(`I onboard the user`, async () => {
-          await sut.onboardUser(createUser(email, "John", "Doe", phoneNumber));
+          await sut.onboardUser(
+            HelperCommandFixtures.aValidCommand({ phoneNumber })
+          );
         });
 
         Then(`the onboarding fails with error "<error>"`, async () => {
@@ -148,14 +161,24 @@ describeFeature(
 
     ScenarioOutline(
       `Admin successfully onboards a helper with valid profession`,
-      ({ Given, When, Then, And }, { email, firstname, lastname, profession }) => {
+      (
+        { Given, When, Then, And },
+        { email, firstname, lastname, profession }
+      ) => {
         Given(`the user's email is "<email>"`, () => {});
         And(`the user's first name is "<firstname>"`, () => {});
         And(`the user's last name is "<lastname>"`, () => {});
         And(`the user's profession is "<profession>"`, () => {});
 
         When(`I onboard the user`, async () => {
-          await sut.onboardUser(createUser(email, firstname, lastname, undefined, [profession]));
+          await sut.onboardUser(
+            HelperCommandFixtures.aValidCommand({
+              email,
+              firstname,
+              lastname,
+              professions: [profession],
+            })
+          );
         });
 
         Then(`the user should be onboarded as a helper`, async () => {
@@ -180,7 +203,11 @@ describeFeature(
         And(`the profession is "<profession>"`, () => {});
 
         When(`I onboard the user`, async () => {
-          await sut.onboardUser(createUser(email, "John", "Doe", undefined, [profession]));
+          await sut.onboardUser(
+            HelperCommandFixtures.aValidCommand({
+              professions: [profession],
+            })
+          );
         });
 
         Then(`the onboarding fails with error "<error>"`, async () => {
@@ -202,7 +229,13 @@ describeFeature(
         Given(
           `a helper "<firstname>" "<lastname>" with email "<email>" is already onboarded`,
           async () => {
-            await sut.onboardUser(createUser(email, firstname, lastname));
+            await sut.onboardUser(
+              HelperCommandFixtures.aValidCommand({
+                firstname,
+                lastname,
+                email,
+              })
+            );
           }
         );
 
@@ -210,7 +243,11 @@ describeFeature(
           `I attempt to onboard another helper "<otherUserFirstname>" "<otherUserLastname>" with same email`,
           async () => {
             await sut.onboardUser(
-              createUser(email, otherUserFirstname, otherUserLastname)
+              HelperCommandFixtures.aValidCommand({
+                firstname,
+                lastname,
+                email,
+              })
             );
           }
         );
@@ -246,7 +283,9 @@ describeFeature(
         });
 
         When(`I attempt to onboard the user`, async () => {
-          await sut.onboardUser(createUser(email, firstname, lastname));
+          await sut.onboardUser(
+            HelperCommandFixtures.aValidCommand({ firstname, lastname, email })
+          );
         });
 
         Then(`the onboarding should fail`, async () => {

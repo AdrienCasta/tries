@@ -1,6 +1,6 @@
 import { expect } from "vitest";
 
-import { User } from "@shared/types/User.js";
+import { OnboardHelperCommand } from "../OnboardHelper.command.js";
 import { OnboardHelper } from "../OnboardHelper.usecase.js";
 import { InMemoryHelperRepository } from "@infrastructure/persistence/InMemoryHelperRepository.js";
 import { InMemoryHelperAccountRepository } from "@infrastructure/persistence/InMemoryHelperAccountRepository.js";
@@ -41,8 +41,8 @@ export default class OnboardHelperUnderTest {
     );
   }
 
-  async onboardUser(user: User) {
-    const result = await this.useCase.execute(user);
+  async onboardUser(command: OnboardHelperCommand) {
+    const result = await this.useCase.execute(command);
     if (!result.success) {
       this.lastError = result.error;
     }

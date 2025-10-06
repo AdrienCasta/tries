@@ -1,4 +1,4 @@
-import { User } from "@shared/types/User.js";
+import { OnboardHelperCommand } from "./OnboardHelper.command.js";
 import { Helper } from "@shared/domain/entities/Helper.js";
 import { HelperAccount } from "@shared/domain/entities/HelperAccount.js";
 import HelperId from "@shared/domain/value-objects/HelperId.js";
@@ -34,7 +34,7 @@ export class OnboardHelper {
     lastname,
     phoneNumber,
     professions,
-  }: User): Promise<
+  }: OnboardHelperCommand): Promise<
     Result<
       HelperId,
       | InvalidEmailError

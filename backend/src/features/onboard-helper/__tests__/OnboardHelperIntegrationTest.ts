@@ -8,12 +8,7 @@ import { InMemoryProfessionRepository } from "@infrastructure/persistence/InMemo
 import { FakeOnboardedHelperNotificationService } from "@infrastructure/notifications/InMemoryOnboardingHelperNotificationService.js";
 import { FixedClock } from "@infrastructure/time/FixedClock.js";
 import InMemoryEventBus from "@infrastructure/events/InMemoryEventBus.js";
-
-interface User {
-  email: string;
-  firstname: string;
-  lastname: string;
-}
+import { OnboardHelperCommand } from "../OnboardHelper.command.js";
 
 /**
  * Integration Test Helper for Onboard Helper Feature
@@ -56,16 +51,16 @@ export default class OnboardHelperIntegrationTest {
     await this.server.close();
   }
 
-  async onboardUser(user: User): Promise<void> {
+  async onboardUser(command: OnboardHelperCommand): Promise<void> {
     this.lastResponse = await this.server.inject({
       method: "POST",
       url: "/api/helpers/onboard",
       payload: {
-        email: user.email,
-        firstname: user.firstname,
-        lastname: user.lastname,
-        phoneNumber: user.phoneNumber,
-        professions: user.professions,
+        email: command.email,
+        firstname: command.firstname,
+        lastname: command.lastname,
+        phoneNumber: command.phoneNumber,
+        professions: command.professions,
       },
     });
   }

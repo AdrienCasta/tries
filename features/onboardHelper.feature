@@ -10,14 +10,15 @@ Feature: Onboarding a new helper
     Given the user's email is "<email>"
     And the user's first name is "<firstname>"
     And the user's last name is "<lastname>"
+    And the user's phone number is "<phoneNumber>"
+    And the user's profession is "<profession>"
     When I onboard the user
     Then the user should be onboarded as a helper
     And the user should receive a notification
 
     Examples: Standard names
-      | email                        | firstname | lastname  |
-      | john@doe.com                 | John      | Doe       |
-      | jane.smith@acme.co           | Jane      | Smith     |
+      | email                        | firstname | lastname  | phoneNumber  | profession
+      | john@doe.com                 | John      | Doe       | +33612345678 | physiotherapist
 
   Scenario Outline: Admin successfully onboards a new helper with phone number
     Given the user's email is "<email>"
@@ -29,10 +30,10 @@ Feature: Onboarding a new helper
     And the user should receive a notification
 
     Examples: With phone numbers
-      | email                        | firstname | lastname  | phoneNumber     |
-      | helper@example.com           | John      | Smith     | +33612345678    |
-      | helper+1@example.com         | John      | Smith     | +34612345678    |
-      | helper+2@example.com         | Jane      | Doe       | 0612345678      |
+      | email                        | firstname | lastname  | phoneNumber  |
+      | helper@example.com           | John      | Smith     | +33612345678 |
+      | helper+1@example.com         | John      | Smith     | +34612345678 |
+      | helper+2@example.com         | Jane      | Doe       | 0612345678   |
 
     Examples: International and special characters
       | email                 | firstname | lastname    |
