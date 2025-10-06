@@ -7,6 +7,7 @@ import { HelperAccountRepository } from "@shared/domain/repositories/HelperAccou
 import HelperEmail from "@shared/domain/value-objects/HelperEmail.js";
 import Firstname from "@shared/domain/value-objects/Firstname.js";
 import Lastname from "@shared/domain/value-objects/Lastname.js";
+import PhoneNumber from "@shared/domain/value-objects/PhoneNumber.js";
 import { Result } from "@shared/infrastructure/Result.js";
 import { ValidationError } from "./OnboardHelper.errors.js";
 import { DuplicateHelperError } from "./OnboardHelper.errors.js";
@@ -28,6 +29,7 @@ export class OnboardHelper {
     email,
     firstname,
     lastname,
+    phoneNumber,
   }: User): Promise<
     Result<
       HelperId,
@@ -53,6 +55,11 @@ export class OnboardHelper {
       return Result.fail(lastnameResult.error);
     }
 
+    const phoneNumberResult = PhoneNumber.create(phoneNumber);
+    if (Result.isFailure(phoneNumberResult)) {
+      return Result.fail(phoneNumberResult.error);
+    }
+
     const existingHelper = await this.helperRepository.findByEmail(email);
     if (existingHelper) {
       return Result.fail(DuplicateHelperError.forEmail(email));
@@ -72,6 +79,7 @@ export class OnboardHelper {
       email: emailResult.value,
       firstname: firstnameResult.value,
       lastname: lastnameResult.value,
+      phoneNumber: phoneNumberResult.value,
     };
 
     const accountResult = await this.helperAccountRepository.create(
@@ -83,7 +91,7 @@ export class OnboardHelper {
     }
 
     await this.helperRepository.save(helper);
-    this.notif.send({ email, firstname, lastname });
+    this.notif.send({ email, firstname, lastname, phoneNumber });
 
     return Result.ok(helper.id);
   }

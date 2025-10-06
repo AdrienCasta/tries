@@ -28,16 +28,19 @@ export class FakeOnboardedHelperNotificationService
     email,
     firstname,
     lastname,
+    phoneNumber,
   }: {
     email: string;
     firstname: string;
     lastname: string;
+    phoneNumber?: string;
   }): Promise<void> {
     this.notifications.set(
       email,
       this.generateTemplate({
         firstname,
         lastname,
+        phoneNumber,
       })
     );
 
@@ -65,29 +68,31 @@ export class FakeOnboardedHelperNotificationService
   private generateTemplate({
     firstname,
     lastname,
+    phoneNumber,
   }: {
     firstname: string;
     lastname: string;
+    phoneNumber?: string;
   }) {
     return `
     Subject: Welcome to ${this.companyName} - Set Up Your Account
-    
+
     Hi ${firstname} ${lastname},
-    
+
     Welcome to the team! Your helper account has been created.
-    
+    ${phoneNumber ? `\n    Phone: ${phoneNumber}\n` : ''}
     To get started, please set up your password by clicking the link below:
-    
+
     [Set Up My Password]
     ${this.passwordSetupUrl}
-    
+
     This link will expire in 48 hours for security reasons.
-    
+
     If you didn't expect this email or have any questions, please contact us at ${this.supportEmailContact}.
-    
+
     Best regards,
     The ${this.companyName} Team
-    
+
     ---
     This is an automated message. Please do not reply to this email.
     `;

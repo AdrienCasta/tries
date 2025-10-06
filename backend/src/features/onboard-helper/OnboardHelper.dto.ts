@@ -2,6 +2,7 @@ export interface OnboardHelperRequest {
   email: string;
   firstname: string;
   lastname: string;
+  phoneNumber?: string;
 }
 
 export interface OnboardHelperSuccessResponse {

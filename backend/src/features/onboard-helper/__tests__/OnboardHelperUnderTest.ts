@@ -84,6 +84,13 @@ export default class OnboardHelperUnderTest {
     expect(this.lastError?.message).toBe(expectedErrorMessage);
   }
 
+  async assertOnboardingFailedWithValidationError(
+    expectedErrorMessage: string
+  ): Promise<void> {
+    expect(this.lastError).toBeInstanceOf(ValidationError);
+    expect(this.lastError?.message).toBe(expectedErrorMessage);
+  }
+
   async assertHelperNotOnboarded(email: string): Promise<void> {
     const helper = await this.helperRepository.findByEmail(email);
     expect(helper).toBeNull();

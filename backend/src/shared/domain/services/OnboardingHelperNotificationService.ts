@@ -3,6 +3,7 @@ export interface OnboardedHelperNotificationService {
     email: string;
     firstname: string;
     lastname: string;
+    phoneNumber?: string;
   }): Promise<void>;
   hasSentTo(email: string): Promise<boolean>;
 }

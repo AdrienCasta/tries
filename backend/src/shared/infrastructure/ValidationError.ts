@@ -22,4 +22,8 @@ export default class ValidationError extends DomainError {
   static lastnameTooShort(): ValidationError {
     return new ValidationError("Last name too short");
   }
+
+  static phoneNumberInvalid(): ValidationError {
+    return new ValidationError("Phone number invalid");
+  }
 }

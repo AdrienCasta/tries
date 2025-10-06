@@ -60,6 +60,7 @@ export default class OnboardHelperIntegrationTest {
         email: user.email,
         firstname: user.firstname,
         lastname: user.lastname,
+        phoneNumber: user.phoneNumber,
       },
     });
   }

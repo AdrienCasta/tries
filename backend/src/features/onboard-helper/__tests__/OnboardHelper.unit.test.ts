@@ -9,11 +9,13 @@ const feature = await loadFeatureFromText(featureContent);
 const createUser = (
   email: string,
   firstname: string,
-  lastname: string
+  lastname: string,
+  phoneNumber?: string
 ): User => ({
   email,
   firstname,
   lastname,
+  phoneNumber,
 });
 
 describeFeature(
@@ -91,6 +93,53 @@ describeFeature(
         And(`the helper is not onboarded`, async () => {
           await sut.assertHelperNotOnboarded(email);
           await sut.assertNotificationNotSent(email);
+        });
+      }
+    );
+
+    ScenarioOutline(
+      `Admin successfully onboards a new helper with phone number`,
+      ({ Given, When, Then, And }, { email, firstname, lastname, phoneNumber }) => {
+        Given(`the user's email is "<email>"`, () => {});
+        And(`the user's first name is "<firstname>"`, () => {});
+        And(`the user's last name is "<lastname>"`, () => {});
+        And(`the user's phone number is "<phoneNumber>"`, () => {});
+
+        When(`I onboard the user`, async () => {
+          await sut.onboardUser(createUser(email, firstname, lastname, phoneNumber));
+        });
+
+        Then(`the user should be onboarded as a helper`, async () => {
+          await sut.assertHelperOnboarded(email);
+        });
+
+        And(`the user should receive a notification`, async () => {
+          await sut.assertNotificationSent(email);
+        });
+      }
+    );
+
+    ScenarioOutline(
+      `Admin cannot onboard helper with invalid phone number`,
+      ({ Given, When, Then, And }, { phoneNumber, error }) => {
+        const email = "john@domain.com";
+
+        Given(`I am onboarding a new helper`, () => {});
+        And(`the email address is "john@domain.com"`, () => {});
+        And(`the first name is "John"`, () => {});
+        And(`the last name is "Doe"`, () => {});
+        And(`the phone number is "<phoneNumber>"`, () => {});
+
+        When(`I onboard the user`, async () => {
+          await sut.onboardUser(createUser(email, "John", "Doe", phoneNumber));
+        });
+
+        Then(`the onboarding fails with error "<error>"`, async () => {
+          await sut.assertOnboardingFailedWithValidationError(error);
+        });
+
+        And(`the helper is not onboarded`, async () => {
+          await sut.assertHelperNotOnboarded(email);
         });
       }
     );

@@ -19,6 +19,21 @@ Feature: Onboarding a new helper
       | john@doe.com                 | John      | Doe       |
       | jane.smith@acme.co           | Jane      | Smith     |
 
+  Scenario Outline: Admin successfully onboards a new helper with phone number
+    Given the user's email is "<email>"
+    And the user's first name is "<firstname>"
+    And the user's last name is "<lastname>"
+    And the user's phone number is "<phoneNumber>"
+    When I onboard the user
+    Then the user should be onboarded as a helper
+    And the user should receive a notification
+
+    Examples: With phone numbers
+      | email                        | firstname | lastname  | phoneNumber     |
+      | helper@example.com           | John      | Smith     | +33612345678    |
+      | helper+1@example.com         | John      | Smith     | +34612345678    |
+      | helper+2@example.com         | Jane      | Doe       | 0612345678      |
+
     Examples: International and special characters
       | email                 | firstname | lastname    |
       | francois@paris.fr     | François  | Dubois      |
@@ -68,6 +83,22 @@ Feature: Onboarding a new helper
       | firstname | lastname | error                  |
       | J         | Doe      | First name too short   |
       | John      | D        | Last name too short    |
+
+  Scenario Outline: Admin cannot onboard helper with invalid phone number
+    Given I am onboarding a new helper
+    And the email address is "john@domain.com"
+    And the first name is "John"
+    And the last name is "Doe"
+    And the phone number is "<phoneNumber>"
+    When I onboard the user
+    Then the onboarding fails with error "<error>"
+    And the helper is not onboarded
+
+    Examples: Invalid phone formats
+      | phoneNumber      | error                  |
+      | 123              | Phone number invalid   |
+      | abcdefg          | Phone number invalid   |
+      | +                | Phone number invalid   |
 
   # Rule: Each helper must have a unique email address
   

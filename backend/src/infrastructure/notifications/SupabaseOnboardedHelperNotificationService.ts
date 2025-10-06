@@ -6,7 +6,7 @@ export class SupabaseOnboardedHelperNotificationService
 {
   constructor(private readonly supabase: SupabaseClient) {}
 
-  async send({ email }) {
+  async send({ email, phoneNumber }) {
     const { data, error } = await this.supabase.auth.admin.inviteUserByEmail(
       email
     );
