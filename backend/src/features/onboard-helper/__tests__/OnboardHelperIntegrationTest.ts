@@ -1,12 +1,12 @@
 import { expect } from "vitest";
-import { HttpServer } from "../../../infrastructure/http/HttpServer.js";
+import { HttpServer } from "@infrastructure/http/HttpServer.js";
 import { createApp } from "../../../app/createApp.js";
-import { FakeHttpServer } from "../../../infrastructure/http/FakeHttpServer.js";
-import { InMemoryHelperRepository } from "../../../infrastructure/persistence/InMemoryHelperRepository.js";
-import { InMemoryHelperAccountRepository } from "../../../infrastructure/persistence/InMemoryHelperAccountRepository.js";
-import { FakeOnboardedHelperNotificationService } from "../../../infrastructure/notifications/InMemoryOnboardingHelperNotificationService.js";
-import { FixedClock } from "../../../infrastructure/time/FixedClock.js";
-import InMemoryEventBus from "../../../infrastructure/events/InMemoryEventBus.js";
+import { FakeHttpServer } from "@infrastructure/http/FakeHttpServer.js";
+import { InMemoryHelperRepository } from "@infrastructure/persistence/InMemoryHelperRepository.js";
+import { InMemoryHelperAccountRepository } from "@infrastructure/persistence/InMemoryHelperAccountRepository.js";
+import { FakeOnboardedHelperNotificationService } from "@infrastructure/notifications/InMemoryOnboardingHelperNotificationService.js";
+import { FixedClock } from "@infrastructure/time/FixedClock.js";
+import InMemoryEventBus from "@infrastructure/events/InMemoryEventBus.js";
 
 interface User {
   email: string;

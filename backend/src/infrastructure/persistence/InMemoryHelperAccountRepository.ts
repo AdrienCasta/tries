@@ -1,8 +1,8 @@
-import { HelperAccount } from "../../shared/domain/entities/HelperAccount.js";
-import { HelperAccountRepository } from "../../shared/domain/repositories/HelperAccountRepository.js";
-import HelperId from "../../shared/domain/value-objects/HelperId.js";
-import { Result } from "../../shared/infrastructure/Result.js";
-import CreateHelperAccountException from "../../shared/infrastructure/CreateHelperAccountException.js";
+import { HelperAccount } from "@shared/domain/entities/HelperAccount.js";
+import { HelperAccountRepository } from "@shared/domain/repositories/HelperAccountRepository.js";
+import HelperId from "@shared/domain/value-objects/HelperId.js";
+import { Result } from "@shared/infrastructure/Result.js";
+import CreateHelperAccountException from "@shared/infrastructure/CreateHelperAccountException.js";
 
 export class InMemoryHelperAccountRepository
   implements HelperAccountRepository

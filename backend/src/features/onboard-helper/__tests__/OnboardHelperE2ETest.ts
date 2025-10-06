@@ -1,13 +1,13 @@
 import { expect, vi } from "vitest";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
-import { HttpServer } from "../../../infrastructure/http/HttpServer.js";
+import { HttpServer } from "@infrastructure/http/HttpServer.js";
 import { createApp } from "../../../app/createApp.js";
-import { FastifyHttpServer } from "../../../infrastructure/http/FastifyHttpServer.js";
-import { SupabaseHelperRepository } from "../../../infrastructure/persistence/SupabaseHelperRepository.js";
-import { SupabaseHelperAccountRepository } from "../../../infrastructure/persistence/SupabaseHelperAccountRepository.js";
-import { SupabaseOnboardedHelperNotificationService } from "../../../infrastructure/notifications/SupabaseOnboardedHelperNotificationService.js";
-import { FixedClock } from "../../../infrastructure/time/FixedClock.js";
-import InMemoryEventBus from "../../../infrastructure/events/InMemoryEventBus.js";
+import { FastifyHttpServer } from "@infrastructure/http/FastifyHttpServer.js";
+import { SupabaseHelperRepository } from "@infrastructure/persistence/SupabaseHelperRepository.js";
+import { SupabaseHelperAccountRepository } from "@infrastructure/persistence/SupabaseHelperAccountRepository.js";
+import { SupabaseOnboardedHelperNotificationService } from "@infrastructure/notifications/SupabaseOnboardedHelperNotificationService.js";
+import { FixedClock } from "@infrastructure/time/FixedClock.js";
+import InMemoryEventBus from "@infrastructure/events/InMemoryEventBus.js";
 
 interface User {
   email: string;

@@ -1,5 +1,5 @@
 import OnboardHelperController from "./OnboardHelper.controller.js";
-import { HttpServer } from "../../infrastructure/http/HttpServer.js";
+import { HttpServer } from "@infrastructure/http/HttpServer.js";
 
 /**
  * Register helper-related routes

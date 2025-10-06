@@ -1,4 +1,4 @@
-import { Clock } from "../../shared/domain/services/Clock.js";
+import { Clock } from "@shared/domain/services/Clock.js";
 
 export class FixedClock implements Clock {
   constructor(private currentTime: Date = new Date("2025-01-01T12:00:00Z")) {}

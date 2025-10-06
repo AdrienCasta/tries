@@ -7,7 +7,9 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@features': path.resolve(__dirname, '../features'),
+      '@shared': path.resolve(__dirname, './src/shared'),
+      '@features': path.resolve(__dirname, './src/features'),
+      '@infrastructure': path.resolve(__dirname, './src/infrastructure'),
     },
   },
 });

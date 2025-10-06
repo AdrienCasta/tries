@@ -1,16 +1,16 @@
 import { OnboardHelper } from "./OnboardHelper.usecase.js";
-import { Result } from "../../shared/infrastructure/Result.js";
+import { Result } from "@shared/infrastructure/Result.js";
 import {
   OnboardHelperRequest,
   OnboardHelperSuccessResponse,
   OnboardHelperErrorResponse,
 } from "./OnboardHelper.dto.js";
-import EventBus from "../../shared/infrastructure/EventBus.js";
+import EventBus from "@shared/infrastructure/EventBus.js";
 import {
   createHelperOnboardingFailed,
   createHelperOnboardingSucceeded,
 } from "./OnboardHelper.events.js";
-import { Clock } from "../../shared/domain/services/Clock.js";
+import { Clock } from "@shared/domain/services/Clock.js";
 
 export default class OnboardHelperController {
   constructor(

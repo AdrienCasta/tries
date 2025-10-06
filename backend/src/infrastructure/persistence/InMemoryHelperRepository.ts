@@ -1,5 +1,5 @@
-import { Helper } from "../../shared/domain/entities/Helper.js";
-import { HelperRepository } from "../../shared/domain/repositories/HelperRepository.js";
+import { Helper } from "@shared/domain/entities/Helper.js";
+import { HelperRepository } from "@shared/domain/repositories/HelperRepository.js";
 
 export class InMemoryHelperRepository implements HelperRepository {
   private helpers: Map<string, Helper> = new Map();

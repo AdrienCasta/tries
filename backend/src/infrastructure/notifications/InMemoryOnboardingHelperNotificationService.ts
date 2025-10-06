@@ -1,4 +1,4 @@
-import { OnboardedHelperNotificationService } from "../../shared/domain/services/OnboardingHelperNotificationService.js";
+import { OnboardedHelperNotificationService } from "@shared/domain/services/OnboardingHelperNotificationService.js";
 
 export class FakeOnboardedHelperNotificationService
   implements OnboardedHelperNotificationService

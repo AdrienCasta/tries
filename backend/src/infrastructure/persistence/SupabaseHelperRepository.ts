@@ -1,10 +1,10 @@
 import { SupabaseClient } from "@supabase/supabase-js";
-import { Helper } from "../../shared/domain/entities/Helper.js";
-import { HelperRepository } from "../../shared/domain/repositories/HelperRepository.js";
-import HelperEmail from "../../shared/domain/value-objects/HelperEmail.js";
-import Firstname from "../../shared/domain/value-objects/Firstname.js";
-import Lastname from "../../shared/domain/value-objects/Lastname.js";
-import HelperId from "../../shared/domain/value-objects/HelperId.js";
+import { Helper } from "@shared/domain/entities/Helper.js";
+import { HelperRepository } from "@shared/domain/repositories/HelperRepository.js";
+import HelperEmail from "@shared/domain/value-objects/HelperEmail.js";
+import Firstname from "@shared/domain/value-objects/Firstname.js";
+import Lastname from "@shared/domain/value-objects/Lastname.js";
+import HelperId from "@shared/domain/value-objects/HelperId.js";
 
 export class SupabaseHelperRepository implements HelperRepository {
   constructor(private readonly supabase: SupabaseClient) {}

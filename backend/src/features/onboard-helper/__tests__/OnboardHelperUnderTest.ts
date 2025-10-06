@@ -1,14 +1,14 @@
 import { expect } from "vitest";
 
-import { User } from "../../../shared/types/User.js";
+import { User } from "@shared/types/User.js";
 import { OnboardHelper } from "../OnboardHelper.usecase.js";
-import { InMemoryHelperRepository } from "../../../infrastructure/persistence/InMemoryHelperRepository.js";
-import { InMemoryHelperAccountRepository } from "../../../infrastructure/persistence/InMemoryHelperAccountRepository.js";
-import { FakeOnboardedHelperNotificationService } from "../../../infrastructure/notifications/InMemoryOnboardingHelperNotificationService.js";
-import { Helper } from "../../../shared/domain/entities/Helper.js";
-import { FixedClock } from "../../../infrastructure/time/FixedClock.js";
+import { InMemoryHelperRepository } from "@infrastructure/persistence/InMemoryHelperRepository.js";
+import { InMemoryHelperAccountRepository } from "@infrastructure/persistence/InMemoryHelperAccountRepository.js";
+import { FakeOnboardedHelperNotificationService } from "@infrastructure/notifications/InMemoryOnboardingHelperNotificationService.js";
+import { Helper } from "@shared/domain/entities/Helper.js";
+import { FixedClock } from "@infrastructure/time/FixedClock.js";
 import { InvalidEmailError, ValidationError } from "../OnboardHelper.errors.js";
-import InfraException from "../../../shared/infrastructure/InfraException.js";
+import InfraException from "@shared/infrastructure/InfraException.js";
 
 export default class OnboardHelperUnderTest {
   private helperRepository!: InMemoryHelperRepository;

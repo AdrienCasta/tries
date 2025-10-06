@@ -1,5 +1,5 @@
 import { SupabaseClient } from "@supabase/supabase-js";
-import { OnboardedHelperNotificationService } from "../../shared/domain/services/OnboardingHelperNotificationService.js";
+import { OnboardedHelperNotificationService } from "@shared/domain/services/OnboardingHelperNotificationService.js";
 
 export class SupabaseOnboardedHelperNotificationService
   implements OnboardedHelperNotificationService

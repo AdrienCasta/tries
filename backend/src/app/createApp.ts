@@ -1,12 +1,12 @@
-import { OnboardHelper } from "../features/onboard-helper/OnboardHelper.usecase.js";
-import { HelperRepository } from "../shared/domain/repositories/HelperRepository.js";
-import { HelperAccountRepository } from "../shared/domain/repositories/HelperAccountRepository.js";
-import { OnboardedHelperNotificationService } from "../shared/domain/services/OnboardingHelperNotificationService.js";
-import { Clock } from "../shared/domain/services/Clock.js";
-import EventBus from "../shared/infrastructure/EventBus.js";
-import OnboardHelperController from "../features/onboard-helper/OnboardHelper.controller.js";
-import { registerHelperRoutes } from "../features/onboard-helper/OnboardHelper.routes.js";
-import { HttpServer } from "../infrastructure/http/HttpServer.js";
+import { OnboardHelper } from "@features/onboard-helper/OnboardHelper.usecase.js";
+import { HelperRepository } from "@shared/domain/repositories/HelperRepository.js";
+import { HelperAccountRepository } from "@shared/domain/repositories/HelperAccountRepository.js";
+import { OnboardedHelperNotificationService } from "@shared/domain/services/OnboardingHelperNotificationService.js";
+import { Clock } from "@shared/domain/services/Clock.js";
+import EventBus from "@shared/infrastructure/EventBus.js";
+import OnboardHelperController from "@features/onboard-helper/OnboardHelper.controller.js";
+import { registerHelperRoutes } from "@features/onboard-helper/OnboardHelper.routes.js";
+import { HttpServer } from "@infrastructure/http/HttpServer.js";
 
 export interface AppDependencies {
   helperRepository: HelperRepository;

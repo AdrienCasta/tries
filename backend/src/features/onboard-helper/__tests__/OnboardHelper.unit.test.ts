@@ -1,5 +1,5 @@
 import { describeFeature, loadFeatureFromText } from "@amiceli/vitest-cucumber";
-import { User } from "../../../shared/types/User.js";
+import { User } from "@shared/types/User.js";
 import OnboardHelperUnderTest from "./OnboardHelperUnderTest.js";
 
 // @ts-ignore

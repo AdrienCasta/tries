@@ -1,6 +1,6 @@
-import DomainEvent from "../../shared/infrastructure/DomainEvent.js";
-import HelperId from "../../shared/domain/value-objects/HelperId.js";
-import { Clock } from "../../shared/domain/services/Clock.js";
+import DomainEvent from "@shared/infrastructure/DomainEvent.js";
+import HelperId from "@shared/domain/value-objects/HelperId.js";
+import { Clock } from "@shared/domain/services/Clock.js";
 
 export interface HelperOnboardingSucceeded extends DomainEvent {
   readonly eventName: "HelperOnboardingSucceeded";
