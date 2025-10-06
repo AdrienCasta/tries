@@ -5,7 +5,7 @@ import HelperEmail from "@shared/domain/value-objects/HelperEmail.js";
 import Firstname from "@shared/domain/value-objects/Firstname.js";
 import Lastname from "@shared/domain/value-objects/Lastname.js";
 import HelperId from "@shared/domain/value-objects/HelperId.js";
-import PhoneNumber from "@shared/domain/value-objects/PhoneNumber.js";
+import DataMappingException from "@shared/infrastructure/DataMappingException.js";
 
 export class SupabaseHelperRepository implements HelperRepository {
   constructor(private readonly supabase: SupabaseClient) {}
@@ -16,7 +16,6 @@ export class SupabaseHelperRepository implements HelperRepository {
       email: helper.email.value,
       firstname: helper.firstname.value,
       lastname: helper.lastname.value,
-      phone: helper.phoneNumber?.value || null,
     });
 
     if (error) {
@@ -43,32 +42,48 @@ export class SupabaseHelperRepository implements HelperRepository {
   }
 
   private mapToHelper(data: any): Helper {
-    const emailResult = HelperEmail.create(data.email);
-    if (!emailResult.success) {
-      throw new Error(`Invalid email from database: ${data.email}`);
-    }
+    try {
+      const emailResult = HelperEmail.create(data.email);
+      if (!emailResult.success) {
+        throw DataMappingException.forField(
+          "email",
+          data.email,
+          emailResult.error.message
+        );
+      }
 
-    const firstnameResult = Firstname.create(data.firstname);
-    if (!firstnameResult.success) {
-      throw new Error(`Invalid firstname from database: ${data.firstname}`);
-    }
+      const firstnameResult = Firstname.create(data.firstname);
+      if (!firstnameResult.success) {
+        throw DataMappingException.forField(
+          "firstname",
+          data.firstname,
+          firstnameResult.error.message
+        );
+      }
 
-    const lastnameResult = Lastname.create(data.lastname);
-    if (!lastnameResult.success) {
-      throw new Error(`Invalid lastname from database: ${data.lastname}`);
-    }
+      const lastnameResult = Lastname.create(data.lastname);
+      if (!lastnameResult.success) {
+        throw DataMappingException.forField(
+          "lastname",
+          data.lastname,
+          lastnameResult.error.message
+        );
+      }
 
-    const phoneNumberResult = PhoneNumber.create(data.phone);
-    if (!phoneNumberResult.success) {
-      throw new Error(`Invalid phone number from database: ${data.phone}`);
+      return {
+        id: HelperId.create(data.id),
+        email: emailResult.value,
+        firstname: firstnameResult.value,
+        lastname: lastnameResult.value,
+      };
+    } catch (error) {
+      if (error instanceof DataMappingException) {
+        throw error;
+      }
+      throw DataMappingException.forRecord(
+        data.id || "unknown",
+        error as Error
+      );
     }
-
-    return {
-      id: HelperId.create(data.id),
-      email: emailResult.value,
-      firstname: firstnameResult.value,
-      lastname: lastnameResult.value,
-      phoneNumber: phoneNumberResult.value,
-    };
   }
 }

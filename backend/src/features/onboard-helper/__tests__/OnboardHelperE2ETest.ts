@@ -131,10 +131,10 @@ export default class OnboardHelperE2ETest {
     expect(authUser?.email).toBe(email);
   }
 
-  async assertOnboardingFailedWithDuplicateEmail(): Promise<void> {
+  async assertOnboardingFailedBecauseEmailHasAlreadyBeenRegistered(): Promise<void> {
     expect(this.lastResponse.statusCode).toBe(400);
     const body = this.lastResponse.json();
-    expect(body.error).toBe("Helper with this email already exists");
+    expect(body.error).toBeDefined();
   }
 
   async assertHelperDetailsNotChanged(

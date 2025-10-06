@@ -16,6 +16,7 @@ export class SupabaseHelperAccountRepository
     const { error } = await this.supabase.auth.admin.createUser({
       email: account.email.value,
       password: account.password?.value,
+      phone: account.phoneNumber?.value,
       email_confirm: false,
     });
 

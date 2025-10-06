@@ -72,19 +72,19 @@ export class OnboardHelper {
       password: await Password.generateTemporary(),
       email: emailResult.value,
       createdAt: this.clock.now(),
-    };
-
-    const helper: Helper = {
-      id: helperId,
-      email: emailResult.value,
-      firstname: firstnameResult.value,
-      lastname: lastnameResult.value,
       phoneNumber: phoneNumberResult.value,
     };
 
     const accountResult = await this.helperAccountRepository.create(
       helperAccount
     );
+
+    const helper: Helper = {
+      id: helperId,
+      email: emailResult.value,
+      firstname: firstnameResult.value,
+      lastname: lastnameResult.value,
+    };
 
     if (Result.isFailure(accountResult)) {
       return Result.fail(accountResult.error);

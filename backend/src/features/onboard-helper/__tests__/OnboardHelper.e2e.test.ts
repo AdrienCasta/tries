@@ -94,7 +94,7 @@ describeFeature(
         );
 
         Then(`the onboarding should fail`, async () => {
-          await sut.assertOnboardingFailedWithDuplicateEmail();
+          await sut.assertOnboardingFailedBecauseEmailHasAlreadyBeenRegistered();
         });
 
         And(`the helper should not be duplicated`, async () => {
