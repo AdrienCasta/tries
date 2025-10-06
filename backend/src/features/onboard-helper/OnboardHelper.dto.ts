@@ -3,6 +3,7 @@ export interface OnboardHelperRequest {
   firstname: string;
   lastname: string;
   phoneNumber?: string;
+  professions?: string[];
 }
 
 export interface OnboardHelperSuccessResponse {

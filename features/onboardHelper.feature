@@ -100,6 +100,36 @@ Feature: Onboarding a new helper
       | abcdefg          | Phone number invalid   |
       | +                | Phone number invalid   |
 
+  Scenario Outline: Admin successfully onboards a helper with valid profession
+    Given the user's email is "<email>"
+    And the user's first name is "<firstname>"
+    And the user's last name is "<lastname>"
+    And the user's profession is "<profession>"
+    When I onboard the user
+    Then the user should be onboarded as a helper
+    And the user should receive a notification
+
+    Examples: Valid professions
+      | email                   | firstname | lastname | profession              |
+      | doctor@example.com      | John      | Smith    | doctor                  |
+      | physio@example.com      | Jane      | Doe      | physiotherapist         |
+      | coach@example.com       | Bob       | Brown    | sports_coach            |
+
+  Scenario Outline: Admin cannot onboard helper with invalid profession
+    Given I am onboarding a new helper
+    And the email address is "john@domain.com"
+    And the first name is "John"
+    And the last name is "Doe"
+    And the profession is "<profession>"
+    When I onboard the user
+    Then the onboarding fails with error "<error>"
+    And the helper is not onboarded
+
+    Examples: Invalid professions
+      | profession       | error                  |
+      | invalidprof      | Profession invalid     |
+      | randomjob        | Profession invalid     |
+
   # Rule: Each helper must have a unique email address
   
   @e2e

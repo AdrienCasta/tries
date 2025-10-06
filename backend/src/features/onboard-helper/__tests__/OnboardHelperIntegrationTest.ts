@@ -4,6 +4,7 @@ import { createApp } from "../../../app/createApp.js";
 import { FakeHttpServer } from "@infrastructure/http/FakeHttpServer.js";
 import { InMemoryHelperRepository } from "@infrastructure/persistence/InMemoryHelperRepository.js";
 import { InMemoryHelperAccountRepository } from "@infrastructure/persistence/InMemoryHelperAccountRepository.js";
+import { InMemoryProfessionRepository } from "@infrastructure/persistence/InMemoryProfessionRepository.js";
 import { FakeOnboardedHelperNotificationService } from "@infrastructure/notifications/InMemoryOnboardingHelperNotificationService.js";
 import { FixedClock } from "@infrastructure/time/FixedClock.js";
 import InMemoryEventBus from "@infrastructure/events/InMemoryEventBus.js";
@@ -24,12 +25,14 @@ export default class OnboardHelperIntegrationTest {
   private server!: HttpServer;
   private helperRepository!: InMemoryHelperRepository;
   private helperAccountRepository!: InMemoryHelperAccountRepository;
+  private professionRepository!: InMemoryProfessionRepository;
   private notificationService!: FakeOnboardedHelperNotificationService;
   private lastResponse: any;
 
   async setup(): Promise<void> {
     this.helperRepository = new InMemoryHelperRepository();
     this.helperAccountRepository = new InMemoryHelperAccountRepository();
+    this.professionRepository = new InMemoryProfessionRepository();
     this.notificationService = new FakeOnboardedHelperNotificationService({
       companyName: "Tries",
       supportEmailContact: "tries@support.fr",
@@ -40,6 +43,7 @@ export default class OnboardHelperIntegrationTest {
     this.server = createApp(fakeServer, {
       helperRepository: this.helperRepository,
       helperAccountRepository: this.helperAccountRepository,
+      professionRepository: this.professionRepository,
       notificationService: this.notificationService,
       clock: new FixedClock(new Date("2025-01-15T10:00:00Z")),
       eventBus: new InMemoryEventBus(),
@@ -61,6 +65,7 @@ export default class OnboardHelperIntegrationTest {
         firstname: user.firstname,
         lastname: user.lastname,
         phoneNumber: user.phoneNumber,
+        professions: user.professions,
       },
     });
   }

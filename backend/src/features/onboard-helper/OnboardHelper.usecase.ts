@@ -4,10 +4,12 @@ import { HelperAccount } from "@shared/domain/entities/HelperAccount.js";
 import HelperId from "@shared/domain/value-objects/HelperId.js";
 import { HelperRepository } from "@shared/domain/repositories/HelperRepository.js";
 import { HelperAccountRepository } from "@shared/domain/repositories/HelperAccountRepository.js";
+import { ProfessionRepository } from "@shared/domain/repositories/ProfessionRepository.js";
 import HelperEmail from "@shared/domain/value-objects/HelperEmail.js";
 import Firstname from "@shared/domain/value-objects/Firstname.js";
 import Lastname from "@shared/domain/value-objects/Lastname.js";
 import PhoneNumber from "@shared/domain/value-objects/PhoneNumber.js";
+import Profession from "@shared/domain/value-objects/Profession.js";
 import { Result } from "@shared/infrastructure/Result.js";
 import { ValidationError } from "./OnboardHelper.errors.js";
 import { DuplicateHelperError } from "./OnboardHelper.errors.js";
@@ -21,6 +23,7 @@ export class OnboardHelper {
   constructor(
     private readonly helperRepository: HelperRepository,
     private readonly helperAccountRepository: HelperAccountRepository,
+    private readonly professionRepository: ProfessionRepository,
     private readonly notif: OnboardedHelperNotificationService,
     private readonly clock: Clock
   ) {}
@@ -30,6 +33,7 @@ export class OnboardHelper {
     firstname,
     lastname,
     phoneNumber,
+    professions,
   }: User): Promise<
     Result<
       HelperId,
@@ -60,6 +64,24 @@ export class OnboardHelper {
       return Result.fail(phoneNumberResult.error);
     }
 
+    // Validate professions array
+    const professionsResult = Profession.createMany(professions);
+    if (Result.isFailure(professionsResult)) {
+      return Result.fail(professionsResult.error);
+    }
+
+    // Validate professions against database
+    if (professionsResult.value.length > 0) {
+      const validProfessions = await this.professionRepository.findAll();
+      const validationResult = Profession.validateAgainstList(
+        professionsResult.value,
+        validProfessions
+      );
+      if (Result.isFailure(validationResult)) {
+        return Result.fail(validationResult.error);
+      }
+    }
+
     const existingHelper = await this.helperRepository.findByEmail(email);
     if (existingHelper) {
       return Result.fail(DuplicateHelperError.forEmail(email));
@@ -84,6 +106,7 @@ export class OnboardHelper {
       email: emailResult.value,
       firstname: firstnameResult.value,
       lastname: lastnameResult.value,
+      professions: professionsResult.value,
     };
 
     if (Result.isFailure(accountResult)) {
@@ -91,7 +114,7 @@ export class OnboardHelper {
     }
 
     await this.helperRepository.save(helper);
-    this.notif.send({ email, firstname, lastname, phoneNumber });
+    this.notif.send({ email, firstname, lastname, phoneNumber, professions });
 
     return Result.ok(helper.id);
   }

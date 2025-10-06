@@ -26,4 +26,8 @@ export default class ValidationError extends DomainError {
   static phoneNumberInvalid(): ValidationError {
     return new ValidationError("Phone number invalid");
   }
+
+  static professionInvalid(): ValidationError {
+    return new ValidationError("Profession invalid");
+  }
 }

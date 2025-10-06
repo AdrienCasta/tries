@@ -148,7 +148,7 @@ export default class OnboardHelperE2ETest {
       .eq("email", email)
       .single();
 
-    expect(helper).toBeDefined();
+    expect(helper).not.toBeNull();
     expect(helper.firstname).toBe(expectedFirstname);
     expect(helper.lastname).toBe(expectedLastname);
   }

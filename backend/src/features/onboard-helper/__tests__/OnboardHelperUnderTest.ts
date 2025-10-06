@@ -4,6 +4,7 @@ import { User } from "@shared/types/User.js";
 import { OnboardHelper } from "../OnboardHelper.usecase.js";
 import { InMemoryHelperRepository } from "@infrastructure/persistence/InMemoryHelperRepository.js";
 import { InMemoryHelperAccountRepository } from "@infrastructure/persistence/InMemoryHelperAccountRepository.js";
+import { InMemoryProfessionRepository } from "@infrastructure/persistence/InMemoryProfessionRepository.js";
 import { FakeOnboardedHelperNotificationService } from "@infrastructure/notifications/InMemoryOnboardingHelperNotificationService.js";
 import { Helper } from "@shared/domain/entities/Helper.js";
 import { FixedClock } from "@infrastructure/time/FixedClock.js";
@@ -13,6 +14,7 @@ import InfraException from "@shared/infrastructure/InfraException.js";
 export default class OnboardHelperUnderTest {
   private helperRepository!: InMemoryHelperRepository;
   private helperAccountRepository!: InMemoryHelperAccountRepository;
+  private professionRepository!: InMemoryProfessionRepository;
   private notificationService!: FakeOnboardedHelperNotificationService;
   private clock!: FixedClock;
   private useCase!: OnboardHelper;
@@ -21,6 +23,7 @@ export default class OnboardHelperUnderTest {
   setup(): void {
     this.helperRepository = new InMemoryHelperRepository();
     this.helperAccountRepository = new InMemoryHelperAccountRepository();
+    this.professionRepository = new InMemoryProfessionRepository();
     this.notificationService = new FakeOnboardedHelperNotificationService({
       companyName: "Tries",
       supportEmailContact: "tries@support.fr",
@@ -32,6 +35,7 @@ export default class OnboardHelperUnderTest {
     this.useCase = new OnboardHelper(
       this.helperRepository,
       this.helperAccountRepository,
+      this.professionRepository,
       this.notificationService,
       this.clock
     );

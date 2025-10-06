@@ -19,11 +19,12 @@ import OnboardHelperIntegrationTest from "./OnboardHelperIntegrationTest.js";
 import featureContent from "../../../../../features/onboardHelper.feature?raw";
 const feature = await loadFeatureFromText(featureContent);
 
-const createUser = (email: string, firstname: string, lastname: string, phoneNumber?: string) => ({
+const createUser = (email: string, firstname: string, lastname: string, phoneNumber?: string, professions?: string[]) => ({
   email,
   firstname,
   lastname,
   phoneNumber,
+  professions,
 });
 
 describeFeature(
@@ -142,6 +143,53 @@ describeFeature(
 
         When(`I onboard the user`, async () => {
           await sut.onboardUser(createUser(email, "John", "Doe", phoneNumber));
+        });
+
+        Then(`the onboarding fails with error "<error>"`, async () => {
+          await sut.assertOnboardingFailedWithError(error);
+        });
+
+        And(`the helper is not onboarded`, async () => {
+          await sut.assertHelperNotOnboarded(email);
+        });
+      }
+    );
+
+    ScenarioOutline(
+      `Admin successfully onboards a helper with valid profession`,
+      ({ Given, When, Then, And }, { email, firstname, lastname, profession }) => {
+        Given(`the user's email is "<email>"`, () => {});
+        And(`the user's first name is "<firstname>"`, () => {});
+        And(`the user's last name is "<lastname>"`, () => {});
+        And(`the user's profession is "<profession>"`, () => {});
+
+        When(`I onboard the user`, async () => {
+          await sut.onboardUser(createUser(email, firstname, lastname, undefined, [profession]));
+        });
+
+        Then(`the user should be onboarded as a helper`, async () => {
+          await sut.assertHelperOnboarded(email);
+        });
+
+        And(`the user should receive a notification`, async () => {
+          await sut.assertNotificationSent(email);
+        });
+      }
+    );
+
+    ScenarioOutline(
+      `Admin cannot onboard helper with invalid profession`,
+      ({ Given, When, Then, And }, { profession, error }) => {
+        const email = "john@domain.com";
+
+        Given(`I am onboarding a new helper`, () => {});
+        And(`the email address is "john@domain.com"`, () => {});
+        And(`the first name is "John"`, () => {});
+        And(`the last name is "Doe"`, () => {});
+        And(`the profession is "<profession>"`, () => {});
+
+        When(`I onboard the user`, async () => {
+          await sut.onboardUser(createUser(email, "John", "Doe", undefined, [profession]));
         });
 
         Then(`the onboarding fails with error "<error>"`, async () => {
