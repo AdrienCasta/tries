@@ -1,7 +1,6 @@
 import { OnboardHelper } from "@features/onboard-helper/OnboardHelper.usecase.js";
 import { HelperRepository } from "@shared/domain/repositories/HelperRepository.js";
 import { HelperAccountRepository } from "@shared/domain/repositories/HelperAccountRepository.js";
-import { ProfessionRepository } from "@shared/domain/repositories/ProfessionRepository.js";
 import { OnboardedHelperNotificationService } from "@shared/domain/services/OnboardingHelperNotificationService.js";
 import { Clock } from "@shared/domain/services/Clock.js";
 import EventBus from "@shared/infrastructure/EventBus.js";
@@ -12,7 +11,6 @@ import { HttpServer } from "@infrastructure/http/HttpServer.js";
 export interface AppDependencies {
   helperRepository: HelperRepository;
   helperAccountRepository: HelperAccountRepository;
-  professionRepository: ProfessionRepository;
   notificationService: OnboardedHelperNotificationService;
   clock: Clock;
   eventBus: EventBus;
@@ -32,7 +30,6 @@ export function createApp(
   const onboardHelper = new OnboardHelper(
     dependencies.helperRepository,
     dependencies.helperAccountRepository,
-    dependencies.professionRepository,
     dependencies.notificationService,
     dependencies.clock
   );

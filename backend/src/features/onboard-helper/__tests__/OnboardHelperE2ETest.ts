@@ -83,16 +83,17 @@ export default class OnboardHelperE2ETest {
     }
   }
 
-  async onboardUser(user: OnboardHelperCommand): Promise<void> {
+  async onboardUser(command: OnboardHelperCommand): Promise<void> {
     this.lastResponse = await this.server.inject({
       method: "POST",
       url: "/api/helpers/onboard",
       payload: {
-        email: user.email,
-        firstname: user.firstname,
-        lastname: user.lastname,
-        phone: user.phoneNumber,
-        profession: user.professions,
+        email: command.email,
+        firstname: command.firstname,
+        lastname: command.lastname,
+        birthdate: command.birthdate,
+        phoneNumber: command.phoneNumber,
+        professions: command.professions,
       },
     });
   }

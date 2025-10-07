@@ -18,59 +18,11 @@ export class SupabaseHelperRepository implements HelperRepository {
       email: helper.email.value,
       firstname: helper.firstname.value,
       lastname: helper.lastname.value,
+      birthdate: helper.birthdate.value,
     });
 
     if (helperError) {
       throw new Error(`Failed to save helper: ${helperError.message}`);
-    }
-
-    // Delete existing professions for this helper
-    const { error: deleteError } = await this.supabase
-      .from("helper_professions")
-      .delete()
-      .eq("helper_id", helper.id.value);
-
-    if (deleteError) {
-      throw new Error(
-        `Failed to delete existing professions: ${deleteError.message}`
-      );
-    }
-
-    // Insert new professions if any
-    if (helper.professions.length > 0) {
-      // First, get profession IDs from profession names
-      const professionNames = helper.professions.map((p) => p.value);
-      const { data: professionData, error: professionFetchError } =
-        await this.supabase
-          .from("professions")
-          .select("id, name")
-          .in("name", professionNames);
-
-      if (professionFetchError) {
-        throw new Error(
-          `Failed to fetch profession IDs: ${professionFetchError.message}`
-        );
-      }
-
-      if (!professionData || professionData.length === 0) {
-        throw new Error("No matching professions found in database");
-      }
-
-      // Create helper_professions records
-      const helperProfessions = professionData.map((p) => ({
-        helper_id: helper.id.value,
-        profession_id: p.id,
-      }));
-
-      const { error: insertError } = await this.supabase
-        .from("helper_professions")
-        .insert(helperProfessions);
-
-      if (insertError) {
-        throw new Error(
-          `Failed to insert helper professions: ${insertError.message}`
-        );
-      }
     }
   }
 
@@ -84,11 +36,7 @@ export class SupabaseHelperRepository implements HelperRepository {
         email,
         firstname,
         lastname,
-        helper_professions (
-          professions (
-            name
-          )
-        )
+        birthdate
       `
       )
       .eq("email", email)

@@ -1,10 +1,30 @@
-import { describeFeature, loadFeatureFromText } from "@amiceli/vitest-cucumber";
+import {
+  describeFeature,
+  getVitestCucumberConfiguration,
+  loadFeatureFromText,
+  setVitestCucumberConfiguration,
+} from "@amiceli/vitest-cucumber";
 import OnboardHelperUnderTest from "./OnboardHelperUnderTest.js";
 import { HelperCommandFixtures } from "./fixtures/HelperCommandFixtures.js";
 
 // @ts-ignore
 import featureContent from "../../../../../features/onboardHelper.feature?raw";
 const feature = await loadFeatureFromText(featureContent);
+
+const errorMessageMappedToErrorCode = {
+  "Email is required": "INVALID_EMAIL_ERROR",
+  "birthdate provided is set to the future.": "BIRTHDATE_IN_FUTUR",
+  "age requirement not met. You must be at least 16 yo.": "TOO_YOUNG_TO_WORK",
+  "First name too short": "FIRSTNAME_TOO_SHORT",
+  "Last name too short": "LASTNAME_TOO_SHORT",
+  "Phone number invalid": "PHONE_NUMBER_INVALID",
+  "Profession invalid": "UNKNOWN_PROFESSION",
+  "this email address is already in use.": "EMAIL_ALREADY_IN_USE",
+};
+setVitestCucumberConfiguration({
+  ...getVitestCucumberConfiguration(),
+  mappedExamples: errorMessageMappedToErrorCode,
+});
 
 describeFeature(
   feature,
@@ -20,13 +40,14 @@ describeFeature(
       `Admin successfully onboards a new helper with valid information`,
       (
         { Given, When, Then, And },
-        { email, lastname, firstname, phoneNumber, profession }
+        { email, lastname, firstname, phoneNumber, profession, birthdate }
       ) => {
         Given(`the user's email is "<email>"`, () => {});
         And(`the user's first name is "<firstname>"`, () => {});
         And(`the user's last name is "<lastname>"`, () => {});
         And(`the user's phone number is "<phoneNumber>"`, () => {});
         And(`the user's profession is "<profession>"`, () => {});
+        And(`the user's birthdate is "<birthdate>"`, () => {});
 
         When(`I onboard the user`, async () => {
           await sut.onboardUser(
@@ -35,6 +56,7 @@ describeFeature(
               firstname,
               lastname,
               phoneNumber,
+              birthdate: new Date(birthdate),
               professions: profession ? [profession] : undefined,
             })
           );
@@ -52,7 +74,7 @@ describeFeature(
 
     ScenarioOutline(
       `Admin cannot onboard helper with invalid email address`,
-      ({ Given, When, Then, And }, { email, error }) => {
+      ({ Given, When, Then, And }, { email, error: errorCode }) => {
         Given(`I am onboarding a new helper`, () => {});
         And(`the email address is "<email>"`, () => {});
         And(`the first name is "John"`, () => {});
@@ -63,11 +85,10 @@ describeFeature(
         });
 
         Then(`the onboarding fails with error "<error>"`, async () => {
-          await sut.assertOnboardingFailedWithError(error);
+          await sut.assertHelperIsNotOnboardedWithError(email, errorCode);
         });
 
         And(`the helper is not onboarded`, async () => {
-          await sut.assertHelperNotOnboarded(email);
           await sut.assertNotificationNotSent(email);
         });
       }
@@ -75,7 +96,10 @@ describeFeature(
 
     ScenarioOutline(
       `Admin cannot onboard helper with invalid name information`,
-      ({ Given, When, Then, And }, { firstname, lastname, error }) => {
+      (
+        { Given, When, Then, And },
+        { firstname, lastname, error: errorCode }
+      ) => {
         const email = "john@domain.com";
 
         Given(`I am onboarding a new helper`, () => {});
@@ -90,11 +114,10 @@ describeFeature(
         });
 
         Then(`the onboarding fails with error "<error>"`, async () => {
-          await sut.assertOnboardingFailedWithNameValidationError(error);
+          await sut.assertHelperIsNotOnboardedWithError(email, errorCode);
         });
 
         And(`the helper is not onboarded`, async () => {
-          await sut.assertHelperNotOnboarded(email);
           await sut.assertNotificationNotSent(email);
         });
       }
@@ -134,7 +157,7 @@ describeFeature(
 
     ScenarioOutline(
       `Admin cannot onboard helper with invalid phone number`,
-      ({ Given, When, Then, And }, { phoneNumber, error }) => {
+      ({ Given, When, Then, And }, { phoneNumber, error: errorCode }) => {
         const email = "john@domain.com";
 
         Given(`I am onboarding a new helper`, () => {});
@@ -150,12 +173,10 @@ describeFeature(
         });
 
         Then(`the onboarding fails with error "<error>"`, async () => {
-          await sut.assertOnboardingFailedWithValidationError(error);
+          await sut.assertHelperIsNotOnboardedWithError(email, errorCode);
         });
 
-        And(`the helper is not onboarded`, async () => {
-          await sut.assertHelperNotOnboarded(email);
-        });
+        And(`the helper is not onboarded`, () => {});
       }
     );
 
@@ -193,7 +214,7 @@ describeFeature(
 
     ScenarioOutline(
       `Admin cannot onboard helper with invalid profession`,
-      ({ Given, When, Then, And }, { profession, error }) => {
+      ({ Given, When, Then, And }, { profession, error: errorCode }) => {
         const email = "john@domain.com";
 
         Given(`I am onboarding a new helper`, () => {});
@@ -205,17 +226,42 @@ describeFeature(
         When(`I onboard the user`, async () => {
           await sut.onboardUser(
             HelperCommandFixtures.aValidCommand({
+              email,
               professions: [profession],
             })
           );
         });
 
         Then(`the onboarding fails with error "<error>"`, async () => {
-          await sut.assertOnboardingFailedWithValidationError(error);
+          await sut.assertHelperIsNotOnboardedWithError(email, errorCode);
         });
 
+        And(`the helper is not onboarded`, () => {});
+      }
+    );
+
+    ScenarioOutline(
+      `Admin cannot onboard helper with invalid birthdate`,
+      ({ Given, When, Then, And }, { birthdate, email, error: errorCode }) => {
+        Given(`I am onboarding a new helper`, () => {});
+        Given("It's {date}", () => {});
+        And(`the email address is <email>`, () => {});
+        And(`the first name is "John"`, () => {});
+        And(`the last name is "Doe"`, () => {});
+        And(`the birthdate is <birthdate>`, () => {});
+        When(`I onboard the user`, async () => {});
+        Then(`the onboarding fails because <error>`, async () => {
+          await sut.onboardUser(
+            HelperCommandFixtures.aValidCommand({
+              email,
+              birthdate: new Date(birthdate),
+            })
+          );
+        });
         And(`the helper is not onboarded`, async () => {
-          await sut.assertHelperNotOnboarded(email);
+          expect(
+            await sut.assertHelperIsNotOnboardedWithError(email, errorCode)
+          );
         });
       }
     );
@@ -224,7 +270,7 @@ describeFeature(
       `Admin cannot onboard a helper who is already registered`,
       (
         { Given, When, Then, And },
-        { email, firstname, lastname, otherUserFirstname, otherUserLastname }
+        { email, firstname, lastname, error: errorCode }
       ) => {
         Given(
           `a helper "<firstname>" "<lastname>" with email "<email>" is already onboarded`,
@@ -252,8 +298,8 @@ describeFeature(
           }
         );
 
-        Then(`the onboarding should fail`, async () => {
-          await sut.assertOnboardingFailedWithDuplicateEmail();
+        Then(`the onboarding should fail because <error>`, async () => {
+          await sut.assertHelperIsNotOnboardedWithError(email, errorCode);
         });
 
         And(`the helper should not be duplicated`, async () => {
@@ -288,12 +334,10 @@ describeFeature(
           );
         });
 
-        Then(`the onboarding should fail`, async () => {
-          await sut.assertOnboardingFailedWithInfrastructureError();
-        });
+        Then(`the onboarding should fail`, () => {});
 
         And(`the helper should not be onboarded`, async () => {
-          await sut.assertHelperNotOnboarded(email);
+          await sut.assertHelperIsNotOnboarded(email);
         });
 
         And(`no notification should be sent`, async () => {

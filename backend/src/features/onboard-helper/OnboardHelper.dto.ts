@@ -2,8 +2,9 @@ export interface OnboardHelperRequest {
   email: string;
   firstname: string;
   lastname: string;
-  phoneNumber?: string;
-  professions?: string[];
+  phoneNumber: string;
+  birthdate: string;
+  professions: string[];
 }
 
 export interface OnboardHelperSuccessResponse {

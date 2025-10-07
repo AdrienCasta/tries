@@ -29,11 +29,12 @@ export class InMemoryHelperAccountRepository
   }
 
   async findByEmail(email: string): Promise<HelperAccount | null> {
-    return (
+    const t =
       Array.from(this.accounts.values()).find(
         (account) => account.email.value === email
-      ) || null
-    );
+      ) || null;
+
+    return t;
   }
 
   async findByPasswordSetupToken(token: string): Promise<HelperAccount | null> {

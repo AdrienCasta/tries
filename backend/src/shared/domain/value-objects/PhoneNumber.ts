@@ -1,5 +1,5 @@
+import DomainError from "@shared/infrastructure/DomainError.js";
 import { Result } from "../../infrastructure/Result.js";
-import ValidationError from "../../infrastructure/ValidationError.js";
 
 export default class PhoneNumber {
   readonly value: string;
@@ -8,18 +8,14 @@ export default class PhoneNumber {
     this.value = value.trim();
   }
 
-  static create(phoneNumber?: string): Result<PhoneNumber | null, ValidationError> {
-    if (!phoneNumber || phoneNumber.trim().length === 0) {
-      return Result.ok(null);
+  static create(phoneNumber: string): Result<PhoneNumber, PhoneNumberError> {
+    const trimmedPhoneNumber = phoneNumber.trim();
+
+    if (!isValidPhoneNumber(trimmedPhoneNumber)) {
+      return Result.fail(new PhoneNumberError(phoneNumber));
     }
 
-    const trimmed = phoneNumber.trim();
-
-    if (!isValidPhoneNumber(trimmed)) {
-      return Result.fail(ValidationError.phoneNumberInvalid());
-    }
-
-    return Result.ok(new PhoneNumber(trimmed));
+    return Result.ok(new PhoneNumber(trimmedPhoneNumber));
   }
 
   toValue(): string {
@@ -28,6 +24,13 @@ export default class PhoneNumber {
 }
 
 function isValidPhoneNumber(phone: string): boolean {
-  const phoneRegex = /^\+?[1-9]\d{8,14}$/;
+  const phoneRegex = /^(\+[1-9]\d{9,14}|0\d{9})$/;
   return phoneRegex.test(phone);
+}
+
+export class PhoneNumberError extends DomainError {
+  readonly code = "PHONE_NUMBER_INVALID";
+  constructor(phone: string) {
+    super("Phone number format is invalid", { phone });
+  }
 }

@@ -4,7 +4,6 @@ import { createApp } from "../../../app/createApp.js";
 import { FakeHttpServer } from "@infrastructure/http/FakeHttpServer.js";
 import { InMemoryHelperRepository } from "@infrastructure/persistence/InMemoryHelperRepository.js";
 import { InMemoryHelperAccountRepository } from "@infrastructure/persistence/InMemoryHelperAccountRepository.js";
-import { InMemoryProfessionRepository } from "@infrastructure/persistence/InMemoryProfessionRepository.js";
 import { FakeOnboardedHelperNotificationService } from "@infrastructure/notifications/InMemoryOnboardingHelperNotificationService.js";
 import { FixedClock } from "@infrastructure/time/FixedClock.js";
 import InMemoryEventBus from "@infrastructure/events/InMemoryEventBus.js";
@@ -20,14 +19,12 @@ export default class OnboardHelperIntegrationTest {
   private server!: HttpServer;
   private helperRepository!: InMemoryHelperRepository;
   private helperAccountRepository!: InMemoryHelperAccountRepository;
-  private professionRepository!: InMemoryProfessionRepository;
   private notificationService!: FakeOnboardedHelperNotificationService;
   private lastResponse: any;
 
   async setup(): Promise<void> {
     this.helperRepository = new InMemoryHelperRepository();
     this.helperAccountRepository = new InMemoryHelperAccountRepository();
-    this.professionRepository = new InMemoryProfessionRepository();
     this.notificationService = new FakeOnboardedHelperNotificationService({
       companyName: "Tries",
       supportEmailContact: "tries@support.fr",
@@ -38,7 +35,6 @@ export default class OnboardHelperIntegrationTest {
     this.server = createApp(fakeServer, {
       helperRepository: this.helperRepository,
       helperAccountRepository: this.helperAccountRepository,
-      professionRepository: this.professionRepository,
       notificationService: this.notificationService,
       clock: new FixedClock(new Date("2025-01-15T10:00:00Z")),
       eventBus: new InMemoryEventBus(),
@@ -59,13 +55,14 @@ export default class OnboardHelperIntegrationTest {
         email: command.email,
         firstname: command.firstname,
         lastname: command.lastname,
+        birthdate: command.birthdate,
         phoneNumber: command.phoneNumber,
         professions: command.professions,
       },
     });
   }
 
-  async assertHelperOnboarded(email: string): Promise<void> {
+  async assertHelperOnboarded(): Promise<void> {
     expect(this.lastResponse.statusCode).toBe(201);
     const body = this.lastResponse.json();
     expect(body.helperId).toBeDefined();
@@ -77,21 +74,19 @@ export default class OnboardHelperIntegrationTest {
     expect(notificationSent).toBe(true);
   }
 
-  async assertOnboardingFailedWithError(expectedError: string): Promise<void> {
-    expect(this.lastResponse.statusCode).toBe(400);
+  async assertOnboardingFailedWithError(
+    statusCode: number,
+    errorBody: { code: number; error: string; details?: unknown }
+  ): Promise<void> {
+    expect(this.lastResponse.statusCode).toBe(statusCode);
     const body = this.lastResponse.json();
-    expect(body.error).toBe(expectedError);
+    expect(body.code).toEqual(errorBody.code);
+    expect(body.error).toBeDefined();
   }
 
   async assertHelperNotOnboarded(email: string): Promise<void> {
     const helper = await this.helperRepository.findByEmail(email);
     expect(helper).toBeNull();
-  }
-
-  async assertOnboardingFailedWithDuplicateEmail(): Promise<void> {
-    expect(this.lastResponse.statusCode).toBe(400);
-    const body = this.lastResponse.json();
-    expect(body.error).toBe("Helper with this email already exists");
   }
 
   async assertHelperDetailsNotChanged(

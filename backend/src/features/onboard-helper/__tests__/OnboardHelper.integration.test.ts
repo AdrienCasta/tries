@@ -1,4 +1,9 @@
-import { loadFeatureFromText, describeFeature } from "@amiceli/vitest-cucumber";
+import {
+  loadFeatureFromText,
+  describeFeature,
+  setVitestCucumberConfiguration,
+  getVitestCucumberConfiguration,
+} from "@amiceli/vitest-cucumber";
 import OnboardHelperIntegrationTest from "./OnboardHelperIntegrationTest.js";
 
 /**
@@ -19,8 +24,46 @@ import OnboardHelperIntegrationTest from "./OnboardHelperIntegrationTest.js";
 import featureContent from "../../../../../features/onboardHelper.feature?raw";
 const feature = await loadFeatureFromText(featureContent);
 
+const errorMessageMappedToErrorCode = {
+  "Email is required": {
+    statusCode: 400,
+    errorBody: { code: "INVALID_EMAIL_ERROR" },
+  },
+  "birthdate provided is set to the future.": {
+    statusCode: 400,
+    errorBody: { code: "BIRTHDATE_IN_FUTUR" },
+  },
+  "age requirement not met. You must be at least 16 yo.": {
+    statusCode: 400,
+    errorBody: { code: "TOO_YOUNG_TO_WORK" },
+  },
+  "First name too short": {
+    statusCode: 400,
+    errorBody: { code: "FIRSTNAME_TOO_SHORT" },
+  },
+  "Last name too short": {
+    statusCode: 400,
+    errorBody: { code: "LASTNAME_TOO_SHORT" },
+  },
+  "Phone number invalid": {
+    statusCode: 400,
+    errorBody: { code: "PHONE_NUMBER_INVALID" },
+  },
+  "Profession invalid": {
+    statusCode: 400,
+    errorBody: { code: "UNKNOWN_PROFESSION" },
+  },
+  "this email address is already in use.": {
+    statusCode: 400,
+    errorBody: { code: "EMAIL_ALREADY_IN_USE" },
+  },
+};
+setVitestCucumberConfiguration({
+  ...getVitestCucumberConfiguration(),
+  mappedExamples: errorMessageMappedToErrorCode,
+});
+
 import { HelperCommandFixtures } from "./fixtures/HelperCommandFixtures.js";
-import { OnboardHelperCommand } from "../OnboardHelper.command.js";
 
 describeFeature(
   feature,
@@ -47,6 +90,7 @@ describeFeature(
         And(`the user's last name is "<lastname>"`, () => {});
         And(`the user's phone number is "<phoneNumber>"`, () => {});
         And(`the user's profession is "<profession>"`, () => {});
+        And(`the user's birthdate is "<birthdate>"`, () => {});
 
         When(`I onboard the user`, async () => {
           await sut.onboardUser(
@@ -83,7 +127,10 @@ describeFeature(
         });
 
         Then(`the onboarding fails with error "<error>"`, async () => {
-          await sut.assertOnboardingFailedWithError(error);
+          await sut.assertOnboardingFailedWithError(
+            error.statusCode,
+            error.errorBody
+          );
         });
 
         And(`the helper is not onboarded`, async () => {
@@ -104,12 +151,15 @@ describeFeature(
 
         When(`I onboard the user`, async () => {
           await sut.onboardUser(
-            HelperCommandFixtures.withNameAndEmail(email, firstname, lastname)
+            HelperCommandFixtures.aValidCommand({ email, firstname, lastname })
           );
         });
 
         Then(`the onboarding fails with error "<error>"`, async () => {
-          await sut.assertOnboardingFailedWithError(error);
+          await sut.assertOnboardingFailedWithError(
+            error.statusCode,
+            error.errorBody
+          );
         });
 
         And(`the helper is not onboarded`, async () => {
@@ -168,7 +218,10 @@ describeFeature(
         });
 
         Then(`the onboarding fails with error "<error>"`, async () => {
-          await sut.assertOnboardingFailedWithError(error);
+          await sut.assertOnboardingFailedWithError(
+            error.statusCode,
+            error.errorBody
+          );
         });
 
         And(`the helper is not onboarded`, async () => {
@@ -229,7 +282,10 @@ describeFeature(
         });
 
         Then(`the onboarding fails with error "<error>"`, async () => {
-          await sut.assertOnboardingFailedWithError(error);
+          await sut.assertOnboardingFailedWithError(
+            error.statusCode,
+            error.errorBody
+          );
         });
 
         And(`the helper is not onboarded`, async () => {
@@ -242,13 +298,24 @@ describeFeature(
       `Admin cannot onboard a helper who is already registered`,
       (
         { Given, When, Then, And },
-        { email, firstname, lastname, otherUserFirstname, otherUserLastname }
+        {
+          email,
+          firstname,
+          lastname,
+          otherUserFirstname,
+          otherUserLastname,
+          error,
+        }
       ) => {
         Given(
           `a helper "<firstname>" "<lastname>" with email "<email>" is already onboarded`,
           async () => {
             await sut.onboardUser(
-              HelperCommandFixtures.withNameAndEmail(email, firstname, lastname)
+              HelperCommandFixtures.aValidCommand({
+                email,
+                firstname,
+                lastname,
+              })
             );
           }
         );
@@ -257,17 +324,20 @@ describeFeature(
           `I attempt to onboard another helper "<otherUserFirstname>" "<otherUserLastname>" with same email`,
           async () => {
             await sut.onboardUser(
-              HelperCommandFixtures.withNameAndEmail(
+              HelperCommandFixtures.aValidCommand({
                 email,
-                otherUserFirstname,
-                otherUserLastname
-              )
+                firstname: otherUserFirstname,
+                lastname: otherUserLastname,
+              })
             );
           }
         );
 
-        Then(`the onboarding should fail`, async () => {
-          await sut.assertOnboardingFailedWithDuplicateEmail();
+        Then(`the onboarding should fail because <error>`, async () => {
+          await sut.assertOnboardingFailedWithError(
+            error.statusCode,
+            error.errorBody
+          );
         });
 
         And(`the helper should not be duplicated`, async () => {
@@ -280,6 +350,35 @@ describeFeature(
             await sut.assertOnlyOneNotificationSentTo(email);
           }
         );
+      }
+    );
+
+    ScenarioOutline(
+      `Admin cannot onboard helper with invalid birthdate`,
+      ({ Given, When, Then, And }, { birthdate, email, error }) => {
+        Given(`I am onboarding a new helper`, () => {});
+        Given("It's {date}", () => {});
+        And(`the email address is <email>`, () => {});
+        And(`the first name is "John"`, () => {});
+        And(`the last name is "Doe"`, () => {});
+        And(`the birthdate is <birthdate>`, () => {});
+        When(`I onboard the user`, async () => {});
+        Then(`the onboarding fails because <error>`, async () => {
+          await sut.onboardUser(
+            HelperCommandFixtures.aValidCommand({
+              email,
+              birthdate: new Date(birthdate),
+            })
+          );
+        });
+        And(`the helper is not onboarded`, async () => {
+          expect(
+            await sut.assertOnboardingFailedWithError(
+              error.statusCode,
+              error.errorBody
+            )
+          );
+        });
       }
     );
 

@@ -41,7 +41,7 @@ describeFeature(
       `Admin successfully onboards a new helper with valid information`,
       (
         { Given, When, Then, And },
-        { email, lastname, firstname, phoneNumber, profession }
+        { email, lastname, firstname, phoneNumber, profession, birthdate }
       ) => {
         Given(`the user's email is "<email>"`, async () => {
           await sut.cleanupEmail(email);
@@ -52,6 +52,7 @@ describeFeature(
         And(`the user's last name is "<lastname>"`, () => {});
         And(`the user's phone number is "<phoneNumber>"`, () => {});
         And(`the user's profession is "<profession>"`, () => {});
+        And(`the user's birthdate is "<birthdate>"`, () => {});
 
         When(`I onboard the user`, async () => {
           await sut.onboardUser(
@@ -60,6 +61,7 @@ describeFeature(
               firstname,
               lastname,
               phoneNumber,
+              birthdate: new Date(birthdate),
               professions: profession ? [profession] : undefined,
             })
           );
@@ -92,22 +94,30 @@ describeFeature(
           `a helper "<firstname>" "<lastname>" with email "<email>" is already onboarded`,
           async () => {
             sut.registerEmailForCleanup(email);
-            await sut.onboardUser({ email, firstname, lastname });
+            await sut.onboardUser(
+              HelperCommandFixtures.aValidCommand({
+                email,
+                firstname,
+                lastname,
+              })
+            );
           }
         );
 
         When(
           `I attempt to onboard another helper "<otherUserFirstname>" "<otherUserLastname>" with same email`,
           async () => {
-            await sut.onboardUser({
-              email,
-              firstname: otherUserFirstname,
-              lastname: otherUserLastname,
-            });
+            await sut.onboardUser(
+              HelperCommandFixtures.aValidCommand({
+                email,
+                firstname: otherUserFirstname,
+                lastname: otherUserLastname,
+              })
+            );
           }
         );
 
-        Then(`the onboarding should fail`, async () => {
+        Then(`the onboarding should fail because <error>`, async () => {
           await sut.assertOnboardingFailedBecauseEmailHasAlreadyBeenRegistered();
         });
 

@@ -30,8 +30,9 @@ export default class OnboardHelperController {
       request.email,
       request.firstname,
       request.lastname,
-      request.phoneNumber,
-      request.professions
+      request.professions,
+      new Date(request.birthdate),
+      request.phoneNumber
     );
 
     const result = await this.onboardHelperUseCase.execute(command);
@@ -74,7 +75,7 @@ export default class OnboardHelperController {
       body: {
         error: result.error.message,
         code: result.error.code,
-        details: result.error.details,
+        details: result.error?.details,
       },
     };
   }

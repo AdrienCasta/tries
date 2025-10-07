@@ -1,29 +1,39 @@
 import { OnboardHelperCommand } from "./OnboardHelper.command.js";
-import { Helper } from "@shared/domain/entities/Helper.js";
+import { Helper as Helper } from "@shared/domain/entities/Helper.js";
 import { HelperAccount } from "@shared/domain/entities/HelperAccount.js";
 import HelperId from "@shared/domain/value-objects/HelperId.js";
 import { HelperRepository } from "@shared/domain/repositories/HelperRepository.js";
 import { HelperAccountRepository } from "@shared/domain/repositories/HelperAccountRepository.js";
-import { ProfessionRepository } from "@shared/domain/repositories/ProfessionRepository.js";
 import HelperEmail from "@shared/domain/value-objects/HelperEmail.js";
-import Firstname from "@shared/domain/value-objects/Firstname.js";
-import Lastname from "@shared/domain/value-objects/Lastname.js";
-import PhoneNumber from "@shared/domain/value-objects/PhoneNumber.js";
-import Profession from "@shared/domain/value-objects/Profession.js";
-import { Result } from "@shared/infrastructure/Result.js";
-import { ValidationError } from "./OnboardHelper.errors.js";
-import { DuplicateHelperError } from "./OnboardHelper.errors.js";
+import Firstname, {
+  FirstnameEmptyError,
+  FirstnameTooShortError,
+} from "@shared/domain/value-objects/Firstname.js";
+import Lastname, {
+  LastnameEmptyError,
+  LastnameTooShortError,
+} from "@shared/domain/value-objects/Lastname.js";
+import PhoneNumber, {
+  PhoneNumberError,
+} from "@shared/domain/value-objects/PhoneNumber.js";
+import Profession, {
+  ProfessionError,
+} from "@shared/domain/value-objects/Profession.js";
 import { OnboardedHelperNotificationService } from "@shared/domain/services/OnboardingHelperNotificationService.js";
 import { Clock } from "@shared/domain/services/Clock.js";
 import Password from "@shared/domain/value-objects/Password.js";
-import { InvalidEmailError } from "./OnboardHelper.errors.js";
 import CreateHelperAccountException from "@shared/infrastructure/CreateHelperAccountException.js";
+import Birthdate, {
+  BirthdateInFuturError,
+  TooYoungToWorkError,
+} from "@shared/domain/value-objects/Birthdate.js";
+import { Result } from "@shared/infrastructure/Result.js";
+import InvalidEmailError from "@shared/infrastructure/InvalidEmailError.js";
 
 export class OnboardHelper {
   constructor(
     private readonly helperRepository: HelperRepository,
     private readonly helperAccountRepository: HelperAccountRepository,
-    private readonly professionRepository: ProfessionRepository,
     private readonly notif: OnboardedHelperNotificationService,
     private readonly clock: Clock
   ) {}
@@ -34,57 +44,43 @@ export class OnboardHelper {
     lastname,
     phoneNumber,
     professions,
+    birthdate,
   }: OnboardHelperCommand): Promise<
     Result<
       HelperId,
       | InvalidEmailError
-      | ValidationError
-      | DuplicateHelperError
+      | BirthdateInFuturError
+      | PhoneNumberError
+      | TooYoungToWorkError
+      | FirstnameEmptyError
+      | FirstnameTooShortError
+      | LastnameTooShortError
+      | LastnameEmptyError
+      | ProfessionError
+      | EmailAlreadyUsedError
       | CreateHelperAccountException
     >
   > {
-    const emailResult = HelperEmail.create(email);
+    const validated = Result.combineObject({
+      email: HelperEmail.create(email),
+      firstname: Firstname.create(firstname),
+      lastname: Lastname.create(lastname),
+      phoneNumber: PhoneNumber.create(phoneNumber),
+      birthdate: Birthdate.create(birthdate, { clock: this.clock }),
+      professions: Profession.createMany(professions),
+    });
 
-    if (Result.isFailure(emailResult)) {
-      return Result.fail(emailResult.error);
+    if (Result.isFailure(validated)) {
+      return Result.fail(validated.error);
     }
 
-    const firstnameResult = Firstname.create(firstname);
-    if (Result.isFailure(firstnameResult)) {
-      return Result.fail(firstnameResult.error);
-    }
-
-    const lastnameResult = Lastname.create(lastname);
-    if (Result.isFailure(lastnameResult)) {
-      return Result.fail(lastnameResult.error);
-    }
-
-    const phoneNumberResult = PhoneNumber.create(phoneNumber);
-    if (Result.isFailure(phoneNumberResult)) {
-      return Result.fail(phoneNumberResult.error);
-    }
-
-    // Validate professions array
-    const professionsResult = Profession.createMany(professions);
-    if (Result.isFailure(professionsResult)) {
-      return Result.fail(professionsResult.error);
-    }
-
-    // Validate professions against database
-    if (professionsResult.value.length > 0) {
-      const validProfessions = await this.professionRepository.findAll();
-      const validationResult = Profession.validateAgainstList(
-        professionsResult.value,
-        validProfessions
-      );
-      if (Result.isFailure(validationResult)) {
-        return Result.fail(validationResult.error);
-      }
-    }
-
-    const existingHelper = await this.helperRepository.findByEmail(email);
+    const existingHelper = await this.helperRepository.findByEmail(
+      validated.value.email.toValue()
+    );
     if (existingHelper) {
-      return Result.fail(DuplicateHelperError.forEmail(email));
+      return Result.fail(
+        new EmailAlreadyUsedError(validated.value.email.toValue())
+      );
     }
 
     const helperId = HelperId.generate();
@@ -92,30 +88,38 @@ export class OnboardHelper {
     const helperAccount: HelperAccount = {
       helperId,
       password: await Password.generateTemporary(),
-      email: emailResult.value,
+      email: validated.value.email,
       createdAt: this.clock.now(),
-      phoneNumber: phoneNumberResult.value,
+      phoneNumber: validated.value.phoneNumber,
     };
 
     const accountResult = await this.helperAccountRepository.create(
       helperAccount
     );
 
-    const helper: Helper = {
-      id: helperId,
-      email: emailResult.value,
-      firstname: firstnameResult.value,
-      lastname: lastnameResult.value,
-      professions: professionsResult.value,
-    };
-
     if (Result.isFailure(accountResult)) {
       return Result.fail(accountResult.error);
     }
+
+    const helper: Helper = {
+      id: helperId,
+      email: validated.value.email,
+      firstname: validated.value.firstname,
+      lastname: validated.value.lastname,
+      birthdate: validated.value.birthdate,
+      professions: validated.value.professions,
+    };
 
     await this.helperRepository.save(helper);
     this.notif.send({ email, firstname, lastname, phoneNumber, professions });
 
     return Result.ok(helper.id);
+  }
+}
+
+class EmailAlreadyUsedError extends Error {
+  readonly code = "EMAIL_ALREADY_IN_USE";
+  constructor(email: string) {
+    super();
   }
 }

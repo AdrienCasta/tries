@@ -12,13 +12,14 @@ Feature: Onboarding a new helper
     And the user's last name is "<lastname>"
     And the user's phone number is "<phoneNumber>"
     And the user's profession is "<profession>"
+    And the user's birthdate is "<birthdate>"
     When I onboard the user
     Then the user should be onboarded as a helper
     And the user should receive a notification
 
     Examples: Standard names
-      | email                        | firstname | lastname  | phoneNumber  | profession
-      | john@doe.com                 | John      | Doe       | +33612345678 | physiotherapist
+      | email                        | firstname | lastname  | phoneNumber  | profession      | birthdate  |
+      | john@doe.com                 | John      | Doe       | +33612345678 | physiotherapist | 1995-03-26 |
 
   Scenario Outline: Admin successfully onboards a new helper with phone number
     Given the user's email is "<email>"
@@ -97,9 +98,10 @@ Feature: Onboarding a new helper
 
     Examples: Invalid phone formats
       | phoneNumber      | error                  |
-      | 123              | Phone number invalid   |
-      | abcdefg          | Phone number invalid   |
-      | +                | Phone number invalid   |
+      | 06 123 456 789   | Phone number invalid   |
+      | 011 23 45 67 89  | Phone number invalid   |
+      | 612345678        | Phone number invalid   |
+      | 06 12 34 56 7    | Phone number invalid   |
 
   Scenario Outline: Admin successfully onboards a helper with valid profession
     Given the user's email is "<email>"
@@ -131,19 +133,35 @@ Feature: Onboarding a new helper
       | invalidprof      | Profession invalid     |
       | randomjob        | Profession invalid     |
 
+  Scenario Outline: Admin cannot onboard helper with invalid birthdate
+    Given I am onboarding a new helper
+    Given It's 2025-10-06
+    And the email address is <email>
+    And the first name is "John"
+    And the last name is "Doe"
+    And the birthdate is <birthdate>
+    When I onboard the user
+    Then the onboarding fails because <error>
+    And the helper is not onboarded
+
+    Examples: Invalid birthdate
+      | email           | birthdate  | error |
+      | john@domain.com | 2025-10-07 | birthdate provided is set to the future.             |
+      | john@domain.com | 2022-10-07 | age requirement not met. You must be at least 16 yo. |
+
   # Rule: Each helper must have a unique email address
   
   @e2e
   Scenario Outline: Admin cannot onboard a helper who is already registered
     Given a helper "<firstname>" "<lastname>" with email "<email>" is already onboarded
     When I attempt to onboard another helper "<otherUserFirstname>" "<otherUserLastname>" with same email
-    Then the onboarding should fail
+    Then the onboarding should fail because <error>
     And the helper should not be duplicated
     And no notification should be sent for the duplicate attempt
 
     Examples: Duplicate helper
-      | email           | firstname | lastname | otherUserFirstname | otherUserLastname |
-      | john@domain.com | John      | Doe      | Michel             | Denis             |
+      | email           | firstname | lastname | otherUserFirstname | otherUserLastname | error                                 |
+      | john@domain.com | John      | Doe      | Michel             | Denis             | this email address is already in use. |
 
   # Rule: System must handle edge cases gracefully
 
