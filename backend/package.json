@@ -6,9 +6,9 @@
     "start": "tsx src/index.ts",
     "test": "vitest",
     "test:sequential": "npm run test:unit && npm run test:integration && npm run test:e2e",
-    "test:unit": "vitest run --config vitest.unit.config.ts --watch",
-    "test:integration": "vitest run --config vitest.integration.config.ts --watch",
-    "test:e2e": "vitest run --config vitest.e2e.config.ts --watch"
+    "test:unit": "vitest run --config vitest.unit.config.ts",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:e2e": "vitest run --config vitest.e2e.config.ts"
   },
   "devDependencies": {
     "@amiceli/vitest-cucumber": "^5.2.1",
