@@ -1,6 +1,5 @@
 import { Result } from "../../infrastructure/Result.js";
 import InvalidEmailError from "../../infrastructure/InvalidEmailError.js";
-import ValidationError from "../../infrastructure/ValidationError.js";
 
 export default class HelperEmail {
   readonly value: string;
@@ -22,7 +21,10 @@ export default class HelperEmail {
   }
 }
 
-function validateEmail(email: string): { isValid: boolean; errorMessage?: string } {
+function validateEmail(email: string): {
+  isValid: boolean;
+  errorMessage?: string;
+} {
   const trimmedEmail = email?.trim();
 
   if (!trimmedEmail || trimmedEmail === "") {

@@ -10,12 +10,16 @@ export class HelperCommandFixtures {
       overrides?.lastname ?? "Doe",
       overrides?.professions ?? ["physiotherapist"],
       overrides?.birthdate ?? new Date("1995-03-26"),
-      overrides?.phoneNumber ?? "+3312345678"
+      overrides?.phoneNumber ?? "+3312345678",
+      overrides?.frenchCounty ?? "44"
     );
   }
 
   static withEmail(email: string): OnboardHelperCommand {
     return this.aValidCommand({ email });
+  }
+  static withFrenchCounty(frenchCounty: string): OnboardHelperCommand {
+    return this.aValidCommand({ frenchCounty });
   }
 
   static withPhoneNumber(phoneNumber: string): OnboardHelperCommand {

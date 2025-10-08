@@ -9,5 +9,4 @@ export interface HelperAccountRepository {
   ): Promise<Result<HelperAccount, CreateHelperAccountException>>;
   findByHelperId(helperId: HelperId): Promise<HelperAccount | null>;
   findByEmail(email: string): Promise<HelperAccount | null>;
-  findByPasswordSetupToken(token: string): Promise<HelperAccount | null>;
 }

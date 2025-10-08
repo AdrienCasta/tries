@@ -19,6 +19,9 @@ import PhoneNumber, {
 import Profession, {
   ProfessionError,
 } from "@shared/domain/value-objects/Profession.js";
+import FrenchCounty, {
+  FrenchCountyError,
+} from "@shared/domain/value-objects/FrenchCounty.js";
 import { OnboardedHelperNotificationService } from "@shared/domain/services/OnboardingHelperNotificationService.js";
 import { Clock } from "@shared/domain/services/Clock.js";
 import Password from "@shared/domain/value-objects/Password.js";
@@ -45,6 +48,7 @@ export class OnboardHelper {
     phoneNumber,
     professions,
     birthdate,
+    frenchCounty,
   }: OnboardHelperCommand): Promise<
     Result<
       HelperId,
@@ -57,6 +61,7 @@ export class OnboardHelper {
       | LastnameTooShortError
       | LastnameEmptyError
       | ProfessionError
+      | FrenchCountyError
       | EmailAlreadyUsedError
       | CreateHelperAccountException
     >
@@ -68,6 +73,7 @@ export class OnboardHelper {
       phoneNumber: PhoneNumber.create(phoneNumber),
       birthdate: Birthdate.create(birthdate, { clock: this.clock }),
       professions: Profession.createMany(professions),
+      frenchCounty: FrenchCounty.create(frenchCounty),
     });
 
     if (Result.isFailure(validated)) {
@@ -108,6 +114,7 @@ export class OnboardHelper {
       lastname: validated.value.lastname,
       birthdate: validated.value.birthdate,
       professions: validated.value.professions,
+      frenchCounty: validated.value.frenchCounty,
     };
 
     await this.helperRepository.save(helper);

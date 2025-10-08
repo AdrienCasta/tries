@@ -5,6 +5,7 @@ import Lastname from "../value-objects/Lastname.js";
 import Profession from "../value-objects/Profession.js";
 import Birthdate from "../value-objects/Birthdate.js";
 import PhoneNumber from "../value-objects/PhoneNumber.js";
+import FrenchCounty from "../value-objects/FrenchCounty.js";
 
 export type Helper = {
   id: HelperId;
@@ -13,4 +14,5 @@ export type Helper = {
   firstname: Firstname;
   birthdate: Birthdate;
   professions: Profession[];
+  frenchCounty: FrenchCounty;
 };

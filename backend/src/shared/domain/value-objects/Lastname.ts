@@ -1,6 +1,5 @@
 import DomainError from "@shared/infrastructure/DomainError.js";
 import { Result } from "../../infrastructure/Result.js";
-import ValidationError from "../../infrastructure/ValidationError.js";
 
 export default class Lastname {
   readonly value: string;

@@ -10,7 +10,9 @@ export class InMemoryHelperAccountRepository
   private accounts: Map<string, HelperAccount> = new Map();
   private shouldFail: boolean = false;
 
-  async create(account: HelperAccount) {
+  async create(
+    account: HelperAccount
+  ): Promise<Result<HelperAccount, CreateHelperAccountException>> {
     if (this.shouldFail) {
       return Result.fail(
         new CreateHelperAccountException("Infrastructure failure simulated")
@@ -35,13 +37,5 @@ export class InMemoryHelperAccountRepository
       ) || null;
 
     return t;
-  }
-
-  async findByPasswordSetupToken(token: string): Promise<HelperAccount | null> {
-    return (
-      Array.from(this.accounts.values()).find(
-        (account) => account.passwordSetupToken?.value === token
-      ) || null
-    );
   }
 }

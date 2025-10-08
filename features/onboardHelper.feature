@@ -13,13 +13,14 @@ Feature: Onboarding a new helper
     And the user's phone number is "<phoneNumber>"
     And the user's profession is "<profession>"
     And the user's birthdate is "<birthdate>"
+    And the user's county is "<frenchCounty>"
     When I onboard the user
     Then the user should be onboarded as a helper
     And the user should receive a notification
 
     Examples: Standard names
-      | email                        | firstname | lastname  | phoneNumber  | profession      | birthdate  |
-      | john@doe.com                 | John      | Doe       | +33612345678 | physiotherapist | 1995-03-26 |
+      | email                        | firstname | lastname  | phoneNumber  | profession      | birthdate  | frenchCounty |
+      | john@doe.com                 | John      | Doe       | +33612345678 | physiotherapist | 1995-03-26 | 44           |
 
   Scenario Outline: Admin successfully onboards a new helper with phone number
     Given the user's email is "<email>"
@@ -46,6 +47,39 @@ Feature: Onboarding a new helper
       | email                        | firstname | lastname    |
       | carole.turin@example.com     | Mary-Jane | Watson      |
       | patrick@example.com          | Patrick   | O'Brien     |
+  
+  Scenario Outline: Admin cannot onboard helper with invalid french county
+    Given I am onboarding a new helper
+    And the email address is carole.turin@example.com
+    And the first name is "John"
+    And the last name is "Doe"
+    And the user's county is "<county>"
+    When I onboard the user
+    Then the onboarding fails with error "<error>"
+    And the helper is not onboarded
+
+    Examples: Invalid county formats
+      | county | error                 |
+      | 99     | Invalid french county |
+      | ab     | Invalid french county |
+      | -10    | Invalid french county |
+      | 0.1    | Invalid french county |
+      | 00     | Invalid french county |
+      | 96     | Invalid french county |
+      | 97     | Invalid french county |
+      | 98     | Invalid french county |
+      | 970    | Invalid french county |
+      | 975    | Invalid french county |
+      | 977    | Invalid french county |
+      | 999    | Invalid french county |
+      | 20     | Invalid french county |
+      | 2C     | Invalid french county |
+      | 2a     | Invalid french county |
+      | 2b     | Invalid french county |
+      |        | Invalid french county |
+      | 1      | Invalid french county |
+      | 001    | Invalid french county |
+      | 4444   | Invalid french county |
 
   Scenario Outline: Admin cannot onboard helper with invalid email address
     Given I am onboarding a new helper
@@ -64,8 +98,8 @@ Feature: Onboarding a new helper
       | john@           | Invalid email format     |
 
     Examples: Missing email
-      | email | error            |
-      |       | Email is required|
+      | email | error             |
+      |       | Email is required |
 
   Scenario Outline: Admin cannot onboard helper with invalid name information
     Given I am onboarding a new helper

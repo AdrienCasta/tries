@@ -4,6 +4,7 @@ import { HelperAccountRepository } from "@shared/domain/repositories/HelperAccou
 import HelperId from "@shared/domain/value-objects/HelperId.js";
 import { Result } from "@shared/infrastructure/Result.js";
 import CreateHelperAccountException from "@shared/infrastructure/CreateHelperAccountException.js";
+import { HelperAccountPersistenceMapper } from "./mappers/HelperAccountPersistenceMapper.js";
 
 export class SupabaseHelperAccountRepository
   implements HelperAccountRepository
@@ -13,23 +14,41 @@ export class SupabaseHelperAccountRepository
   async create(
     account: HelperAccount
   ): Promise<Result<HelperAccount, CreateHelperAccountException>> {
-    const { error } = await this.supabase.auth.admin.createUser({
-      email: account.email.value,
-      password: account.password?.value,
-      phone: account.phoneNumber?.value,
-      email_confirm: false,
-    });
+    const persistenceModel =
+      HelperAccountPersistenceMapper.toPersistence(account);
+    const { error } = await this.supabase.auth.admin.createUser(
+      persistenceModel
+    );
 
     return error
       ? Result.fail(new CreateHelperAccountException(error.message))
       : Result.ok(account);
   }
 
-  async findByHelperId(id: HelperId) {
+  async findByHelperId(id: HelperId): Promise<HelperAccount | null> {
     const { data, error } = await this.supabase.auth.admin.getUserById(
       id.value
     );
 
-    return data.user;
+    if (error || !data.user) {
+      return null;
+    }
+
+    return HelperAccountPersistenceMapper.toDomain(data.user as any);
+  }
+
+  async findByEmail(email: string): Promise<HelperAccount | null> {
+    const { data, error } = await this.supabase.auth.admin.listUsers();
+
+    if (error || !data.users) {
+      return null;
+    }
+
+    const user = data.users.find((u) => u.email === email);
+    if (!user) {
+      return null;
+    }
+
+    return HelperAccountPersistenceMapper.toDomain(user as any);
   }
 }

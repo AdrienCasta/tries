@@ -32,13 +32,13 @@ export default class OnboardHelperController {
       request.lastname,
       request.professions,
       new Date(request.birthdate),
-      request.phoneNumber
+      request.phoneNumber,
+      request.frenchCounty
     );
 
     const result = await this.onboardHelperUseCase.execute(command);
 
     if (Result.isSuccess(result)) {
-      // Publish success event
       await this.eventBus.publish(
         createHelperOnboardingSucceeded(
           this.clock,

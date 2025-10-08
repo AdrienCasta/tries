@@ -94,6 +94,7 @@ export default class OnboardHelperE2ETest {
         birthdate: command.birthdate,
         phoneNumber: command.phoneNumber,
         professions: command.professions,
+        frenchCounty: command.frenchCounty,
       },
     });
   }

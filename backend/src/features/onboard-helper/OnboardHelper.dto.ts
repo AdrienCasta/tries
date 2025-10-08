@@ -5,6 +5,7 @@ export interface OnboardHelperRequest {
   phoneNumber: string;
   birthdate: string;
   professions: string[];
+  frenchCounty: string;
 }
 
 export interface OnboardHelperSuccessResponse {

@@ -6,20 +6,6 @@ import {
 } from "@amiceli/vitest-cucumber";
 import OnboardHelperIntegrationTest from "./OnboardHelperIntegrationTest.js";
 
-/**
- * INTEGRATION TESTS - Business Logic Integration (No Real Infrastructure)
- *
- * These tests verify business flow integration without infrastructure overhead:
- * - FakeHttpServer (lightweight, no real HTTP framework)
- * - Route handling
- * - Controller logic
- * - Use case execution
- * - In-memory repositories (fast, no external dependencies)
- *
- * This is the primary test suite for business logic integration.
- * E2E tests use real Fastify + Supabase for critical scenarios.
- */
-
 // @ts-ignore
 import featureContent from "../../../../../features/onboardHelper.feature?raw";
 const feature = await loadFeatureFromText(featureContent);
@@ -57,6 +43,10 @@ const errorMessageMappedToErrorCode = {
     statusCode: 400,
     errorBody: { code: "EMAIL_ALREADY_IN_USE" },
   },
+  "Invalid french county": {
+    statusCode: 400,
+    errorBody: { code: "FRENCH_COUNTY_INVALID" },
+  },
 };
 setVitestCucumberConfiguration({
   ...getVitestCucumberConfiguration(),
@@ -83,7 +73,7 @@ describeFeature(
       `Admin successfully onboards a new helper with valid information`,
       (
         { Given, When, Then, And },
-        { email, lastname, firstname, phoneNumber, profession }
+        { email, lastname, firstname, phoneNumber, profession, frenchCounty }
       ) => {
         Given(`the user's email is "<email>"`, () => {});
         And(`the user's first name is "<firstname>"`, () => {});
@@ -91,6 +81,7 @@ describeFeature(
         And(`the user's phone number is "<phoneNumber>"`, () => {});
         And(`the user's profession is "<profession>"`, () => {});
         And(`the user's birthdate is "<birthdate>"`, () => {});
+        And(`the user's county is "<frenchCounty>"`, () => {});
 
         When(`I onboard the user`, async () => {
           await sut.onboardUser(
@@ -100,16 +91,44 @@ describeFeature(
               lastname,
               phoneNumber,
               professions: profession ? [profession] : undefined,
+              frenchCounty,
             })
           );
         });
 
         Then(`the user should be onboarded as a helper`, async () => {
-          await sut.assertHelperOnboarded(email);
+          await sut.assertHelperOnboarded();
         });
 
         And(`the user should receive a notification`, async () => {
           await sut.assertNotificationSent(email);
+        });
+      }
+    );
+
+    ScenarioOutline(
+      `Admin cannot onboard helper with invalid french county`,
+      ({ Given, When, Then, And }, { county, error }) => {
+        const command = HelperCommandFixtures.withFrenchCounty(county);
+        Given(`I am onboarding a new helper`, () => {});
+        And(`the email address is {email}`, () => {});
+        And(`the first name is "John"`, () => {});
+        And(`the last name is "Doe"`, () => {});
+        And(`the user's county is "<county>"`, () => {});
+
+        When(`I onboard the user`, async () => {
+          await sut.onboardUser(command);
+        });
+
+        Then(`the onboarding fails with error "<error>"`, async () => {
+          await sut.assertOnboardingFailedWithError(
+            error.statusCode,
+            error.errorBody
+          );
+        });
+
+        And(`the helper is not onboarded`, async () => {
+          await sut.assertNotificationNotSent(command.email);
         });
       }
     );
@@ -191,7 +210,7 @@ describeFeature(
         });
 
         Then(`the user should be onboarded as a helper`, async () => {
-          await sut.assertHelperOnboarded(email);
+          await sut.assertHelperOnboarded();
         });
 
         And(`the user should receive a notification`, async () => {
@@ -253,7 +272,7 @@ describeFeature(
         });
 
         Then(`the user should be onboarded as a helper`, async () => {
-          await sut.assertHelperOnboarded(email);
+          await sut.assertHelperOnboarded();
         });
 
         And(`the user should receive a notification`, async () => {

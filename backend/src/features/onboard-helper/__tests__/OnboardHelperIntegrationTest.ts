@@ -48,17 +48,11 @@ export default class OnboardHelperIntegrationTest {
   }
 
   async onboardUser(command: OnboardHelperCommand): Promise<void> {
+    console.log({ onboardUserCommand: command });
     this.lastResponse = await this.server.inject({
       method: "POST",
       url: "/api/helpers/onboard",
-      payload: {
-        email: command.email,
-        firstname: command.firstname,
-        lastname: command.lastname,
-        birthdate: command.birthdate,
-        phoneNumber: command.phoneNumber,
-        professions: command.professions,
-      },
+      payload: command,
     });
   }
 

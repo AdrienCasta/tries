@@ -1,23 +1,6 @@
 import { loadFeatureFromText, describeFeature } from "@amiceli/vitest-cucumber";
 import OnboardHelperE2ETest from "./OnboardHelperE2ETest.js";
 
-/**
- * E2E TESTS - CRITICAL SCENARIOS ONLY
- *
- * These tests verify the COMPLETE stack with real infrastructure:
- * - Real Fastify HTTP server
- * - Real HTTP requests/responses
- * - Real Supabase database persistence
- * - Real Supabase authentication
- * - Transaction atomicity with real infrastructure
- *
- * Comprehensive scenario coverage is provided by:
- * - Unit tests (business logic with test doubles)
- * - Integration tests (HTTP layer with in-memory repositories)
- *
- * E2E tests focus on critical paths that require real infrastructure validation.
- */
-
 // @ts-ignore
 import featureContent from "../../../../../features/onboardHelper.feature?raw";
 import { HelperCommandFixtures } from "./fixtures/HelperCommandFixtures.js";
@@ -41,7 +24,15 @@ describeFeature(
       `Admin successfully onboards a new helper with valid information`,
       (
         { Given, When, Then, And },
-        { email, lastname, firstname, phoneNumber, profession, birthdate }
+        {
+          email,
+          lastname,
+          firstname,
+          phoneNumber,
+          profession,
+          birthdate,
+          frenchCounty,
+        }
       ) => {
         Given(`the user's email is "<email>"`, async () => {
           await sut.cleanupEmail(email);
@@ -53,6 +44,7 @@ describeFeature(
         And(`the user's phone number is "<phoneNumber>"`, () => {});
         And(`the user's profession is "<profession>"`, () => {});
         And(`the user's birthdate is "<birthdate>"`, () => {});
+        And(`the user's county is "<frenchCounty>"`, () => {});
 
         When(`I onboard the user`, async () => {
           await sut.onboardUser(
@@ -63,6 +55,7 @@ describeFeature(
               phoneNumber,
               birthdate: new Date(birthdate),
               professions: profession ? [profession] : undefined,
+              frenchCounty,
             })
           );
         });

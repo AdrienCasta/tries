@@ -20,6 +20,7 @@ const errorMessageMappedToErrorCode = {
   "Phone number invalid": "PHONE_NUMBER_INVALID",
   "Profession invalid": "UNKNOWN_PROFESSION",
   "this email address is already in use.": "EMAIL_ALREADY_IN_USE",
+  "Invalid french county": "FRENCH_COUNTY_INVALID",
 };
 setVitestCucumberConfiguration({
   ...getVitestCucumberConfiguration(),
@@ -40,7 +41,15 @@ describeFeature(
       `Admin successfully onboards a new helper with valid information`,
       (
         { Given, When, Then, And },
-        { email, lastname, firstname, phoneNumber, profession, birthdate }
+        {
+          email,
+          lastname,
+          firstname,
+          phoneNumber,
+          profession,
+          birthdate,
+          frenchCounty,
+        }
       ) => {
         Given(`the user's email is "<email>"`, () => {});
         And(`the user's first name is "<firstname>"`, () => {});
@@ -48,6 +57,7 @@ describeFeature(
         And(`the user's phone number is "<phoneNumber>"`, () => {});
         And(`the user's profession is "<profession>"`, () => {});
         And(`the user's birthdate is "<birthdate>"`, () => {});
+        And(`the user's county is "<frenchCounty>"`, () => {});
 
         When(`I onboard the user`, async () => {
           await sut.onboardUser(
@@ -58,6 +68,7 @@ describeFeature(
               phoneNumber,
               birthdate: new Date(birthdate),
               professions: profession ? [profession] : undefined,
+              frenchCounty,
             })
           );
         });
@@ -68,6 +79,33 @@ describeFeature(
 
         And(`the user should receive a notification`, async () => {
           await sut.assertNotificationSent(email);
+        });
+      }
+    );
+
+    ScenarioOutline(
+      `Admin cannot onboard helper with invalid french county`,
+      ({ Given, When, Then, And }, { county, error: errorCode }) => {
+        const command = HelperCommandFixtures.withFrenchCounty(county);
+        Given(`I am onboarding a new helper`, () => {});
+        And(`the email address is {email}`, () => {});
+        And(`the first name is "John"`, () => {});
+        And(`the last name is "Doe"`, () => {});
+        And(`the user's county is "<county>"`, () => {});
+
+        When(`I onboard the user`, async () => {
+          await sut.onboardUser(command);
+        });
+
+        Then(`the onboarding fails with error "<error>"`, async () => {
+          await sut.assertHelperIsNotOnboardedWithError(
+            command.email,
+            errorCode
+          );
+        });
+
+        And(`the helper is not onboarded`, async () => {
+          await sut.assertNotificationNotSent(command.email);
         });
       }
     );

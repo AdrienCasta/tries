@@ -1,5 +1,4 @@
 import { Result } from "@shared/infrastructure/Result.js";
-import ValidationError from "../../infrastructure/ValidationError.js";
 import DomainError from "@shared/infrastructure/DomainError.js";
 
 export default class Firstname {
