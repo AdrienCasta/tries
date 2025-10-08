@@ -206,35 +206,3 @@ Feature: Onboarding a new helper
     Then the onboarding should fail
     And the helper should not be onboarded
     And no notification should be sent
-
-  # Scenario Outline: Admin onboards helper with edge case valid emails
-  #   Given the user's email is "<email>"
-  #   And the user's first name is "John"
-  #   And the user's last name is "Doe"
-  #   When I onboard the user
-  #   Then the user should be onboarded as a helper
-
-  #   Examples: Special but valid email formats
-  #     | email                          |
-  #     | john+tag@example.com           |
-  #     | john.doe.smith@example.com     |
-  #     | john_doe@sub.example.com       |
-
-  # Scenario: Admin onboards helper with maximum length valid data
-  #   Given the user's email is "very.long.email.address.that.is.still.valid@extremely-long-domain-name.com"
-  #   And the user's first name is "Bartholomew"
-  #   And the user's last name is "Montgomery-Smythe"
-  #   When I onboard the user
-  #   Then the user should be onboarded as a helper
-  #   And the user should receive a notification
-
-  # Scenario: Admin onboards helper and receives personalized notification
-  #   Given the user's email is "sarah.connor@example.com"
-  #   And the user's first name is "Sarah"
-  #   And the user's last name is "Connor"
-  #   When I onboard the user
-  #   Then the user should receive a notification
-  #   And the notification should contain "Hi Sarah Connor"
-  #   And the notification should contain "Welcome to Tries"
-  #   And the notification should contain "https://tries.fr/setup-password"
-  #   And the notification should contain "tries@support.fr"

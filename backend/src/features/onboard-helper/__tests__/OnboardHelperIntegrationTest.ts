@@ -31,11 +31,16 @@ export default class OnboardHelperIntegrationTest {
       passwordSetupUrl: "https://tries.fr/setup-password",
     });
 
+    const { FakeEmailConfirmationService } = await import(
+      "../../confirm-helper-email/__tests__/fakes/FakeEmailConfirmationService.js"
+    );
+
     const fakeServer = new FakeHttpServer();
     this.server = createApp(fakeServer, {
       helperRepository: this.helperRepository,
       helperAccountRepository: this.helperAccountRepository,
       notificationService: this.notificationService,
+      emailConfirmationService: new FakeEmailConfirmationService(),
       clock: new FixedClock(new Date("2025-01-15T10:00:00Z")),
       eventBus: new InMemoryEventBus(),
     });
@@ -48,7 +53,6 @@ export default class OnboardHelperIntegrationTest {
   }
 
   async onboardUser(command: OnboardHelperCommand): Promise<void> {
-    console.log({ onboardUserCommand: command });
     this.lastResponse = await this.server.inject({
       method: "POST",
       url: "/api/helpers/onboard",

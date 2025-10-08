@@ -1,7 +1,10 @@
 import { expect } from "vitest";
 
 import { OnboardHelperCommand } from "../OnboardHelper.command.js";
-import { OnboardHelper } from "../OnboardHelper.usecase.js";
+import {
+  OnboardHelper,
+  OnboardHelperResult,
+} from "../OnboardHelper.usecase.js";
 import { InMemoryHelperRepository } from "@infrastructure/persistence/InMemoryHelperRepository.js";
 import { InMemoryHelperAccountRepository } from "@infrastructure/persistence/InMemoryHelperAccountRepository.js";
 import { FakeOnboardedHelperNotificationService } from "@infrastructure/notifications/InMemoryOnboardingHelperNotificationService.js";
@@ -15,9 +18,7 @@ export default class OnboardHelperUnderTest {
   private notificationService!: FakeOnboardedHelperNotificationService;
   private clock!: FixedClock;
   private useCase!: OnboardHelper;
-  private usecaseResult: Awaited<
-    ReturnType<typeof this.useCase.execute>
-  > | null = null;
+  private usecaseResult!: Awaited<OnboardHelperResult>;
 
   setup(): void {
     this.helperRepository = new InMemoryHelperRepository();
@@ -28,7 +29,6 @@ export default class OnboardHelperUnderTest {
       passwordSetupUrl: "https://tries.fr/setup-password",
     });
     this.clock = new FixedClock();
-    this.usecaseResult = null;
 
     this.useCase = new OnboardHelper(
       this.helperRepository,
@@ -39,7 +39,6 @@ export default class OnboardHelperUnderTest {
   }
 
   async onboardUser(command: OnboardHelperCommand) {
-    console.log({ command });
     this.usecaseResult = await this.useCase.execute(command);
   }
 

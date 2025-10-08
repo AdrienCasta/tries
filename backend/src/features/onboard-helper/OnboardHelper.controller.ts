@@ -13,6 +13,10 @@ import {
 } from "./OnboardHelper.events.js";
 import { Clock } from "@shared/domain/services/Clock.js";
 
+type OnboardHelperControllerResponse =
+  | { status: 201; body: OnboardHelperSuccessResponse }
+  | { status: 400; body: OnboardHelperErrorResponse };
+
 export default class OnboardHelperController {
   constructor(
     private readonly onboardHelperUseCase: OnboardHelper,
@@ -22,10 +26,7 @@ export default class OnboardHelperController {
 
   async handle(
     request: OnboardHelperRequest
-  ): Promise<
-    | { status: 201; body: OnboardHelperSuccessResponse }
-    | { status: 400; body: OnboardHelperErrorResponse }
-  > {
+  ): Promise<OnboardHelperControllerResponse> {
     const command = new OnboardHelperCommand(
       request.email,
       request.firstname,
@@ -80,3 +81,6 @@ export default class OnboardHelperController {
     };
   }
 }
+
+export type OnboardHelperControllerResponseBody =
+  OnboardHelperControllerResponse["body"];

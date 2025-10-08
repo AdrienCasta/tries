@@ -130,3 +130,7 @@ class EmailAlreadyUsedError extends Error {
     super();
   }
 }
+
+export type OnboardHelperResult = ReturnType<
+  typeof OnboardHelper.prototype.execute
+>;

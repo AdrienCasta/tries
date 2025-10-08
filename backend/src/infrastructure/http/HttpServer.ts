@@ -30,8 +30,17 @@ export interface HttpServer {
   listen(port: number): Promise<void>;
   close(): Promise<void>;
   ready(): Promise<void>;
-  inject(options: { method: string; url: string; payload?: any }): Promise<{
+  inject<Response>(options: {
+    method: string;
+    url: string;
+    payload?: any;
+  }): Promise<{
     statusCode: number;
-    json: () => any;
+    json: () => Response;
   }>;
 }
+
+export type HttpServerInjectResponse<Response> = {
+  statusCode: number;
+  json: () => Response;
+};
