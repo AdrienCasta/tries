@@ -51,4 +51,25 @@ export class SupabaseHelperAccountRepository
 
     return HelperAccountPersistenceMapper.toDomain(user as any);
   }
+  async findByPhone(phoneNumber: string): Promise<HelperAccount | null> {
+    const { data, error } = await this.supabase.auth.admin.listUsers();
+
+    if (error || !data.users) {
+      return null;
+    }
+
+    const normalizedSearchPhone = phoneNumber.replace(/^\+/, "");
+
+    const user = data.users.find((u) => {
+      if (!u.phone) return false;
+      const normalizedUserPhone = u.phone.replace(/^\+/, "");
+      return normalizedUserPhone === normalizedSearchPhone;
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    return HelperAccountPersistenceMapper.toDomain(user as any);
+  }
 }

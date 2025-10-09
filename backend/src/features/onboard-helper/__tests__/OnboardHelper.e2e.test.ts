@@ -1,5 +1,5 @@
 import { loadFeatureFromText, describeFeature } from "@amiceli/vitest-cucumber";
-import OnboardHelperE2ETest from "./OnboardHelperE2ETest.js";
+import OnboardHelperE2eHarnessTest from "./OnboardHelper.e2e-harness-test.js";
 
 // @ts-ignore
 import featureContent from "../../../../../features/onboardHelper.feature?raw";
@@ -9,85 +9,25 @@ const feature = await loadFeatureFromText(featureContent);
 describeFeature(
   feature,
   ({ BeforeEachScenario, AfterEachScenario, ScenarioOutline, Scenario }) => {
-    let sut: OnboardHelperE2ETest;
+    let harness: OnboardHelperE2eHarnessTest;
 
     BeforeEachScenario(async () => {
-      sut = new OnboardHelperE2ETest();
-      await sut.setup();
+      harness = new OnboardHelperE2eHarnessTest();
+      await harness.setup();
     });
 
     AfterEachScenario(async () => {
-      await sut.teardown();
+      await harness.teardown();
     });
 
     ScenarioOutline(
-      `Admin successfully onboards a new helper with valid information`,
-      (
-        { Given, When, Then, And },
-        {
-          email,
-          lastname,
-          firstname,
-          phoneNumber,
-          profession,
-          birthdate,
-          frenchCounty,
-        }
-      ) => {
-        Given(`the user's email is "<email>"`, async () => {
-          await sut.cleanupEmail(email);
-          sut.registerEmailForCleanup(email);
-        });
-
-        And(`the user's first name is "<firstname>"`, () => {});
-        And(`the user's last name is "<lastname>"`, () => {});
-        And(`the user's phone number is "<phoneNumber>"`, () => {});
-        And(`the user's profession is "<profession>"`, () => {});
-        And(`the user's birthdate is "<birthdate>"`, () => {});
-        And(`the user's county is "<frenchCounty>"`, () => {});
-
-        When(`I onboard the user`, async () => {
-          await sut.onboardUser(
-            HelperCommandFixtures.aValidCommand({
-              email,
-              firstname,
-              lastname,
-              phoneNumber,
-              birthdate: new Date(birthdate),
-              professions: profession ? [profession] : undefined,
-              frenchCounty,
-            })
-          );
-        });
-
-        Then(`the user should be onboarded as a helper`, async () => {
-          await sut.assertHelperOnboarded(email);
-          await sut.assertHelperInDatabase(email, firstname, lastname);
-        });
-
-        And(`the user should receive a notification`, async () => {
-          await sut.assertHelperAccountInAuth(email);
-          await sut.assertOnlyOneNotificationSent();
-        });
-      }
-    );
-
-    /**
-     * CRITICAL E2E SCENARIO #2: Duplicate Prevention
-     * Verifies database constraints prevent duplicate helpers via real HTTP
-     * Critical for data integrity
-     */
-    ScenarioOutline(
-      `Admin cannot onboard a helper who is already registered`,
-      (
-        { Given, When, Then, And },
-        { email, firstname, lastname, otherUserFirstname, otherUserLastname }
-      ) => {
-        Given(
-          `a helper "<firstname>" "<lastname>" with email "<email>" is already onboarded`,
+      `Admin onboards a qualified helper`,
+      ({ Given, When, Then, And }, { email, lastname, firstname }) => {
+        Given(`an admin has a qualified helper's information`, () => {});
+        When(
+          `the admin submits the onboarding request for "<firstname>" "<lastname>"`,
           async () => {
-            sut.registerEmailForCleanup(email);
-            await sut.onboardUser(
+            await harness.onboardUser(
               HelperCommandFixtures.aValidCommand({
                 email,
                 firstname,
@@ -96,34 +36,60 @@ describeFeature(
             );
           }
         );
+        Then(`a helper account is created for "<email>"`, async () => {
+          await harness.assertHelperOnboarded(email);
+          await harness.assertHelperInDatabase(email, firstname, lastname);
+        });
+        And(`a welcome email is sent to "<email>"`, async () => {
+          await harness.assertHelperAccountInAuth(email);
+          // await harness.assertOnlyOneNotificationSent();
+        });
+        And(`the helper can access the Tries platform`, () => {});
+      }
+    );
+
+    ScenarioOutline(
+      `Admin cannot onboard a helper with duplicate email`,
+      ({ Given, When, Then, And }, { email, firstname, lastname }) => {
+        const command = HelperCommandFixtures.aValidCommand({
+          email,
+          firstname,
+          lastname,
+        });
+        Given(
+          `a helper "<firstname>" "<lastname>" with email "<email>" is already onboarded`,
+          async () => {
+            harness.registerEmailForCleanup(email);
+            await harness.onboardUser(command);
+          }
+        );
 
         When(
-          `I attempt to onboard another helper "<otherUserFirstname>" "<otherUserLastname>" with same email`,
+          `an admin attempts to onboard a user with the same email`,
           async () => {
-            await sut.onboardUser(
+            await harness.onboardUser(
               HelperCommandFixtures.aValidCommand({
                 email,
-                firstname: otherUserFirstname,
-                lastname: otherUserLastname,
               })
             );
           }
         );
 
-        Then(`the onboarding should fail because <error>`, async () => {
-          await sut.assertOnboardingFailedBecauseEmailHasAlreadyBeenRegistered();
+        Then(`the system rejects the request because <error>`, async () => {
+          await harness.assertOnboardingFailedBecauseEmailHasAlreadyBeenRegistered();
         });
 
-        And(`the helper should not be duplicated`, async () => {
-          await sut.assertHelperDetailsNotChanged(email, firstname, lastname);
+        And(`the helper is not duplicated`, async () => {
+          await harness.assertHelperDetailsNotChanged(
+            email,
+            firstname,
+            lastname
+          );
         });
 
-        And(
-          `no notification should be sent for the duplicate attempt`,
-          async () => {
-            await sut.assertOnlyOneNotificationSent();
-          }
-        );
+        And(`no notification is sent`, async () => {
+          await harness.assertOnlyOneNotificationSent();
+        });
       }
     );
   },

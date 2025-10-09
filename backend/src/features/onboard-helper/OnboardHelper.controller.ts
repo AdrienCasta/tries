@@ -1,6 +1,10 @@
-import { OnboardHelper } from "./OnboardHelper.usecase.js";
+import {
+  EmailAlreadyUsedError,
+  OnboardHelper,
+  PhoneAlreadyUsedError,
+} from "./OnboardHelper.usecase.js";
 import { OnboardHelperCommand } from "./OnboardHelper.command.js";
-import { Result } from "@shared/infrastructure/Result.js";
+import { Result, Failure } from "@shared/infrastructure/Result.js";
 import {
   OnboardHelperRequest,
   OnboardHelperSuccessResponse,
@@ -12,10 +16,17 @@ import {
   createHelperOnboardingSucceeded,
 } from "./OnboardHelper.events.js";
 import { Clock } from "@shared/domain/services/Clock.js";
+import HelperId from "@shared/domain/value-objects/HelperId.js";
 
 type OnboardHelperControllerResponse =
   | { status: 201; body: OnboardHelperSuccessResponse }
-  | { status: 400; body: OnboardHelperErrorResponse };
+  | { status: 400 | 409; body: OnboardHelperErrorResponse };
+
+const HTTP_STATUS = {
+  CREATED: 201,
+  BAD_REQUEST: 400,
+  CONFLICT: 409,
+} as const;
 
 export default class OnboardHelperController {
   constructor(
@@ -27,7 +38,20 @@ export default class OnboardHelperController {
   async handle(
     request: OnboardHelperRequest
   ): Promise<OnboardHelperControllerResponse> {
-    const command = new OnboardHelperCommand(
+    const command = this.buildCommandFromRequest(request);
+    const result = await this.onboardHelperUseCase.execute(command);
+
+    if (Result.isSuccess(result)) {
+      return await this.handleSuccess(result.value, request);
+    }
+
+    return await this.handleFailure(result, request);
+  }
+
+  private buildCommandFromRequest(
+    request: OnboardHelperRequest
+  ): OnboardHelperCommand {
+    return new OnboardHelperCommand(
       request.email,
       request.firstname,
       request.lastname,
@@ -36,30 +60,35 @@ export default class OnboardHelperController {
       request.phoneNumber,
       request.frenchCounty
     );
+  }
 
-    const result = await this.onboardHelperUseCase.execute(command);
+  private async handleSuccess(
+    helperId: HelperId,
+    request: OnboardHelperRequest
+  ): Promise<OnboardHelperControllerResponse> {
+    await this.eventBus.publish(
+      createHelperOnboardingSucceeded(
+        this.clock,
+        helperId,
+        request.email,
+        request.firstname,
+        request.lastname
+      )
+    );
 
-    if (Result.isSuccess(result)) {
-      await this.eventBus.publish(
-        createHelperOnboardingSucceeded(
-          this.clock,
-          result.value,
-          request.email,
-          request.firstname,
-          request.lastname
-        )
-      );
+    return {
+      status: HTTP_STATUS.CREATED,
+      body: {
+        helperId: helperId.value,
+        message: "Helper successfully onboarded",
+      },
+    };
+  }
 
-      return {
-        status: 201,
-        body: {
-          helperId: result.value.value,
-          message: "Helper successfully onboarded",
-        },
-      };
-    }
-
-    // Publish failure event
+  private async handleFailure(
+    result: Failure<Error>,
+    request: OnboardHelperRequest
+  ): Promise<OnboardHelperControllerResponse> {
     await this.eventBus.publish(
       createHelperOnboardingFailed(
         this.clock,
@@ -70,14 +99,32 @@ export default class OnboardHelperController {
       )
     );
 
-    // Validation failure response
+    const status = this.mapErrorToStatus(result.error);
     return {
-      status: 400,
-      body: {
-        error: result.error.message,
-        code: result.error.code,
-        details: result.error?.details,
-      },
+      status,
+      body: this.createErrorResponse(result.error),
+    };
+  }
+
+  private mapErrorToStatus(error: Error): 400 | 409 {
+    if (this.isConflictError(error)) {
+      return HTTP_STATUS.CONFLICT;
+    }
+    return HTTP_STATUS.BAD_REQUEST;
+  }
+
+  private isConflictError(error: Error): boolean {
+    return (
+      error instanceof PhoneAlreadyUsedError ||
+      error instanceof EmailAlreadyUsedError
+    );
+  }
+
+  private createErrorResponse(error: Error): OnboardHelperErrorResponse {
+    return {
+      error: error.message,
+      code: (error as any).code,
+      details: (error as any)?.details,
     };
   }
 }

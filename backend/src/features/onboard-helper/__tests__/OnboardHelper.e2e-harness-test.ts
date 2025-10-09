@@ -17,7 +17,7 @@ import { OnboardHelperCommand } from "../OnboardHelper.command.js";
  * domain-focused assertion methods. Hides technical details of database
  * queries, auth operations, and HTTP implementation.
  */
-export default class OnboardHelperE2ETest {
+export default class OnboardHelperE2eHarnessTest {
   private server!: HttpServer;
   private supabase!: SupabaseClient;
   private notificationService!: SupabaseOnboardedHelperNotificationService;
@@ -97,6 +97,8 @@ export default class OnboardHelperE2ETest {
         frenchCounty: command.frenchCounty,
       },
     });
+
+    this.registerEmailForCleanup(command.email);
   }
 
   async assertHelperOnboarded(email: string): Promise<void> {
@@ -131,7 +133,7 @@ export default class OnboardHelperE2ETest {
   }
 
   async assertOnboardingFailedBecauseEmailHasAlreadyBeenRegistered(): Promise<void> {
-    expect(this.lastResponse.statusCode).toBe(400);
+    expect(this.lastResponse.statusCode).toBe(409);
     const body = this.lastResponse.json();
     expect(body.error).toBeDefined();
   }

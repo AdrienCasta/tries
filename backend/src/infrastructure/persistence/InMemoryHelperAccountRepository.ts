@@ -31,11 +31,17 @@ export class InMemoryHelperAccountRepository
   }
 
   async findByEmail(email: string): Promise<HelperAccount | null> {
-    const t =
+    return (
       Array.from(this.accounts.values()).find(
         (account) => account.email.value === email
-      ) || null;
-
-    return t;
+      ) || null
+    );
+  }
+  async findByPhone(phone: string): Promise<HelperAccount | null> {
+    return (
+      Array.from(this.accounts.values()).find(
+        (account) => account.phoneNumber?.value === phone
+      ) || null
+    );
   }
 }

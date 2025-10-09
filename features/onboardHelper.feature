@@ -1,63 +1,50 @@
 Feature: Onboarding a new helper
   As an admin
   I want to onboard qualified users as helpers
-  So that they can access the platform and start assisting customers
+  So that they can access the platform and start applaying to events
+
+  Background:
+    Given the admin is authenticated
 
   # Rule: Helper information must be valid and complete
 
   @e2e
   @frontend
-  Scenario Outline: Admin successfully onboards a new helper with valid information
-    Given the user's email is "<email>"
-    And the user's first name is "<firstname>"
-    And the user's last name is "<lastname>"
-    And the user's phone number is "<phoneNumber>"
-    And the user's profession is "<profession>"
-    And the user's birthdate is "<birthdate>"
-    And the user's county is "<frenchCounty>"
-    When I onboard the user
-    Then the user should be onboarded as a helper
-    And the user should receive a notification
+  @unit
+  Scenario Outline: Admin onboards a qualified helper
+    Given an admin has a qualified helper's information
+    When the admin submits the onboarding request for "<firstname>" "<lastname>"
+    Then a helper account is created for "<email>"
+    And a welcome email is sent to "<email>"
+    And the helper can access the Tries platform
 
-    Examples: Standard names
-      | email                        | firstname | lastname  | phoneNumber  | profession      | birthdate  | frenchCounty |
-      | john@doe.com                 | John      | Doe       | +33612345678 | physiotherapist | 1995-03-26 | 44           |
+    Examples:
+      | email                    | firstname  | lastname |
+      | john@doe.com             | John       | Doe      |
+      | helper@example.com       | John       | Smith    |
+      | francois@paris.fr        | François   | Dubois   |
 
-  Scenario Outline: Admin successfully onboards a new helper with phone number
-    Given the user's email is "<email>"
-    And the user's first name is "<firstname>"
-    And the user's last name is "<lastname>"
-    And the user's phone number is "<phoneNumber>"
-    When I onboard the user
-    Then the user should be onboarded as a helper
-    And the user should receive a notification
+  @e2e
+  Scenario Outline: Admin cannot onboard a helper with duplicate email
+    Given a helper "<firstname>" "<lastname>" with email "<email>" is already onboarded
+    When an admin attempts to onboard a user with the same email
+    Then the system rejects the request because <error>
+    And the helper is not duplicated
+    And no notification is sent
 
-    Examples: With phone numbers
-      | email                        | firstname | lastname  | phoneNumber  |
-      | helper@example.com           | John      | Smith     | +33612345678 |
-      | helper+1@example.com         | John      | Smith     | +34612345678 |
-      | helper+2@example.com         | Jane      | Doe       | 0612345678   |
+    Examples: Duplicate helper
+      | email           | firstname | lastname | error                                 |
+      | john@domain.com | John      | Doe      | this email address is already in use. |
+      | john@domain.com | John      | Doe      | this email address is already in use. |
 
-    Examples: International and special characters
-      | email                 | firstname | lastname    |
-      | francois@paris.fr     | François  | Dubois      |
-      | jose@madrid.es        | José      | García      |
-      | anna@berlin.de        | Anne-Marie| Müller      |
-
-    Examples: Names with hyphens and apostrophes
-      | email                        | firstname | lastname    |
-      | carole.turin@example.com     | Mary-Jane | Watson      |
-      | patrick@example.com          | Patrick   | O'Brien     |
   
-  Scenario Outline: Admin cannot onboard helper with invalid french county
-    Given I am onboarding a new helper
-    And the email address is carole.turin@example.com
-    And the first name is "John"
-    And the last name is "Doe"
-    And the user's county is "<county>"
-    When I onboard the user
-    Then the onboarding fails with error "<error>"
-    And the helper is not onboarded
+  @unit
+  @integration
+  Scenario Outline: Admin cannot onboard helper from invalid french county
+    Given an admin attempts to onboard a helper from county "<county>"
+    When the admin submits the onboarding request
+    Then the system rejects the request with "<error>"
+    And no helper account is created
 
     Examples: Invalid county formats
       | county | error                 |
@@ -82,14 +69,13 @@ Feature: Onboarding a new helper
       | 001    | Invalid french county |
       | 4444   | Invalid french county |
 
-  Scenario Outline: Admin cannot onboard helper with invalid email address
-    Given I am onboarding a new helper
-    And the email address is "<email>"
-    And the first name is "John"
-    And the last name is "Doe"
-    When I onboard the user
-    Then the onboarding fails with error "<error>"
-    And the helper is not onboarded
+  @unit
+  @integration
+  Scenario Outline: Admin cannot onboard helper with invalid email
+    Given an admin attempts to onboard a helper with email "<email>"
+    When the admin submits the onboarding request
+    Then the system rejects the request with "<error>"
+    And no helper account is created
 
     Examples: Invalid email formats
       | email           | error                    |
@@ -102,14 +88,25 @@ Feature: Onboarding a new helper
       | email | error             |
       |       | Email is required |
 
-  Scenario Outline: Admin cannot onboard helper with invalid name information
-    Given I am onboarding a new helper
-    And the email address is "john@domain.com"
-    And the first name is "<firstname>"
-    And the last name is "<lastname>"
-    When I onboard the user
-    Then the onboarding fails with error "<error>"
-    And the helper is not onboarded
+  @unit
+  @integration                                                                                                                                                                           
+  Scenario Outline: Admin cannot onboard a helper with phone number already in use                                                                                                    
+    Given a helper with phone number <phoneNumber> is already onboarded                                                                                                        
+    When an admin attempts to onboard a user with the same phone number                                                                                                          
+    Then the system rejects the request because <error>                                                                                                                          
+    And no helper account is created                                                                                                                                             
+                                                                                                                                                                                 
+    Examples: Phone number already in use                                                                                                                                      
+      | phoneNumber  | error                                |                                                                                                                 
+      | +33612345678 | this phone number is already in use. | 
+
+  @unit
+  @integration
+  Scenario Outline: Admin cannot onboard helper with invalid name
+    Given an admin attempts to onboard a helper named "<firstname>" "<lastname>"
+    When the admin submits the onboarding request
+    Then the system rejects the request with "<error>"
+    And no helper account is created
 
     Examples: Missing required fields
       | firstname | lastname | error                    |
@@ -121,15 +118,13 @@ Feature: Onboarding a new helper
       | J         | Doe      | First name too short   |
       | John      | D        | Last name too short    |
 
+ @unit
+ @integration
   Scenario Outline: Admin cannot onboard helper with invalid phone number
-    Given I am onboarding a new helper
-    And the email address is "john@domain.com"
-    And the first name is "John"
-    And the last name is "Doe"
-    And the phone number is "<phoneNumber>"
-    When I onboard the user
-    Then the onboarding fails with error "<error>"
-    And the helper is not onboarded
+    Given an admin attempts to onboard a helper with phone number "<phoneNumber>"
+    When the admin submits the onboarding request
+    Then the system rejects the request with "<error>"
+    And no helper account is created
 
     Examples: Invalid phone formats
       | phoneNumber      | error                  |
@@ -138,72 +133,39 @@ Feature: Onboarding a new helper
       | 612345678        | Phone number invalid   |
       | 06 12 34 56 7    | Phone number invalid   |
 
-  Scenario Outline: Admin successfully onboards a helper with valid profession
-    Given the user's email is "<email>"
-    And the user's first name is "<firstname>"
-    And the user's last name is "<lastname>"
-    And the user's profession is "<profession>"
-    When I onboard the user
-    Then the user should be onboarded as a helper
-    And the user should receive a notification
 
-    Examples: Valid professions
-      | email                   | firstname | lastname | profession              |
-      | doctor@example.com      | John      | Smith    | doctor                  |
-      | physio@example.com      | Jane      | Doe      | physiotherapist         |
-      | coach@example.com       | Bob       | Brown    | sports_coach            |
+  @unit
+  @integration
+  Scenario Outline: Admin cannot onboard helper with invalid profession(s)
+    Given an admin attempts to onboard a helper with professions <professions>
+    When the admin submits the onboarding request
+    Then the system rejects the request with <error>
+    And no helper account is created
 
-  Scenario Outline: Admin cannot onboard helper with invalid profession
-    Given I am onboarding a new helper
-    And the email address is "john@domain.com"
-    And the first name is "John"
-    And the last name is "Doe"
-    And the profession is "<profession>"
-    When I onboard the user
-    Then the onboarding fails with error "<error>"
-    And the helper is not onboarded
+    Examples: Invalid profession(s)
+      | professions                  | error              |
+      |                              | Profession invalid |
+      | invalidprof                  | Profession invalid |
+      | physiotherapist, invalidprof | Profession invalid |
 
-    Examples: Invalid professions
-      | profession       | error                  |
-      | invalidprof      | Profession invalid     |
-      | randomjob        | Profession invalid     |
-
+  @unit
+  @integration
   Scenario Outline: Admin cannot onboard helper with invalid birthdate
-    Given I am onboarding a new helper
-    Given It's 2025-10-06
-    And the email address is <email>
-    And the first name is "John"
-    And the last name is "Doe"
-    And the birthdate is <birthdate>
-    When I onboard the user
-    Then the onboarding fails because <error>
-    And the helper is not onboarded
+    Given it is 2025-10-06
+    And an admin attempts to onboard a helper born on <birthdate>
+    When the admin submits the onboarding request
+    Then the system rejects the request with <error>
+    And no helper account is created
 
     Examples: Invalid birthdate
-      | email           | birthdate  | error |
-      | john@domain.com | 2025-10-07 | birthdate provided is set to the future.             |
-      | john@domain.com | 2022-10-07 | age requirement not met. You must be at least 16 yo. |
+      | birthdate  | error |
+      | 2025-10-07 | birthdate provided is set to the future.             |
+      | 2022-10-07 | age requirement not met. You must be at least 16 yo. |
 
-  # Rule: Each helper must have a unique email address
-  
-  @e2e
-  Scenario Outline: Admin cannot onboard a helper who is already registered
-    Given a helper "<firstname>" "<lastname>" with email "<email>" is already onboarded
-    When I attempt to onboard another helper "<otherUserFirstname>" "<otherUserLastname>" with same email
-    Then the onboarding should fail because <error>
-    And the helper should not be duplicated
-    And no notification should be sent for the duplicate attempt
-
-    Examples: Duplicate helper
-      | email           | firstname | lastname | otherUserFirstname | otherUserLastname | error                                 |
-      | john@domain.com | John      | Doe      | Michel             | Denis             | this email address is already in use. |
-
-  # Rule: System must handle edge cases gracefully
-
-  Scenario: Admin cannot onboard helper when system is temporarily unavailable
-    Given I am onboarding a new helper with valid information
+  Scenario: Admin cannot onboard helper when system is unavailable
+    Given an admin has valid helper information
     And the system is temporarily unavailable
-    When I attempt to onboard the user
-    Then the onboarding should fail
-    And the helper should not be onboarded
-    And no notification should be sent
+    When the admin attempts to onboard the helper
+    Then the system cannot process the request
+    And no helper account is created
+    And no notification is sent

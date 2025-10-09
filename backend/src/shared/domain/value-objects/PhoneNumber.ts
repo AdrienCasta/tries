@@ -24,13 +24,15 @@ export default class PhoneNumber {
 }
 
 function isValidPhoneNumber(phone: string): boolean {
-  const phoneRegex = /^(\+[1-9]\d{9,14}|0\d{9})$/;
+  const phoneRegex = /^\+[1-9]\d{9,14}$/;
   return phoneRegex.test(phone);
 }
 
 export class PhoneNumberError extends DomainError {
   readonly code = "PHONE_NUMBER_INVALID";
   constructor(phone: string) {
-    super("Phone number format is invalid", { phone });
+    super("Phone number must be in E.164 format (e.g., +33612345678)", {
+      phone,
+    });
   }
 }

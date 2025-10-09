@@ -12,7 +12,7 @@ import { FixedClock } from "@infrastructure/time/FixedClock.js";
 import { Failure, Result } from "@shared/infrastructure/Result.js";
 import DomainError from "@shared/infrastructure/DomainError.js";
 
-export default class OnboardHelperUnderTest {
+export default class OnboardHelperUnitHarnessTest {
   private helperRepository!: InMemoryHelperRepository;
   private helperAccountRepository!: InMemoryHelperAccountRepository;
   private notificationService!: FakeOnboardedHelperNotificationService;
@@ -20,7 +20,7 @@ export default class OnboardHelperUnderTest {
   private useCase!: OnboardHelper;
   private usecaseResult!: Awaited<OnboardHelperResult>;
 
-  setup(): void {
+  setup(date?: Date): void {
     this.helperRepository = new InMemoryHelperRepository();
     this.helperAccountRepository = new InMemoryHelperAccountRepository();
     this.notificationService = new FakeOnboardedHelperNotificationService({
@@ -28,7 +28,7 @@ export default class OnboardHelperUnderTest {
       supportEmailContact: "tries@support.fr",
       passwordSetupUrl: "https://tries.fr/setup-password",
     });
-    this.clock = new FixedClock();
+    this.clock = new FixedClock(date);
 
     this.useCase = new OnboardHelper(
       this.helperRepository,

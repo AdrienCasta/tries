@@ -4,7 +4,7 @@ import {
   setVitestCucumberConfiguration,
   getVitestCucumberConfiguration,
 } from "@amiceli/vitest-cucumber";
-import OnboardHelperIntegrationTest from "./OnboardHelperIntegrationTest.js";
+import OnboardHelperIntegrationHarnessTest from "./OnboardHelper.integration-harness-test.js";
 
 // @ts-ignore
 import featureContent from "../../../../../features/onboardHelper.feature?raw";
@@ -40,12 +40,16 @@ const errorMessageMappedToErrorCode = {
     errorBody: { code: "UNKNOWN_PROFESSION" },
   },
   "this email address is already in use.": {
-    statusCode: 400,
+    statusCode: 409,
     errorBody: { code: "EMAIL_ALREADY_IN_USE" },
   },
   "Invalid french county": {
     statusCode: 400,
     errorBody: { code: "FRENCH_COUNTY_INVALID" },
+  },
+  "this phone number is already in use.": {
+    statusCode: 409,
+    errorBody: { code: "PHONE_NUMBER_ALREADY_IN_USE" },
   },
 };
 setVitestCucumberConfiguration({
@@ -58,278 +62,25 @@ import { HelperCommandFixtures } from "./fixtures/HelperCommandFixtures.js";
 describeFeature(
   feature,
   ({ BeforeEachScenario, AfterEachScenario, ScenarioOutline, Scenario }) => {
-    let sut: OnboardHelperIntegrationTest;
+    let harness: OnboardHelperIntegrationHarnessTest;
 
     BeforeEachScenario(async () => {
-      sut = new OnboardHelperIntegrationTest();
-      await sut.setup();
+      harness = new OnboardHelperIntegrationHarnessTest();
+      await harness.setup();
     });
 
     AfterEachScenario(async () => {
-      await sut.teardown();
+      await harness.teardown();
     });
 
     ScenarioOutline(
-      `Admin successfully onboards a new helper with valid information`,
-      (
-        { Given, When, Then, And },
-        { email, lastname, firstname, phoneNumber, profession, frenchCounty }
-      ) => {
-        Given(`the user's email is "<email>"`, () => {});
-        And(`the user's first name is "<firstname>"`, () => {});
-        And(`the user's last name is "<lastname>"`, () => {});
-        And(`the user's phone number is "<phoneNumber>"`, () => {});
-        And(`the user's profession is "<profession>"`, () => {});
-        And(`the user's birthdate is "<birthdate>"`, () => {});
-        And(`the user's county is "<frenchCounty>"`, () => {});
-
-        When(`I onboard the user`, async () => {
-          await sut.onboardUser(
-            HelperCommandFixtures.aValidCommand({
-              email,
-              firstname,
-              lastname,
-              phoneNumber,
-              professions: profession ? [profession] : undefined,
-              frenchCounty,
-            })
-          );
-        });
-
-        Then(`the user should be onboarded as a helper`, async () => {
-          await sut.assertHelperOnboarded();
-        });
-
-        And(`the user should receive a notification`, async () => {
-          await sut.assertNotificationSent(email);
-        });
-      }
-    );
-
-    ScenarioOutline(
-      `Admin cannot onboard helper with invalid french county`,
-      ({ Given, When, Then, And }, { county, error }) => {
-        const command = HelperCommandFixtures.withFrenchCounty(county);
-        Given(`I am onboarding a new helper`, () => {});
-        And(`the email address is {email}`, () => {});
-        And(`the first name is "John"`, () => {});
-        And(`the last name is "Doe"`, () => {});
-        And(`the user's county is "<county>"`, () => {});
-
-        When(`I onboard the user`, async () => {
-          await sut.onboardUser(command);
-        });
-
-        Then(`the onboarding fails with error "<error>"`, async () => {
-          await sut.assertOnboardingFailedWithError(
-            error.statusCode,
-            error.errorBody
-          );
-        });
-
-        And(`the helper is not onboarded`, async () => {
-          await sut.assertNotificationNotSent(command.email);
-        });
-      }
-    );
-
-    ScenarioOutline(
-      `Admin cannot onboard helper with invalid email address`,
-      ({ Given, When, Then, And }, { email, error }) => {
-        Given(`I am onboarding a new helper`, () => {});
-        And(`the email address is "<email>"`, () => {});
-        And(`the first name is "John"`, () => {});
-        And(`the last name is "Doe"`, () => {});
-
-        When(`I onboard the user`, async () => {
-          await sut.onboardUser(HelperCommandFixtures.withEmail(email));
-        });
-
-        Then(`the onboarding fails with error "<error>"`, async () => {
-          await sut.assertOnboardingFailedWithError(
-            error.statusCode,
-            error.errorBody
-          );
-        });
-
-        And(`the helper is not onboarded`, async () => {
-          await sut.assertHelperNotOnboarded(email);
-        });
-      }
-    );
-
-    ScenarioOutline(
-      `Admin cannot onboard helper with invalid name information`,
-      ({ Given, When, Then, And }, { firstname, lastname, error }) => {
-        const email = "john@domain.com";
-
-        Given(`I am onboarding a new helper`, () => {});
-        And(`the email address is "john@domain.com"`, () => {});
-        And(`the first name is "<firstname>"`, () => {});
-        And(`the last name is "<lastname>"`, () => {});
-
-        When(`I onboard the user`, async () => {
-          await sut.onboardUser(
-            HelperCommandFixtures.aValidCommand({ email, firstname, lastname })
-          );
-        });
-
-        Then(`the onboarding fails with error "<error>"`, async () => {
-          await sut.assertOnboardingFailedWithError(
-            error.statusCode,
-            error.errorBody
-          );
-        });
-
-        And(`the helper is not onboarded`, async () => {
-          await sut.assertHelperNotOnboarded(email);
-        });
-      }
-    );
-
-    ScenarioOutline(
-      `Admin successfully onboards a new helper with phone number`,
-      (
-        { Given, When, Then, And },
-        { email, firstname, lastname, phoneNumber }
-      ) => {
-        Given(`the user's email is "<email>"`, () => {});
-        And(`the user's first name is "<firstname>"`, () => {});
-        And(`the user's last name is "<lastname>"`, () => {});
-        And(`the user's phone number is "<phoneNumber>"`, () => {});
-
-        When(`I onboard the user`, async () => {
-          await sut.onboardUser(
-            HelperCommandFixtures.aValidCommand({
-              email,
-              firstname,
-              lastname,
-              phoneNumber,
-            })
-          );
-        });
-
-        Then(`the user should be onboarded as a helper`, async () => {
-          await sut.assertHelperOnboarded();
-        });
-
-        And(`the user should receive a notification`, async () => {
-          await sut.assertNotificationSent(email);
-        });
-      }
-    );
-
-    ScenarioOutline(
-      `Admin cannot onboard helper with invalid phone number`,
-      ({ Given, When, Then, And }, { phoneNumber, error }) => {
-        const email = "john@domain.com";
-
-        Given(`I am onboarding a new helper`, () => {});
-        And(`the email address is "john@domain.com"`, () => {});
-        And(`the first name is "John"`, () => {});
-        And(`the last name is "Doe"`, () => {});
-        And(`the phone number is "<phoneNumber>"`, () => {});
-
-        When(`I onboard the user`, async () => {
-          await sut.onboardUser(
-            HelperCommandFixtures.aValidCommand({ phoneNumber })
-          );
-        });
-
-        Then(`the onboarding fails with error "<error>"`, async () => {
-          await sut.assertOnboardingFailedWithError(
-            error.statusCode,
-            error.errorBody
-          );
-        });
-
-        And(`the helper is not onboarded`, async () => {
-          await sut.assertHelperNotOnboarded(email);
-        });
-      }
-    );
-
-    ScenarioOutline(
-      `Admin successfully onboards a helper with valid profession`,
-      (
-        { Given, When, Then, And },
-        { email, firstname, lastname, profession }
-      ) => {
-        Given(`the user's email is "<email>"`, () => {});
-        And(`the user's first name is "<firstname>"`, () => {});
-        And(`the user's last name is "<lastname>"`, () => {});
-        And(`the user's profession is "<profession>"`, () => {});
-
-        When(`I onboard the user`, async () => {
-          await sut.onboardUser(
-            HelperCommandFixtures.aValidCommand({
-              email,
-              firstname,
-              lastname,
-              professions: [profession],
-            })
-          );
-        });
-
-        Then(`the user should be onboarded as a helper`, async () => {
-          await sut.assertHelperOnboarded();
-        });
-
-        And(`the user should receive a notification`, async () => {
-          await sut.assertNotificationSent(email);
-        });
-      }
-    );
-
-    ScenarioOutline(
-      `Admin cannot onboard helper with invalid profession`,
-      ({ Given, When, Then, And }, { profession, error }) => {
-        const email = "john@domain.com";
-
-        Given(`I am onboarding a new helper`, () => {});
-        And(`the email address is "john@domain.com"`, () => {});
-        And(`the first name is "John"`, () => {});
-        And(`the last name is "Doe"`, () => {});
-        And(`the profession is "<profession>"`, () => {});
-
-        When(`I onboard the user`, async () => {
-          await sut.onboardUser(
-            HelperCommandFixtures.aValidCommand({
-              professions: [profession],
-            })
-          );
-        });
-
-        Then(`the onboarding fails with error "<error>"`, async () => {
-          await sut.assertOnboardingFailedWithError(
-            error.statusCode,
-            error.errorBody
-          );
-        });
-
-        And(`the helper is not onboarded`, async () => {
-          await sut.assertHelperNotOnboarded(email);
-        });
-      }
-    );
-
-    ScenarioOutline(
-      `Admin cannot onboard a helper who is already registered`,
-      (
-        { Given, When, Then, And },
-        {
-          email,
-          firstname,
-          lastname,
-          otherUserFirstname,
-          otherUserLastname,
-          error,
-        }
-      ) => {
-        Given(
-          `a helper "<firstname>" "<lastname>" with email "<email>" is already onboarded`,
+      `Admin onboards a qualified helper`,
+      ({ Given, When, Then, And }, { email, lastname, firstname }) => {
+        Given(`an admin has a qualified helper's information`, () => {});
+        When(
+          `the admin submits the onboarding request for "<firstname>" "<lastname>"`,
           async () => {
-            await sut.onboardUser(
+            await harness.onboardUser(
               HelperCommandFixtures.aValidCommand({
                 email,
                 firstname,
@@ -338,96 +89,199 @@ describeFeature(
             );
           }
         );
+        Then(`a helper account is created for "<email>"`, async () => {
+          await harness.assertHelperOnboarded(email);
+        });
+        And(`a welcome email is sent to "<email>"`, async () => {
+          await harness.assertNotificationSent(email);
+        });
+        And(`the helper can access the Tries platform`, () => {});
+      }
+    );
 
-        When(
-          `I attempt to onboard another helper "<otherUserFirstname>" "<otherUserLastname>" with same email`,
-          async () => {
-            await sut.onboardUser(
-              HelperCommandFixtures.aValidCommand({
-                email,
-                firstname: otherUserFirstname,
-                lastname: otherUserLastname,
-              })
-            );
-          }
+    ScenarioOutline(
+      `Admin cannot onboard helper from invalid french county`,
+      ({ Given, When, Then, And }, { county, error }) => {
+        const command = HelperCommandFixtures.withFrenchCounty(county);
+        Given(
+          `an admin attempts to onboard a helper from county "<county>"`,
+          () => {}
         );
-
-        Then(`the onboarding should fail because <error>`, async () => {
-          await sut.assertOnboardingFailedWithError(
+        When(`the admin submits the onboarding request`, async () => {
+          await harness.onboardUser(command);
+        });
+        Then(`the system rejects the request with "<error>"`, async () => {
+          await harness.assertHelperIsNotOnboardedWithError(
             error.statusCode,
             error.errorBody
           );
         });
-
-        And(`the helper should not be duplicated`, async () => {
-          await sut.assertHelperDetailsNotChanged(email, firstname, lastname);
+        And(`no helper account is created`, async () => {
+          await harness.assertNotificationNotSent(command.email);
         });
+      }
+    );
 
-        And(
-          `no notification should be sent for the duplicate attempt`,
-          async () => {
-            await sut.assertOnlyOneNotificationSentTo(email);
-          }
+    ScenarioOutline(
+      `Admin cannot onboard helper with invalid email`,
+      ({ Given, When, Then, And }, { email, error }) => {
+        Given(
+          `an admin attempts to onboard a helper with email "<email>"`,
+          () => {}
         );
+        When(`the admin submits the onboarding request`, async () => {
+          await harness.onboardUser(HelperCommandFixtures.withEmail(email));
+        });
+        Then(`the system rejects the request with "<error>"`, async () => {
+          await harness.assertHelperIsNotOnboardedWithError(
+            error.statusCode,
+            error.errorBody
+          );
+        });
+        And(`no helper account is created`, async () => {
+          await harness.assertNotificationNotSent(email);
+        });
+      }
+    );
+
+    ScenarioOutline(
+      `Admin cannot onboard helper with invalid name`,
+      ({ Given, When, Then, And }, { firstname, lastname, error }) => {
+        const command = HelperCommandFixtures.aValidCommand({
+          firstname,
+          lastname,
+        });
+        Given(
+          `an admin attempts to onboard a helper named "<firstname>" "<lastname>"`,
+          () => {}
+        );
+        When(`the admin submits the onboarding request`, async () => {
+          await harness.onboardUser(command);
+        });
+        Then(`the system rejects the request with "<error>"`, async () => {
+          await harness.assertHelperIsNotOnboardedWithError(
+            error.statusCode,
+            error.errorBody
+          );
+        });
+        And(`no helper account is created`, async () => {
+          await harness.assertNotificationNotSent(command.email);
+        });
+      }
+    );
+
+    ScenarioOutline(
+      `Admin cannot onboard helper with invalid phone number`,
+      ({ Given, When, Then, And }, { error, phoneNumber }) => {
+        const command = HelperCommandFixtures.aValidCommand({
+          phoneNumber,
+        });
+        Given(
+          `an admin attempts to onboard a helper with phone number "<phoneNumber>"`,
+          () => {}
+        );
+        When(`the admin submits the onboarding request`, async () => {
+          await harness.onboardUser(
+            HelperCommandFixtures.aValidCommand(command)
+          );
+        });
+        Then(`the system rejects the request with "<error>"`, async () => {
+          await harness.assertHelperIsNotOnboardedWithError(
+            error.statusCode,
+            error.errorBody
+          );
+        });
+        And(`no helper account is created`, async () => {
+          await harness.assertNotificationNotSent(command.email);
+        });
+      }
+    );
+
+    ScenarioOutline(
+      `Admin cannot onboard helper with invalid profession(s)`,
+      ({ Given, When, Then, And }, { professions, error }) => {
+        const command = HelperCommandFixtures.aValidCommand({
+          professions: professions.trim("").split(","),
+        });
+        Given(
+          "an admin attempts to onboard a helper with professions <professions>",
+          () => {}
+        );
+        When(`the admin submits the onboarding request`, async () => {
+          await harness.onboardUser(command);
+        });
+        Then(`the system rejects the request with <error>`, async () => {
+          await harness.assertHelperIsNotOnboardedWithError(
+            error.statusCode,
+            error.errorBody
+          );
+        });
+        And(`no helper account is created`, async () => {
+          await harness.assertNotificationNotSent(command.email);
+        });
       }
     );
 
     ScenarioOutline(
       `Admin cannot onboard helper with invalid birthdate`,
-      ({ Given, When, Then, And }, { birthdate, email, error }) => {
-        Given(`I am onboarding a new helper`, () => {});
-        Given("It's {date}", () => {});
-        And(`the email address is <email>`, () => {});
-        And(`the first name is "John"`, () => {});
-        And(`the last name is "Doe"`, () => {});
-        And(`the birthdate is <birthdate>`, () => {});
-        When(`I onboard the user`, async () => {});
-        Then(`the onboarding fails because <error>`, async () => {
-          await sut.onboardUser(
-            HelperCommandFixtures.aValidCommand({
-              email,
-              birthdate: new Date(birthdate),
-            })
+      ({ Given, When, Then, And }, { birthdate, error }) => {
+        const command = HelperCommandFixtures.aValidCommand({
+          birthdate: new Date(birthdate),
+        });
+        Given("it is {date}", (ctx, date) => {
+          harness.setup(date);
+        });
+        And(
+          "an admin attempts to onboard a helper born on <birthdate>",
+          () => {}
+        );
+        When(`the admin submits the onboarding request`, async () => {
+          await harness.onboardUser(command);
+        });
+        Then(`the system rejects the request with <error>`, async () => {
+          await harness.assertHelperIsNotOnboardedWithError(
+            error.statusCode,
+            error.errorBody
           );
         });
-        And(`the helper is not onboarded`, async () => {
-          expect(
-            await sut.assertOnboardingFailedWithError(
-              error.statusCode,
-              error.errorBody
-            )
-          );
+        And(`no helper account is created`, async () => {
+          await harness.assertNotificationNotSent(command.email);
         });
       }
     );
-
-    Scenario(
-      `Admin cannot onboard helper when system is temporarily unavailable`,
-      ({ Given, When, Then, And }) => {
-        const email = "john@domain.com";
-
-        Given(`I am onboarding a new helper with valid information`, () => {});
-
-        And(`the system is temporarily unavailable`, () => {
-          sut.simulateSystemUnavailable();
+    ScenarioOutline(
+      `Admin cannot onboard a helper with phone number already in use`,
+      ({ Given, When, Then, And }, { phoneNumber, error }) => {
+        const secondCommand = HelperCommandFixtures.aValidCommand({
+          phoneNumber,
         });
-
-        When(`I attempt to onboard the user`, async () => {
-          await sut.onboardUser(HelperCommandFixtures.withEmail(email));
+        Given(
+          "a helper with phone number <phoneNumber> is already onboarded",
+          async () => {
+            await harness.onboardUser(
+              HelperCommandFixtures.aValidCommand({
+                phoneNumber,
+              })
+            );
+          }
+        );
+        When(
+          "an admin attempts to onboard a user with the same phone number",
+          async () => {
+            await harness.onboardUser(secondCommand);
+          }
+        );
+        Then(`the system rejects the request because <error>`, async () => {
+          await harness.assertHelperIsNotOnboardedWithError(
+            error.statusCode,
+            error.errorBody
+          );
         });
-
-        Then(`the onboarding should fail`, async () => {
-          await sut.assertOnboardingFailed();
-        });
-
-        And(`the helper should not be onboarded`, async () => {
-          await sut.assertHelperNotOnboarded(email);
-        });
-
-        And(`no notification should be sent`, async () => {
-          await sut.assertNotificationNotSent(email);
+        And(`no helper account is created`, async () => {
+          await harness.assertNotificationNotSent(secondCommand.email);
         });
       }
     );
-  }
+  },
+  { includeTags: ["integration"] }
 );

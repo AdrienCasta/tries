@@ -63,6 +63,7 @@ export class OnboardHelper {
       | ProfessionError
       | FrenchCountyError
       | EmailAlreadyUsedError
+      | PhoneAlreadyUsedError
       | CreateHelperAccountException
     >
   > {
@@ -80,12 +81,22 @@ export class OnboardHelper {
       return Result.fail(validated.error);
     }
 
-    const existingHelper = await this.helperRepository.findByEmail(
+    const existingHelper = await this.helperAccountRepository.findByEmail(
       validated.value.email.toValue()
     );
     if (existingHelper) {
       return Result.fail(
         new EmailAlreadyUsedError(validated.value.email.toValue())
+      );
+    }
+
+    const existingPhone = await this.helperAccountRepository.findByPhone(
+      validated.value.phoneNumber.toValue()
+    );
+
+    if (existingPhone) {
+      return Result.fail(
+        new PhoneAlreadyUsedError(validated.value.phoneNumber.toValue())
       );
     }
 
@@ -124,8 +135,15 @@ export class OnboardHelper {
   }
 }
 
-class EmailAlreadyUsedError extends Error {
+export class EmailAlreadyUsedError extends Error {
   readonly code = "EMAIL_ALREADY_IN_USE";
+  constructor(email: string) {
+    super();
+  }
+}
+
+export class PhoneAlreadyUsedError extends Error {
+  readonly code = "PHONE_NUMBER_ALREADY_IN_USE";
   constructor(email: string) {
     super();
   }

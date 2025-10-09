@@ -1,16 +1,18 @@
 import { OnboardHelperCommand } from "../../OnboardHelper.command.js";
+import { PhoneNumberFixtures } from "@shared/__tests__/fixtures/PhoneNumberFixtures.js";
+import { EmailFixtures } from "@shared/__tests__/fixtures/EmailFixtures.js";
 
 export class HelperCommandFixtures {
   static aValidCommand(
     overrides?: Partial<OnboardHelperCommand>
   ): OnboardHelperCommand {
     return new OnboardHelperCommand(
-      overrides?.email ?? "john@example.com",
+      overrides?.email ?? EmailFixtures.aRandomEmail(),
       overrides?.firstname ?? "John",
       overrides?.lastname ?? "Doe",
       overrides?.professions ?? ["physiotherapist"],
       overrides?.birthdate ?? new Date("1995-03-26"),
-      overrides?.phoneNumber ?? "+3312345678",
+      overrides?.phoneNumber ?? PhoneNumberFixtures.aRandomMobileNumber(),
       overrides?.frenchCounty ?? "44"
     );
   }

@@ -54,58 +54,66 @@ const feature = await loadFeatureFromText(featureContent);
 
 describeFeature(
   feature,
-  ({ AfterEachScenario, ScenarioOutline }) => {
-    AfterEachScenario(() => {
-      cleanup();
+  ({ Background, BeforeEachScenario, ScenarioOutline }) => {
+    Background(({ Given }) => {
+      Given("the admin is authenticated", () => {});
+    });
+
+    BeforeEachScenario(() => {
       vi.clearAllMocks();
     });
 
     ScenarioOutline(
-      `Admin successfully onboards a new helper with valid information`,
-      (
-        { Given, When, Then, And },
-        {
-          email,
-          firstname,
-          lastname,
-          phoneNumber,
-          profession,
-          birthdate,
-          frenchCounty,
-        }
-      ) => {
-        Given(`the user's email is "<email>"`, () => {});
-        And(`the user's first name is "<firstname>"`, () => {});
-        And(`the user's last name is "<lastname>"`, () => {});
-        And(`the user's phone number is "<phoneNumber>"`, () => {});
-        And(`the user's profession is "<profession>"`, () => {});
-        And(`the user's birthdate is "<birthdate>"`, () => {});
-        And(`the user's county is "<frenchCounty>"`, () => {});
+      `Admin onboards a qualified helper`,
+      ({ Given, When, Then, And }, { email, firstname, lastname }) => {
+        const defaultHelperData = {
+          phoneNumber: "+33612345678",
+          profession: "physiotherapist",
+          birthdate: "1995-03-26",
+          frenchCounty: "44",
+        };
 
-        When(`I onboard the user`, async () => {
-          const user = userEvent.setup();
+        Given(`an admin has a qualified helper's information`, () => {});
 
-          mockFetch.mockResolvedValueOnce(mockSuccessResponse());
-          render(<OnboardHelperPage />);
+        When(
+          `the admin submits the onboarding request for "<firstname>" "<lastname>"`,
+          async () => {
+            const user = userEvent.setup();
+            mockFetch.mockResolvedValueOnce(mockSuccessResponse());
+            render(<OnboardHelperPage />);
 
-          await fillAndSubmitHelperForm(user, {
-            email,
-            firstname,
-            lastname,
-            phoneNumber,
-            profession,
-            birthdate,
-            frenchCounty,
-          });
+            await fillAndSubmitHelperForm(user, {
+              email,
+              firstname,
+              lastname,
+              ...defaultHelperData,
+            });
 
-          expect(
-            await screen.findByText(/user onboarded/i)
-          ).toBeInTheDocument();
-        });
+            expect(mockFetch).toHaveBeenCalledWith(
+              "/api/helpers/onboard",
+              expect.objectContaining({
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  email,
+                  firstname,
+                  lastname,
+                  ...defaultHelperData,
+                }),
+              })
+            );
 
-        Then(`the user should be onboarded as a helper`, () => {});
+            expect(
+              await screen.findByText(/user onboarded/i)
+            ).toBeInTheDocument();
+          }
+        );
 
-        And(`the user should receive a notification`, () => {});
+        Then(`a helper account is created for "<email>"`, () => {});
+
+        And(`a welcome email is sent to "<email>"`, () => {});
+
+        And(`the helper can access the Tries platform`, () => {});
       }
     );
   },

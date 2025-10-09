@@ -1,12 +1,12 @@
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import type { OnboardHelperFormData } from '../types/OnboardHelperForm.types'
-import { onboardHelperSchema } from '../validators/schema'
-import { VALID_PROFESSIONS } from '../constants/professions'
-import { FRENCH_COUNTIES } from '../constants/frenchCounties'
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { OnboardHelperFormData } from "../types/OnboardHelperForm.types";
+import { onboardHelperSchema } from "../validators/schema";
+import { VALID_PROFESSIONS } from "../constants/professions";
+import { FRENCH_COUNTIES } from "../constants/frenchCounties";
 
 interface OnboardHelperFormProps {
-  onSubmit?: (data: OnboardHelperFormData) => void
+  onSubmit?: (data: OnboardHelperFormData) => void;
 }
 
 export function OnboardHelperForm({ onSubmit }: OnboardHelperFormProps = {}) {
@@ -16,15 +16,15 @@ export function OnboardHelperForm({ onSubmit }: OnboardHelperFormProps = {}) {
     formState: { errors },
   } = useForm<OnboardHelperFormData>({
     resolver: zodResolver(onboardHelperSchema),
-  })
+  });
 
   const handleFormSubmit = (data: OnboardHelperFormData) => {
     if (onSubmit) {
-      onSubmit(data)
+      onSubmit(data);
     } else {
-      console.log(data)
+      console.log(data);
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} noValidate>
@@ -34,12 +34,10 @@ export function OnboardHelperForm({ onSubmit }: OnboardHelperFormProps = {}) {
           id="email"
           type="email"
           aria-required="true"
-          aria-invalid={errors.email ? 'true' : 'false'}
-          {...register('email')}
+          aria-invalid={errors.email ? "true" : "false"}
+          {...register("email")}
         />
-        {errors.email && (
-          <span role="alert">{errors.email.message}</span>
-        )}
+        {errors.email && <span role="alert">{errors.email.message}</span>}
       </div>
 
       <div>
@@ -48,8 +46,8 @@ export function OnboardHelperForm({ onSubmit }: OnboardHelperFormProps = {}) {
           id="firstname"
           type="text"
           aria-required="true"
-          aria-invalid={errors.firstname ? 'true' : 'false'}
-          {...register('firstname')}
+          aria-invalid={errors.firstname ? "true" : "false"}
+          {...register("firstname")}
         />
         {errors.firstname && (
           <span role="alert">{errors.firstname.message}</span>
@@ -62,12 +60,10 @@ export function OnboardHelperForm({ onSubmit }: OnboardHelperFormProps = {}) {
           id="lastname"
           type="text"
           aria-required="true"
-          aria-invalid={errors.lastname ? 'true' : 'false'}
-          {...register('lastname')}
+          aria-invalid={errors.lastname ? "true" : "false"}
+          {...register("lastname")}
         />
-        {errors.lastname && (
-          <span role="alert">{errors.lastname.message}</span>
-        )}
+        {errors.lastname && <span role="alert">{errors.lastname.message}</span>}
       </div>
 
       <div>
@@ -76,8 +72,8 @@ export function OnboardHelperForm({ onSubmit }: OnboardHelperFormProps = {}) {
           id="phoneNumber"
           type="tel"
           aria-required="true"
-          aria-invalid={errors.phoneNumber ? 'true' : 'false'}
-          {...register('phoneNumber')}
+          aria-invalid={errors.phoneNumber ? "true" : "false"}
+          {...register("phoneNumber")}
         />
         {errors.phoneNumber && (
           <span role="alert">{errors.phoneNumber.message}</span>
@@ -89,13 +85,13 @@ export function OnboardHelperForm({ onSubmit }: OnboardHelperFormProps = {}) {
         <select
           id="profession"
           aria-required="true"
-          aria-invalid={errors.profession ? 'true' : 'false'}
-          {...register('profession')}
+          aria-invalid={errors.profession ? "true" : "false"}
+          {...register("profession")}
         >
           <option value="">Select profession</option>
           {VALID_PROFESSIONS.map((profession) => (
             <option key={profession} value={profession}>
-              {profession.replace('_', ' ')}
+              {profession.replace("_", " ")}
             </option>
           ))}
         </select>
@@ -110,8 +106,8 @@ export function OnboardHelperForm({ onSubmit }: OnboardHelperFormProps = {}) {
           id="birthdate"
           type="date"
           aria-required="true"
-          aria-invalid={errors.birthdate ? 'true' : 'false'}
-          {...register('birthdate')}
+          aria-invalid={errors.birthdate ? "true" : "false"}
+          {...register("birthdate")}
         />
         {errors.birthdate && (
           <span role="alert">{errors.birthdate.message}</span>
@@ -123,8 +119,8 @@ export function OnboardHelperForm({ onSubmit }: OnboardHelperFormProps = {}) {
         <select
           id="frenchCounty"
           aria-required="true"
-          aria-invalid={errors.frenchCounty ? 'true' : 'false'}
-          {...register('frenchCounty')}
+          aria-invalid={errors.frenchCounty ? "true" : "false"}
+          {...register("frenchCounty")}
         >
           <option value="">Select county</option>
           <optgroup label="Metropolitan France">
@@ -156,5 +152,5 @@ export function OnboardHelperForm({ onSubmit }: OnboardHelperFormProps = {}) {
 
       <button type="submit">Onboard Helper</button>
     </form>
-  )
+  );
 }
