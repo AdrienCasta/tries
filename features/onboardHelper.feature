@@ -6,6 +6,7 @@ Feature: Onboarding a new helper
   # Rule: Helper information must be valid and complete
 
   @e2e
+  @frontend
   Scenario Outline: Admin successfully onboards a new helper with valid information
     Given the user's email is "<email>"
     And the user's first name is "<firstname>"
