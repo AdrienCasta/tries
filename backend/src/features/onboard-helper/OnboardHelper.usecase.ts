@@ -1,5 +1,5 @@
 import { OnboardHelperCommand } from "./OnboardHelper.command.js";
-import { Helper as Helper } from "@shared/domain/entities/Helper.js";
+import { Helper } from "@shared/domain/entities/Helper.js";
 import { HelperAccount } from "@shared/domain/entities/HelperAccount.js";
 import HelperId from "@shared/domain/value-objects/HelperId.js";
 import { HelperRepository } from "@shared/domain/repositories/HelperRepository.js";
@@ -35,6 +35,24 @@ import InvalidEmailError from "@shared/infrastructure/InvalidEmailError.js";
 import EmailAlreadyUsedError from "@shared/infrastructure/EmailAlreadyUsedError.js";
 import PhoneAlreadyUsedError from "@shared/infrastructure/PhoneAlreadyUsedError.js";
 
+type ValidationError =
+  | InvalidEmailError
+  | BirthdateInFuturError
+  | PhoneNumberError
+  | TooYoungToWorkError
+  | FirstnameEmptyError
+  | FirstnameTooShortError
+  | LastnameTooShortError
+  | LastnameEmptyError
+  | ProfessionError
+  | FrenchCountyError;
+
+type OnboardHelperError =
+  | ValidationError
+  | EmailAlreadyUsedError
+  | PhoneAlreadyUsedError
+  | CreateHelperAccountException;
+
 export class OnboardHelper {
   constructor(
     private readonly helperRepository: HelperRepository,
@@ -43,41 +61,10 @@ export class OnboardHelper {
     private readonly clock: Clock
   ) {}
 
-  async execute({
-    email,
-    firstname,
-    lastname,
-    phoneNumber,
-    professions,
-    birthdate,
-    frenchCounty,
-  }: OnboardHelperCommand): Promise<
-    Result<
-      HelperId,
-      | InvalidEmailError
-      | BirthdateInFuturError
-      | PhoneNumberError
-      | TooYoungToWorkError
-      | FirstnameEmptyError
-      | FirstnameTooShortError
-      | LastnameTooShortError
-      | LastnameEmptyError
-      | ProfessionError
-      | FrenchCountyError
-      | EmailAlreadyUsedError
-      | PhoneAlreadyUsedError
-      | CreateHelperAccountException
-    >
-  > {
-    const validated = Result.combineObject({
-      email: HelperEmail.create(email),
-      firstname: Firstname.create(firstname),
-      lastname: Lastname.create(lastname),
-      phoneNumber: PhoneNumber.create(phoneNumber),
-      birthdate: Birthdate.create(birthdate, { clock: this.clock }),
-      professions: Profession.createMany(professions),
-      frenchCounty: FrenchCounty.create(frenchCounty),
-    });
+  async execute(
+    command: OnboardHelperCommand
+  ): Promise<Result<HelperId, OnboardHelperError>> {
+    const validated = this.validateCommand(command);
 
     if (Result.isFailure(validated)) {
       return Result.fail(validated.error);
@@ -112,9 +99,28 @@ export class OnboardHelper {
     };
 
     await this.helperRepository.save(helper);
-    this.notif.send({ email, firstname, lastname, phoneNumber, professions });
+
+    this.notif.send({
+      email: validated.value.email.value,
+      firstname: validated.value.firstname.value,
+      lastname: validated.value.lastname.value,
+      phoneNumber: validated.value.phoneNumber.value,
+      professions: validated.value.professions.map((p) => p.value),
+    });
 
     return Result.ok(helper.id);
+  }
+
+  private validateCommand(command: OnboardHelperCommand) {
+    return Result.combineObject({
+      email: HelperEmail.create(command.email),
+      firstname: Firstname.create(command.firstname),
+      lastname: Lastname.create(command.lastname),
+      phoneNumber: PhoneNumber.create(command.phoneNumber),
+      birthdate: Birthdate.create(command.birthdate, { clock: this.clock }),
+      professions: Profession.createMany(command.professions),
+      frenchCounty: FrenchCounty.create(command.frenchCounty),
+    });
   }
 }
 
