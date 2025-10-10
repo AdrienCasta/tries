@@ -54,6 +54,25 @@ export class SupabaseHelperAccountRepository
     return Result.ok(account);
   }
 
+  async delete(helperId: HelperId): Promise<void> {
+    try {
+      const { error } = await this.supabase.auth.admin.deleteUser(
+        helperId.value
+      );
+
+      if (error) {
+        console.error(
+          `Failed to delete helper account ${helperId.value}: ${error.message}`
+        );
+      }
+    } catch (error) {
+      console.error(
+        `Exception deleting helper account ${helperId.value}:`,
+        error
+      );
+    }
+  }
+
   async findByHelperId(id: HelperId): Promise<HelperAccount | null> {
     const { data, error } = await this.supabase.auth.admin.getUserById(
       id.value

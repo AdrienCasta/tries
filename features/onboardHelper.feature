@@ -162,10 +162,29 @@ Feature: Onboarding a new helper
       | 2025-10-07 | birthdate provided is set to the future.             |
       | 2022-10-07 | age requirement not met. You must be at least 16 yo. |
 
-  Scenario: Admin cannot onboard helper when system is unavailable
+  @unit
+  Scenario Outline: Admin cannot onboard helper when system is unavailable
     Given an admin has valid helper information
-    And the system is temporarily unavailable
+    And the system is temporarily unavailable in scenario <scenario>
     When the admin attempts to onboard the helper
     Then the system cannot process the request
     And no helper account is created
     And no notification is sent
+
+    Examples:
+      | scenario |
+      | default  |
+
+  @unit
+  Scenario Outline: System rolls back account when helper save fails
+    Given an admin has valid helper information in scenario <scenario>
+    And the helper account creation will succeed
+    But the helper profile save will fail
+    When the admin attempts to onboard the helper
+    Then the system rejects the request
+    And the helper account is rolled back
+    And no notification is sent
+
+    Examples:
+      | scenario |
+      | default  |

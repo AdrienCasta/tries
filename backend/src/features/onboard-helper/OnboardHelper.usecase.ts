@@ -34,6 +34,7 @@ import { Result } from "@shared/infrastructure/Result.js";
 import InvalidEmailError from "@shared/infrastructure/InvalidEmailError.js";
 import EmailAlreadyUsedError from "@shared/infrastructure/EmailAlreadyUsedError.js";
 import PhoneAlreadyUsedError from "@shared/infrastructure/PhoneAlreadyUsedError.js";
+import SaveHelperError from "@shared/infrastructure/SaveHelperError.js";
 
 type ValidationError =
   | InvalidEmailError
@@ -51,7 +52,8 @@ type OnboardHelperError =
   | ValidationError
   | EmailAlreadyUsedError
   | PhoneAlreadyUsedError
-  | CreateHelperAccountException;
+  | CreateHelperAccountException
+  | SaveHelperError;
 
 export class OnboardHelper {
   constructor(
@@ -98,7 +100,12 @@ export class OnboardHelper {
       frenchCounty: validated.value.frenchCounty,
     };
 
-    await this.helperRepository.save(helper);
+    const saveResult = await this.helperRepository.save(helper);
+
+    if (Result.isFailure(saveResult)) {
+      await this.helperAccountRepository.delete(helperId);
+      return Result.fail(saveResult.error);
+    }
 
     this.notif.send({
       email: validated.value.email.value,

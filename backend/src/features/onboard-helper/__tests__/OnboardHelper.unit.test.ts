@@ -247,6 +247,53 @@ describeFeature(
         });
       }
     );
+
+    ScenarioOutline(
+      `Admin cannot onboard helper when system is unavailable`,
+      ({ Given, And, When, Then }, { scenario }) => {
+        const command = HelperCommandFixtures.aValidCommand();
+        Given("an admin has valid helper information", () => {});
+        And("the system is temporarily unavailable in scenario <scenario>", () => {
+          harness.simulateInfrastructureFailure();
+        });
+        When("the admin attempts to onboard the helper", async () => {
+          await harness.onboardUser(command);
+        });
+        Then("the system cannot process the request", async () => {
+          await harness.assertHelperIsNotOnboarded(command.email);
+        });
+        And("no helper account is created", async () => {
+          await harness.assertNotificationNotSent(command.email);
+        });
+        And("no notification is sent", async () => {
+          await harness.assertNotificationNotSent(command.email);
+        });
+      }
+    );
+
+    ScenarioOutline(
+      `System rolls back account when helper save fails`,
+      ({ Given, And, But, When, Then }, { scenario }) => {
+        const command = HelperCommandFixtures.aValidCommand();
+        Given("an admin has valid helper information in scenario <scenario>", () => {});
+        And("the helper account creation will succeed", () => {});
+        But("the helper profile save will fail", () => {
+          harness.simulateHelperRepositoryFailure();
+        });
+        When("the admin attempts to onboard the helper", async () => {
+          await harness.onboardUser(command);
+        });
+        Then("the system rejects the request", async () => {
+          await harness.assertHelperIsNotOnboarded(command.email);
+        });
+        And("the helper account is rolled back", async () => {
+          await harness.assertHelperAccountDeleted(command.email);
+        });
+        And("no notification is sent", async () => {
+          await harness.assertNotificationNotSent(command.email);
+        });
+      }
+    );
   },
   {
     includeTags: ["unit"],

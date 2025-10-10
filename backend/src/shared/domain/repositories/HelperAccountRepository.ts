@@ -16,6 +16,7 @@ export interface HelperAccountRepository {
       | PhoneAlreadyUsedError
     >
   >;
+  delete(helperId: HelperId): Promise<void>;
   findByHelperId(helperId: HelperId): Promise<HelperAccount | null>;
   findByEmail(email: string): Promise<HelperAccount | null>;
   findByPhone(phone: string): Promise<HelperAccount | null>;

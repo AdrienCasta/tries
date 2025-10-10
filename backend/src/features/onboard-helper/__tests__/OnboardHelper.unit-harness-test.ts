@@ -107,4 +107,18 @@ export default class OnboardHelperUnitHarnessTest {
   simulateInfrastructureFailure(): void {
     this.helperAccountRepository.simulateFailure();
   }
+
+  simulateHelperRepositoryFailure(): void {
+    this.helperRepository.simulateFailure();
+  }
+
+  async assertHelperAccountCreated(email: string): Promise<void> {
+    const account = await this.helperAccountRepository.findByEmail(email);
+    expect(account).not.toBeNull();
+  }
+
+  async assertHelperAccountDeleted(email: string): Promise<void> {
+    const account = await this.helperAccountRepository.findByEmail(email);
+    expect(account).toBeNull();
+  }
 }

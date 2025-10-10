@@ -44,6 +44,10 @@ export class InMemoryHelperAccountRepository
     return Result.ok(account);
   }
 
+  async delete(helperId: HelperId): Promise<void> {
+    this.accounts.delete(helperId.toValue());
+  }
+
   simulateFailure(): void {
     this.shouldFail = true;
   }
