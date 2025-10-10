@@ -1,5 +1,5 @@
 import { Result } from "@shared/infrastructure/Result.js";
-import DomainError from "@shared/infrastructure/DomainError.js";
+import DomainError from "@shared/domain/DomainError.js";
 
 export default class Firstname {
   readonly value: string;

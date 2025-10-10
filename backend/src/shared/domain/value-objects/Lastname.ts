@@ -1,4 +1,4 @@
-import DomainError from "@shared/infrastructure/DomainError.js";
+import DomainError from "@shared/domain/DomainError.js";
 import { Result } from "../../infrastructure/Result.js";
 
 export default class Lastname {

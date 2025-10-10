@@ -1,10 +1,8 @@
-import {
-  EmailAlreadyUsedError,
-  OnboardHelper,
-  PhoneAlreadyUsedError,
-} from "./OnboardHelper.usecase.js";
+import { OnboardHelper } from "./OnboardHelper.usecase.js";
 import { OnboardHelperCommand } from "./OnboardHelper.command.js";
 import { Result, Failure } from "@shared/infrastructure/Result.js";
+import EmailAlreadyUsedError from "@shared/infrastructure/EmailAlreadyUsedError.js";
+import PhoneAlreadyUsedError from "@shared/infrastructure/PhoneAlreadyUsedError.js";
 import {
   OnboardHelperRequest,
   OnboardHelperSuccessResponse,

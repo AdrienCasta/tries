@@ -1,4 +1,4 @@
-import DomainError from "./DomainError";
+import DomainError from "../domain/DomainError";
 
 export default class EmptyEmailError extends DomainError {
   readonly code = "EMPTY_EMAIL_ERROR";

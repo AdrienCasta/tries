@@ -1,4 +1,4 @@
-import DomainError from "@shared/infrastructure/DomainError.js";
+import DomainError from "@shared/domain/DomainError.js";
 import { Result } from "../../infrastructure/Result.js";
 
 export default class FrenchCounty {
@@ -27,7 +27,8 @@ function isValidFrenchCounty(county: string): boolean {
   if (!county || county === "") {
     return false;
   }
-  const countyRegex = /^(0[1-9]|1[0-9]|2[1-9AB]|[3-8][0-9]|9[0-5]|97[1-4]|976)$/;
+  const countyRegex =
+    /^(0[1-9]|1[0-9]|2[1-9AB]|[3-8][0-9]|9[0-5]|97[1-4]|976)$/;
   return countyRegex.test(county);
 }
 

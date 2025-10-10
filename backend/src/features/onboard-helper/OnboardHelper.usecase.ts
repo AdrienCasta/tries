@@ -32,6 +32,8 @@ import Birthdate, {
 } from "@shared/domain/value-objects/Birthdate.js";
 import { Result } from "@shared/infrastructure/Result.js";
 import InvalidEmailError from "@shared/infrastructure/InvalidEmailError.js";
+import EmailAlreadyUsedError from "@shared/infrastructure/EmailAlreadyUsedError.js";
+import PhoneAlreadyUsedError from "@shared/infrastructure/PhoneAlreadyUsedError.js";
 
 export class OnboardHelper {
   constructor(
@@ -81,25 +83,6 @@ export class OnboardHelper {
       return Result.fail(validated.error);
     }
 
-    const existingHelper = await this.helperAccountRepository.findByEmail(
-      validated.value.email.toValue()
-    );
-    if (existingHelper) {
-      return Result.fail(
-        new EmailAlreadyUsedError(validated.value.email.toValue())
-      );
-    }
-
-    const existingPhone = await this.helperAccountRepository.findByPhone(
-      validated.value.phoneNumber.toValue()
-    );
-
-    if (existingPhone) {
-      return Result.fail(
-        new PhoneAlreadyUsedError(validated.value.phoneNumber.toValue())
-      );
-    }
-
     const helperId = HelperId.generate();
 
     const helperAccount: HelperAccount = {
@@ -132,20 +115,6 @@ export class OnboardHelper {
     this.notif.send({ email, firstname, lastname, phoneNumber, professions });
 
     return Result.ok(helper.id);
-  }
-}
-
-export class EmailAlreadyUsedError extends Error {
-  readonly code = "EMAIL_ALREADY_IN_USE";
-  constructor(email: string) {
-    super();
-  }
-}
-
-export class PhoneAlreadyUsedError extends Error {
-  readonly code = "PHONE_NUMBER_ALREADY_IN_USE";
-  constructor(email: string) {
-    super();
   }
 }
 

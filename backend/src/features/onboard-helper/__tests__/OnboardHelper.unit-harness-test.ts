@@ -10,7 +10,7 @@ import { InMemoryHelperAccountRepository } from "@infrastructure/persistence/InM
 import { FakeOnboardedHelperNotificationService } from "@infrastructure/notifications/InMemoryOnboardingHelperNotificationService.js";
 import { FixedClock } from "@infrastructure/time/FixedClock.js";
 import { Failure, Result } from "@shared/infrastructure/Result.js";
-import DomainError from "@shared/infrastructure/DomainError.js";
+import DomainError from "@shared/domain/DomainError.js";
 
 export default class OnboardHelperUnitHarnessTest {
   private helperRepository!: InMemoryHelperRepository;

@@ -5,7 +5,7 @@ import {
   ConfirmHelperEmailResult,
 } from "../ConfirmHelperEmail.usecase.js";
 import { Failure, Result } from "@shared/infrastructure/Result.js";
-import DomainError from "@shared/infrastructure/DomainError.js";
+import DomainError from "@shared/domain/DomainError.js";
 import { FakeEmailConfirmationService } from "./fakes/FakeEmailConfirmationService.js";
 import { FixedClock } from "@infrastructure/time/FixedClock.js";
 

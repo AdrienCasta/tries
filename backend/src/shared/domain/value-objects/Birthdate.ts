@@ -1,6 +1,6 @@
 import { SystemClock } from "@infrastructure/time/SystemClock.js";
 import { Result } from "../../infrastructure/Result.js";
-import DomainError from "@shared/infrastructure/DomainError.js";
+import DomainError from "@shared/domain/DomainError.js";
 
 export default class Birthdate {
   readonly value: Date;

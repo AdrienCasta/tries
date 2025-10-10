@@ -34,7 +34,6 @@ export class HelperAccountPersistenceMapper {
         const normalizedPhone = data.phone.startsWith("+")
           ? data.phone
           : `+${data.phone}`;
-        console.log(data.phone);
         const phoneResult = PhoneNumber.create(normalizedPhone);
         if (!phoneResult.success) {
           throw DataMappingException.forField(

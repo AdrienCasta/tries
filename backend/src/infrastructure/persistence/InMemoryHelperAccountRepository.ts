@@ -3,6 +3,8 @@ import { HelperAccountRepository } from "@shared/domain/repositories/HelperAccou
 import HelperId from "@shared/domain/value-objects/HelperId.js";
 import { Result } from "@shared/infrastructure/Result.js";
 import CreateHelperAccountException from "@shared/infrastructure/CreateHelperAccountException.js";
+import EmailAlreadyUsedError from "@shared/infrastructure/EmailAlreadyUsedError.js";
+import PhoneAlreadyUsedError from "@shared/infrastructure/PhoneAlreadyUsedError.js";
 
 export class InMemoryHelperAccountRepository
   implements HelperAccountRepository
@@ -12,12 +14,32 @@ export class InMemoryHelperAccountRepository
 
   async create(
     account: HelperAccount
-  ): Promise<Result<HelperAccount, CreateHelperAccountException>> {
+  ): Promise<
+    Result<
+      HelperAccount,
+      | CreateHelperAccountException
+      | EmailAlreadyUsedError
+      | PhoneAlreadyUsedError
+    >
+  > {
     if (this.shouldFail) {
       return Result.fail(
         new CreateHelperAccountException("Infrastructure failure simulated")
       );
     }
+
+    const existingEmail = await this.findByEmail(account.email.value);
+    if (existingEmail) {
+      return Result.fail(new EmailAlreadyUsedError(account.email.value));
+    }
+
+    const existingPhone = account.phoneNumber
+      ? await this.findByPhone(account.phoneNumber.value)
+      : null;
+    if (existingPhone) {
+      return Result.fail(new PhoneAlreadyUsedError(account.phoneNumber!.value));
+    }
+
     this.accounts.set(account.helperId.toValue(), account);
     return Result.ok(account);
   }

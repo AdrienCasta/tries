@@ -1,6 +1,6 @@
 import { randomBytes } from "crypto";
 import { Result } from "../../infrastructure/Result.js";
-import DomainError from "@shared/infrastructure/DomainError.js";
+import DomainError from "@shared/domain/DomainError.js";
 
 export default class Password {
   readonly value: string;

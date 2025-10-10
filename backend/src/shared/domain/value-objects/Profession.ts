@@ -1,4 +1,4 @@
-import DomainError from "@shared/infrastructure/DomainError";
+import DomainError from "@shared/domain/DomainError";
 import { Result } from "@shared/infrastructure/Result.js";
 
 export const VALID_PROFESSIONS = [

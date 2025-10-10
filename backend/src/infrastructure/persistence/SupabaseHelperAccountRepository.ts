@@ -5,6 +5,8 @@ import HelperId from "@shared/domain/value-objects/HelperId.js";
 import { Result } from "@shared/infrastructure/Result.js";
 import CreateHelperAccountException from "@shared/infrastructure/CreateHelperAccountException.js";
 import { HelperAccountPersistenceMapper } from "./mappers/HelperAccountPersistenceMapper.js";
+import EmailAlreadyUsedError from "@shared/infrastructure/EmailAlreadyUsedError.js";
+import PhoneAlreadyUsedError from "@shared/infrastructure/PhoneAlreadyUsedError.js";
 
 export class SupabaseHelperAccountRepository
   implements HelperAccountRepository
@@ -13,16 +15,43 @@ export class SupabaseHelperAccountRepository
 
   async create(
     account: HelperAccount
-  ): Promise<Result<HelperAccount, CreateHelperAccountException>> {
+  ): Promise<
+    Result<
+      HelperAccount,
+      | CreateHelperAccountException
+      | EmailAlreadyUsedError
+      | PhoneAlreadyUsedError
+    >
+  > {
     const persistenceModel =
       HelperAccountPersistenceMapper.toPersistence(account);
     const { error } = await this.supabase.auth.admin.createUser(
       persistenceModel
     );
 
-    return error
-      ? Result.fail(new CreateHelperAccountException(error.message))
-      : Result.ok(account);
+    if (error) {
+      const errorMessage = error.message.toLowerCase();
+
+      if (
+        errorMessage.includes("email") &&
+        (errorMessage.includes("already") || errorMessage.includes("exists"))
+      ) {
+        return Result.fail(new EmailAlreadyUsedError(account.email.value));
+      }
+
+      if (
+        errorMessage.includes("phone") &&
+        (errorMessage.includes("already") || errorMessage.includes("exists"))
+      ) {
+        return Result.fail(
+          new PhoneAlreadyUsedError(account.phoneNumber?.value || "")
+        );
+      }
+
+      return Result.fail(new CreateHelperAccountException(error.message));
+    }
+
+    return Result.ok(account);
   }
 
   async findByHelperId(id: HelperId): Promise<HelperAccount | null> {
@@ -51,6 +80,7 @@ export class SupabaseHelperAccountRepository
 
     return HelperAccountPersistenceMapper.toDomain(user as any);
   }
+
   async findByPhone(phoneNumber: string): Promise<HelperAccount | null> {
     const { data, error } = await this.supabase.auth.admin.listUsers();
 
