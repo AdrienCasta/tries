@@ -1,6 +1,7 @@
 import { OnboardHelperCommand } from "../../OnboardHelper.command.js";
 import { PhoneNumberFixtures } from "@shared/__tests__/fixtures/PhoneNumberFixtures.js";
 import { EmailFixtures } from "@shared/__tests__/fixtures/EmailFixtures.js";
+import { PlaceOfBirthFixtures } from "@shared/__tests__/fixtures/PlaceOfBirthFixtures.js";
 
 export class HelperCommandFixtures {
   static aValidCommand(
@@ -13,7 +14,8 @@ export class HelperCommandFixtures {
       overrides?.professions ?? ["physiotherapist"],
       overrides?.birthdate ?? new Date("1995-03-26"),
       overrides?.phoneNumber ?? PhoneNumberFixtures.aRandomMobileNumber(),
-      overrides?.frenchCounty ?? "44"
+      overrides?.frenchCounty ?? "44",
+      overrides?.placeOfBirth ?? PlaceOfBirthFixtures.aRandomPlaceOfBirth()
     );
   }
 

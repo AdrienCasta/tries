@@ -6,6 +6,11 @@ export interface OnboardHelperRequest {
   birthdate: string;
   professions: string[];
   frenchCounty: string;
+  placeOfBirth: {
+    country: string;
+    city: string;
+    zipCode?: string;
+  };
 }
 
 export interface OnboardHelperSuccessResponse {

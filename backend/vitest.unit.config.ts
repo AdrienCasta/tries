@@ -7,7 +7,8 @@ export default mergeConfig(
     test: {
       include: [
         "src/__tests__/**/*.unit.test.ts",
-        "src/features/**/*.unit.test.ts"
+        "src/shared/**/*Fixtures.test.ts",
+        "src/features/**/*.unit.test.ts",
       ],
     },
   })

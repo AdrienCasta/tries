@@ -95,6 +95,7 @@ export default class OnboardHelperE2eHarnessTest {
         phoneNumber: command.phoneNumber,
         professions: command.professions,
         frenchCounty: command.frenchCounty,
+        placeOfBirth: command.placeOfBirth,
       },
     });
 

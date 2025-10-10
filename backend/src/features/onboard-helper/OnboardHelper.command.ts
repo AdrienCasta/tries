@@ -6,6 +6,11 @@ export class OnboardHelperCommand {
     public readonly professions: string[],
     public readonly birthdate: Date,
     public readonly phoneNumber: string,
-    public readonly frenchCounty: string
+    public readonly frenchCounty: string,
+    public readonly placeOfBirth: {
+      country: string;
+      city: string;
+      zipCode?: string;
+    }
   ) {}
 }

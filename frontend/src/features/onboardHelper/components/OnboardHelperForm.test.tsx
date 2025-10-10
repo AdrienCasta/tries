@@ -1,7 +1,25 @@
-import { describe, test, expect } from "vitest";
+import { describe, test, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { OnboardHelperForm } from "./OnboardHelperForm";
+import { HelperFormDataFixtures } from "../__tests__/fixtures/HelperFormDataFixtures";
+import type { OnboardHelperFormData } from "../types/OnboardHelperForm.types";
+
+const fillFormWithData = async (
+  user: ReturnType<typeof userEvent.setup>,
+  data: OnboardHelperFormData
+) => {
+  await user.type(screen.getByLabelText(/email/i), data.email);
+  await user.type(screen.getByLabelText(/first name/i), data.firstname);
+  await user.type(screen.getByLabelText(/last name/i), data.lastname);
+  await user.type(screen.getByLabelText(/phone number/i), data.phoneNumber);
+  await user.selectOptions(
+    screen.getByLabelText(/profession/i),
+    data.profession
+  );
+  await user.type(screen.getByLabelText(/birthdate/i), data.birthdate);
+  await user.selectOptions(screen.getByLabelText(/county/i), data.frenchCounty);
+};
 
 describe("OnboardHelperForm", () => {
   describe("Rendering and Structure", () => {
@@ -18,38 +36,6 @@ describe("OnboardHelperForm", () => {
       expect(
         screen.getByRole("button", { name: /onboard/i })
       ).toBeInTheDocument();
-    });
-  });
-
-  describe("User Interactions", () => {
-    test("accepts email input", async () => {
-      const user = userEvent.setup();
-      render(<OnboardHelperForm />);
-
-      const emailInput = screen.getByLabelText(/email/i);
-      await user.type(emailInput, "test@example.com");
-
-      expect(emailInput).toHaveValue("test@example.com");
-    });
-
-    test("accepts firstname input", async () => {
-      const user = userEvent.setup();
-      render(<OnboardHelperForm />);
-
-      const firstnameInput = screen.getByLabelText(/first name/i);
-      await user.type(firstnameInput, "John");
-
-      expect(firstnameInput).toHaveValue("John");
-    });
-
-    test("accepts lastname input", async () => {
-      const user = userEvent.setup();
-      render(<OnboardHelperForm />);
-
-      const lastnameInput = screen.getByLabelText(/last name/i);
-      await user.type(lastnameInput, "Doe");
-
-      expect(lastnameInput).toHaveValue("Doe");
     });
   });
 
@@ -139,28 +125,12 @@ describe("OnboardHelperForm", () => {
 
       render(<OnboardHelperForm onSubmit={mockOnSubmit} />);
 
-      await user.type(screen.getByLabelText(/email/i), "john.doe@example.com");
-      await user.type(screen.getByLabelText(/first name/i), "John");
-      await user.type(screen.getByLabelText(/last name/i), "Doe");
-      await user.type(screen.getByLabelText(/phone number/i), "+33612345678");
-      await user.selectOptions(
-        screen.getByLabelText(/profession/i),
-        "physiotherapist"
-      );
-      await user.type(screen.getByLabelText(/birthdate/i), "1995-03-26");
-      await user.selectOptions(screen.getByLabelText(/county/i), "44");
+      const validData = HelperFormDataFixtures.aValidFormData();
+      await fillFormWithData(user, validData);
 
       await user.click(screen.getByRole("button", { name: /onboard/i }));
 
-      expect(mockOnSubmit).toHaveBeenCalledWith({
-        email: "john.doe@example.com",
-        firstname: "John",
-        lastname: "Doe",
-        phoneNumber: "+33612345678",
-        profession: "physiotherapist",
-        birthdate: "1995-03-26",
-        frenchCounty: "44",
-      });
+      expect(mockOnSubmit).toHaveBeenCalledWith(validData);
     });
 
     test("displays all validation errors on submit with empty form", async () => {
@@ -176,6 +146,30 @@ describe("OnboardHelperForm", () => {
       expect(screen.getByText(/profession.*required/i)).toBeInTheDocument();
       expect(screen.getByText(/birthdate.*required/i)).toBeInTheDocument();
       expect(screen.getByText(/county.*required/i)).toBeInTheDocument();
+    });
+  });
+
+
+  describe("French County Validation", () => {
+    test("displays error when county is empty", async () => {
+      const user = userEvent.setup();
+      render(<OnboardHelperForm />);
+
+      await user.type(screen.getByLabelText(/email/i), "test@example.com");
+      await user.type(screen.getByLabelText(/first name/i), "John");
+      await user.type(screen.getByLabelText(/last name/i), "Doe");
+      await user.type(screen.getByLabelText(/phone number/i), "+33612345678");
+      await user.selectOptions(
+        screen.getByLabelText(/profession/i),
+        "physiotherapist"
+      );
+      await user.type(screen.getByLabelText(/birthdate/i), "1995-03-26");
+
+      await user.click(screen.getByRole("button", { name: /onboard/i }));
+
+      expect(
+        await screen.findByText(/county.*required|required.*county/i)
+      ).toBeInTheDocument();
     });
   });
 });

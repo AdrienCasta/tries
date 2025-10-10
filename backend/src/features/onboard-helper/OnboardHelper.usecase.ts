@@ -35,6 +35,9 @@ import InvalidEmailError from "@shared/infrastructure/InvalidEmailError.js";
 import EmailAlreadyUsedError from "@shared/infrastructure/EmailAlreadyUsedError.js";
 import PhoneAlreadyUsedError from "@shared/infrastructure/PhoneAlreadyUsedError.js";
 import SaveHelperError from "@shared/infrastructure/SaveHelperError.js";
+import PlaceOfBirth, {
+  PlaceOfBirthError,
+} from "@shared/domain/value-objects/PlaceOfBirth.js";
 
 type ValidationError =
   | InvalidEmailError
@@ -46,6 +49,7 @@ type ValidationError =
   | LastnameTooShortError
   | LastnameEmptyError
   | ProfessionError
+  | PlaceOfBirthError
   | FrenchCountyError;
 
 type OnboardHelperError =
@@ -98,6 +102,7 @@ export class OnboardHelper {
       birthdate: validated.value.birthdate,
       professions: validated.value.professions,
       frenchCounty: validated.value.frenchCounty,
+      placeOfBirth: validated.value.placeOfBirth,
     };
 
     const saveResult = await this.helperRepository.save(helper);
@@ -127,6 +132,7 @@ export class OnboardHelper {
       birthdate: Birthdate.create(command.birthdate, { clock: this.clock }),
       professions: Profession.createMany(command.professions),
       frenchCounty: FrenchCounty.create(command.frenchCounty),
+      placeOfBirth: PlaceOfBirth.create(command.placeOfBirth),
     });
   }
 }
