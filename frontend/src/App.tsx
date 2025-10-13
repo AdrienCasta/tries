@@ -1,4 +1,4 @@
-import OnboardHelperPage from "./features/onboardHelper/OnboardHelper.page";
+import OnboardHelperPage from "./features/onboard-helper/OnboardHelper.page";
 
 function App() {
   return <OnboardHelperPage />;

@@ -1,6 +1,6 @@
 import { Toaster } from "@/components/ui/sonner";
-import { OnboardHelperForm } from "./components/OnboardHelperForm";
-import { useOnboardHelper } from "./hooks/useOnboardHelper";
+import { OnboardHelperForm } from "./OnboardHelperForm";
+import { useOnboardHelper } from "./OnboardHelper.hook";
 
 export default function OnboardHelperPage() {
   const { onboard, isLoading } = useOnboardHelper();

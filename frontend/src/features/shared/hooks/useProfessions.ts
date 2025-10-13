@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { type UseFormReturn } from "react-hook-form";
-import type { OnboardHelperCommand } from "../types/OnboardHelperForm.types";
+import type { OnboardHelperCommand } from "../../onboard-helper/OnboardHelper.types";
 import {
   VALID_PROFESSIONS,
   type ProfessionCode,
@@ -23,19 +23,11 @@ export function useProfessions({
 
   const handleAddProfession = useCallback(
     (professionCode: ProfessionCode) => {
-      const current = form.getValues("professions") || [];
-      form.setValue("professions", [...current, professionCode], {
-        shouldValidate: true,
-      });
+      const selectedProfessions = form.getValues("professions") || [];
+      form.setValue("professions", [...selectedProfessions, professionCode]);
 
       const currentRpps = form.getValues("rppsNumbers") || {};
-      form.setValue(
-        "rppsNumbers",
-        { ...currentRpps, [professionCode]: "" },
-        {
-          shouldValidate: true,
-        }
-      );
+      form.setValue("rppsNumbers", { ...currentRpps, [professionCode]: "" });
     },
     [form]
   );

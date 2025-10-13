@@ -1,5 +1,5 @@
-import type { IHelperRepository, OnboardHelperResult } from "../../domain/interfaces/IHelperRepository";
-import type { OnboardHelperCommand } from "../../types/OnboardHelperForm.types";
+import type { IHelperRepository, OnboardHelperResult } from "./types";
+import type { OnboardHelperCommand } from "../../onboard-helper/OnboardHelper.types";
 
 export class HttpHelperRepository implements IHelperRepository {
   private readonly baseUrl: string;

@@ -1,9 +1,9 @@
 import { configureStore } from "@reduxjs/toolkit";
-import onboardingReducer from "../features/onboardHelper/store/onboardingSlice";
+import onboardHelperReducer from "../features/onboard-helper/OnboardHelper.slice";
 
 export const store = configureStore({
   reducer: {
-    onboarding: onboardingReducer,
+    onboardHelper: onboardHelperReducer,
   },
 });
 

@@ -1,8 +1,8 @@
 import { screen, render, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
-import type { OnboardHelperCommand } from "../types/OnboardHelperForm.types";
-import { HelperCommandFixtures } from "../__tests__/fixtures/HelperCommandFixtures";
+import type { OnboardHelperCommand } from "./OnboardHelper.types";
+import { HelperCommandFixtures } from "../shared/test-helpers/fixtures";
 import { OnboardHelperForm } from "./OnboardHelperForm";
 
 // ==================== Setup Helpers ====================
@@ -18,11 +18,54 @@ export const renderForm = () => {
   return { user };
 };
 
-export const renderFormWithSubmit = () => {
+export const setupForm = () => {
   const user = userEvent.setup();
   const mockOnSubmit = vi.fn();
+
   render(<OnboardHelperForm onSubmit={mockOnSubmit} />);
-  return { user, mockOnSubmit };
+
+  const fields = {
+    physiotherapistRpps() {
+      const matcher = /RPPS Number for Physiotherapist/i;
+      return {
+        get: () => screen.getByLabelText(matcher),
+        find: () => screen.findByLabelText(matcher),
+        query: () => screen.queryByLabelText(matcher),
+      };
+    },
+    getDoctorRpps() {
+      return screen.getByLabelText(/RPPS Number for Doctor/i);
+    },
+  };
+
+  const selectPhysiotherapist = () => selectAProfession(user);
+  const enterPhysiotherapistRpps = async (rpps = "100012345671") => {
+    await user.type(fields.physiotherapistRpps().get(), rpps);
+  };
+
+  const selectDoctor = () => selectAProfession(user, /doctor/i);
+  const removeDoctor = async () => {
+    await user.click(screen.getByLabelText(/Remove Doctor/i));
+  };
+  const enterDoctorRpps = async (rpps = "10001234567") => {
+    await user.type(fields.getDoctorRpps(), rpps);
+  };
+
+  const submit = async () => {
+    await user.click(screen.getByRole("button", { name: /onboard/i }));
+  };
+
+  return {
+    user,
+    fields,
+    selectPhysiotherapist,
+    selectDoctor,
+    removeDoctor,
+    enterDoctorRpps,
+    enterPhysiotherapistRpps,
+    submit,
+    mockOnSubmit,
+  };
 };
 
 // ==================== Form Action Helpers ====================
@@ -117,8 +160,6 @@ export const selectCountryOfResidence = async (
   await user.click(countryOption);
 };
 
-// ==================== Profession Helpers ====================
-
 export const selectAProfession = async (
   user: ReturnType<typeof userEvent.setup>,
   profession: string | RegExp = /physiotherapist/i
@@ -140,7 +181,10 @@ export const enterRppsNumber = async (
   rppsNumber = "12345678901"
 ) => {
   const rppsInput = screen.getByLabelText(
-    new RegExp(`RPPS Number for ${professionLabel.toString().replace(/\/i?/g, "")}`, "i")
+    new RegExp(
+      `RPPS Number for ${professionLabel.toString().replace(/\/i?/g, "")}`,
+      "i"
+    )
   );
   await user.type(rppsInput, rppsNumber);
 };
@@ -184,7 +228,11 @@ export const fillValidHelperForm = async (
   await selectCountryOfBirth(user);
   await selectCountryOfResidence(user, /belgium/i);
   await selectAProfession(user, /physiotherapist/i);
-  await enterRppsNumber(user, "Physiotherapist", cmd.rppsNumbers.physiotherapist);
+  await enterRppsNumber(
+    user,
+    "Physiotherapist",
+    cmd.rppsNumbers.physiotherapist
+  );
   await enterprofessionalDescription(user, cmd.professionalDescription);
 };
 

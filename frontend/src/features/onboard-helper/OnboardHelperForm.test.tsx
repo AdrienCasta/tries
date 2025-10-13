@@ -1,0 +1,378 @@
+import { describe, expect, vi, it, beforeAll, beforeEach } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { OnboardHelperForm } from "./OnboardHelperForm";
+import {
+  submitForm,
+  renderForm,
+  setupForm,
+  fillFormWithBelgiumResidence,
+  fillBasicInfoOnly,
+  fillFormWithMultipleProfessions,
+  fillValidHelperForm,
+  expectSubmitToBeCalled,
+  expectSubmitToBeCalledWith,
+  expectSubmitNotToBeCalled,
+  selectCountryOfBirth,
+  enterCityOfBirth,
+  enterZipCode,
+  selectCountryOfResidence,
+  selectAProfession,
+  enterRppsNumber,
+} from "./OnboardHelperForm.test-helpers";
+
+describe("Place of birth", () => {
+  it("selects the country of birth", async () => {
+    const { user } = renderForm();
+
+    await fillValidHelperForm(user);
+    await selectCountryOfBirth(user);
+    await enterCityOfBirth(user);
+    await enterZipCode(user);
+
+    await submitForm(user);
+  });
+});
+
+describe("Country of Residence", () => {
+  it("allows user to select country of residence", async () => {
+    const user = userEvent.setup();
+    render(<OnboardHelperForm />);
+
+    await selectCountryOfResidence(user, /belgium/i);
+
+    const countrySelect = screen.getByRole("combobox", {
+      name: /country of residence/i,
+    });
+    expect(countrySelect).toHaveTextContent(/belgium/i);
+  });
+
+  it("shows French county field when France is selected", async () => {
+    const user = userEvent.setup();
+    render(<OnboardHelperForm />);
+
+    await selectCountryOfResidence(user, /france/i);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("combobox", { name: /french county/i })
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("hides French county field when Belgium is selected", async () => {
+    const user = userEvent.setup();
+    render(<OnboardHelperForm />);
+
+    await selectCountryOfResidence(user, /belgium/i);
+
+    expect(
+      screen.queryByRole("combobox", { name: /french county/i })
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows validation error when France selected but no county provided", async () => {
+    const user = userEvent.setup();
+    const mockOnSubmit = vi.fn();
+    render(<OnboardHelperForm onSubmit={mockOnSubmit} />);
+
+    await selectCountryOfResidence(user, /france/i);
+    await submitForm(user);
+
+    expect(
+      await screen.findByText(/county.*required|required.*county/i)
+    ).toBeInTheDocument();
+
+    expect(mockOnSubmit).not.toHaveBeenCalled();
+  });
+
+  it("successfully submits when Belgium selected without county", async () => {
+    const { user, mockOnSubmit } = setupForm();
+
+    await fillFormWithBelgiumResidence(user);
+    await submitForm(user);
+
+    await expectSubmitToBeCalled(mockOnSubmit);
+  });
+});
+
+describe("Multiple Professions", () => {
+  it("stores selected profession in professions array", async () => {
+    const { user, mockOnSubmit } = setupForm();
+
+    await fillFormWithBelgiumResidence(user);
+    await submitForm(user);
+
+    await expectSubmitToBeCalledWith(mockOnSubmit, {
+      professions: ["physiotherapist"],
+    });
+  });
+
+  it("displays selected profession in a list", async () => {
+    const user = userEvent.setup();
+    render(<OnboardHelperForm />);
+
+    await selectAProfession(user, /doctor/i);
+
+    expect(screen.getByText("Doctor")).toBeInTheDocument();
+  });
+
+  it("allows adding multiple professions", async () => {
+    const { user, mockOnSubmit } = setupForm();
+
+    await fillFormWithMultipleProfessions(user, [
+      { name: /doctor/i, label: "Doctor", rpps: "11111111111" },
+      {
+        name: /physiotherapist/i,
+        label: "Physiotherapist",
+        rpps: "22222222222",
+      },
+    ]);
+
+    expect(screen.getByText("Doctor")).toBeInTheDocument();
+    expect(screen.getByText("Physiotherapist")).toBeInTheDocument();
+
+    await submitForm(user);
+
+    await expectSubmitToBeCalledWith(mockOnSubmit, {
+      professions: expect.arrayContaining(["doctor", "physiotherapist"]),
+    });
+  });
+
+  it("removes already selected profession from dropdown", async () => {
+    const user = userEvent.setup();
+    render(<OnboardHelperForm />);
+
+    const professionSelect = screen.getByRole("combobox", {
+      name: /professions/i,
+    });
+    await user.click(professionSelect);
+    const doctorOption = await screen.findByRole("option", { name: /doctor/i });
+    await user.click(doctorOption);
+
+    await user.click(professionSelect);
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("option", { name: /^doctor$/i })
+      ).not.toBeInTheDocument();
+      expect(
+        screen.getByRole("option", { name: /physiotherapist/i })
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("allows removing a selected profession", async () => {
+    const user = userEvent.setup();
+    render(<OnboardHelperForm />);
+
+    // Add two professions
+    await selectAProfession(user, /doctor/i);
+    await selectAProfession(user, /physiotherapist/i);
+
+    // Both should be visible
+    expect(screen.getByText("Doctor")).toBeInTheDocument();
+    expect(screen.getByText("Physiotherapist")).toBeInTheDocument();
+
+    // Remove Doctor
+    const removeDoctorButton = screen.getByLabelText(/remove doctor/i);
+    await user.click(removeDoctorButton);
+
+    await waitFor(() => {
+      expect(screen.queryByLabelText(/remove doctor/i)).not.toBeInTheDocument();
+    });
+    expect(
+      screen.getByLabelText(/remove physiotherapist/i)
+    ).toBeInTheDocument();
+  });
+
+  it("hides selector when all professions are selected", async () => {
+    const user = userEvent.setup();
+    render(<OnboardHelperForm />);
+
+    await selectAProfession(user, /doctor/i);
+    await selectAProfession(user, /physiotherapist/i);
+    await selectAProfession(user, /sports coach/i);
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("combobox", { name: /professions/i })
+      ).not.toBeInTheDocument();
+      expect(
+        screen.getByText(/all professions have been selected/i)
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("shows validation error when no profession selected", async () => {
+    const user = userEvent.setup();
+    const mockOnSubmit = vi.fn();
+    render(<OnboardHelperForm onSubmit={mockOnSubmit} />);
+
+    await submitForm(user);
+
+    expect(
+      await screen.findByText(/at least one profession is required/i)
+    ).toBeInTheDocument();
+
+    expect(mockOnSubmit).not.toHaveBeenCalled();
+  });
+
+  it("complete flow: add, remove, and submit multiple professions", async () => {
+    const { user, mockOnSubmit } = setupForm();
+
+    await fillBasicInfoOnly(user);
+
+    await selectAProfession(user, /doctor/i);
+    await enterRppsNumber(user, "Doctor", "11111111111");
+
+    await selectAProfession(user, /physiotherapist/i);
+    await enterRppsNumber(user, "Physiotherapist", "22222222222");
+
+    const removeDoctorButton = screen.getByLabelText(/remove doctor/i);
+    await user.click(removeDoctorButton);
+
+    await selectAProfession(user, /sports coach/i);
+    await enterRppsNumber(user, "Sports Coach", "33333333333");
+
+    await waitFor(() => {
+      expect(screen.queryByLabelText(/remove doctor/i)).not.toBeInTheDocument();
+    });
+    expect(
+      screen.getByLabelText(/remove physiotherapist/i)
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText(/remove sports coach/i)).toBeInTheDocument();
+
+    await submitForm(user);
+
+    await expectSubmitToBeCalledWith(mockOnSubmit, {
+      professions: ["physiotherapist", "sports_coach"],
+    });
+  });
+});
+
+describe("Add RPPS to a selected profession", () => {
+  let setup: ReturnType<typeof setupForm>;
+  let user: typeof setup.user;
+  let mockOnSubmit: typeof setup.mockOnSubmit;
+
+  beforeEach(() => {
+    setup = setupForm();
+    user = setup.user;
+    mockOnSubmit = setup.mockOnSubmit;
+  });
+
+  it("displays RPPS input field when a profession is selected", async () => {
+    await setup.selectDoctor();
+
+    expect(setup.fields.getDoctorRpps()).toBeInTheDocument();
+  });
+
+  it("displays RPPS input fields for multiple professions", async () => {
+    await setup.selectDoctor();
+    await setup.selectPhysiotherapist();
+
+    expect(setup.fields.getDoctorRpps()).toBeInTheDocument();
+    expect(setup.fields.physiotherapistRpps().get()).toBeInTheDocument();
+  });
+
+  it("removes RPPS input field when profession is removed", async () => {
+    await setup.selectDoctor();
+    expect(setup.fields.getDoctorRpps()).toBeInTheDocument();
+
+    await setup.removeDoctor();
+
+    expect(setup.fields.physiotherapistRpps().query()).not.toBeInTheDocument();
+  });
+  it("shows validation error when RPPS number is greater than 11-digit long", async () => {
+    await fillBasicInfoOnly(user);
+    await setup.selectPhysiotherapist();
+
+    const tooLongRpps = "100012345671";
+    await setup.enterPhysiotherapistRpps(tooLongRpps);
+    await setup.submit();
+
+    expect(
+      await screen.findByText(/Rpps must be exactly 11 digits./i)
+    ).toBeInTheDocument();
+    expectSubmitNotToBeCalled(mockOnSubmit);
+  });
+
+  it("shows validation error when RPPS number is less than 11-digit long", async () => {
+    await fillBasicInfoOnly(user);
+    await setup.selectPhysiotherapist();
+
+    const tooShortRpps = "100012";
+    await setup.enterPhysiotherapistRpps(tooShortRpps);
+    await setup.submit();
+
+    expect(
+      await screen.findByText(/Rpps must be exactly 11 digits./i)
+    ).toBeInTheDocument();
+    expectSubmitNotToBeCalled(mockOnSubmit);
+  });
+  it("shows validation error when RPPS number is not composed with only digit", async () => {
+    await fillBasicInfoOnly(user);
+    await setup.selectPhysiotherapist();
+
+    const notDigitOnly = "1A0012345671";
+    await setup.enterPhysiotherapistRpps(notDigitOnly);
+    await setup.submit();
+
+    expect(
+      await screen.findByText(/Rpps must be exactly 11 digits./i)
+    ).toBeInTheDocument();
+    expectSubmitNotToBeCalled(mockOnSubmit);
+  });
+  it("maintains RPPS number values when switching between fields", async () => {
+    await setup.selectDoctor();
+    await setup.enterDoctorRpps("12345678901");
+
+    await setup.selectPhysiotherapist();
+    await setup.enterPhysiotherapistRpps("98765432109");
+
+    expect(setup.fields.getDoctorRpps()).toHaveValue("12345678901");
+    expect(setup.fields.physiotherapistRpps().get()).toHaveValue("98765432109");
+  });
+  it("clears RPPS number data when profession is removed and re-added", async () => {
+    await setup.selectDoctor();
+    await setup.enterDoctorRpps();
+
+    const removeButton = screen.getByLabelText(/Remove Doctor/i);
+    await user.click(removeButton);
+
+    await setup.selectDoctor();
+
+    expect(setup.fields.getDoctorRpps()).toHaveValue("");
+  });
+  it("shows validation error when RPPS number is missing for a profession", async () => {
+    await fillBasicInfoOnly(user);
+    await setup.selectDoctor();
+    await submitForm(user);
+
+    expect(
+      await screen.findByText(/RPPS number is required for each profession/i)
+    ).toBeInTheDocument();
+    expectSubmitNotToBeCalled(mockOnSubmit);
+  });
+  it("successfully submits when RPPS numbers are provided for all professions", async () => {
+    await fillFormWithMultipleProfessions(user, [
+      { name: /doctor/i, label: "Doctor", rpps: "12345678901" },
+      {
+        name: /physiotherapist/i,
+        label: "Physiotherapist",
+        rpps: "98765432109",
+      },
+    ]);
+
+    await submitForm(user);
+
+    await expectSubmitToBeCalledWith(mockOnSubmit, {
+      professions: ["doctor", "physiotherapist"],
+      rppsNumbers: {
+        doctor: "12345678901",
+        physiotherapist: "98765432109",
+      },
+    });
+  });
+});

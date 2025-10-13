@@ -1,5 +1,5 @@
 import { type Control } from "react-hook-form";
-import type { OnboardHelperCommand } from "../types/OnboardHelperForm.types";
+import type { OnboardHelperCommand } from "../../onboard-helper/OnboardHelper.types";
 import {
   VALID_PROFESSIONS,
   type ProfessionCode,
@@ -98,7 +98,7 @@ export function ProfessionSelector({
 
           {availableProfessions.length > 0 ? (
             <Select
-              onValueChange={(value) =>
+              onValueChange={(value: string) =>
                 onAddProfession(value as ProfessionCode)
               }
               value=""

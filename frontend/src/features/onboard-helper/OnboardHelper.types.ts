@@ -8,6 +8,8 @@ export interface OnboardHelperCommand {
   birthdate: string;
   frenchCounty: string;
   countryOfBirth: string;
+  "city-of-birth": string;
+  "city-of-birth-zip-code": string;
   countryOfResidence: string;
   professionalDescription: string;
 }

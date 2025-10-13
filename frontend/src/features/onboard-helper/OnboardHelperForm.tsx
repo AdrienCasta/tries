@@ -1,10 +1,10 @@
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { OnboardHelperCommand } from "../types/OnboardHelperForm.types";
-import { onboardHelperSchema } from "../validators/schema";
-import { useProfessions } from "../hooks/useProfessions";
-import { ProfessionSelector } from "./ProfessionSelector";
-import { LocationFields } from "./LocationFields";
+import type { OnboardHelperCommand } from "./OnboardHelper.types";
+import { onboardHelperSchema } from "./OnboardHelper.schema";
+import { useProfessions } from "../shared/hooks/useProfessions";
+import { ProfessionSelector } from "../shared/components/ProfessionSelector";
+import { LocationFields } from "../shared/components/LocationFields";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -39,6 +39,8 @@ export function OnboardHelperForm({
       birthdate: "",
       frenchCounty: "",
       countryOfBirth: "",
+      "city-of-birth": "",
+      "city-of-birth-zip-code": "",
       countryOfResidence: "",
       professionalDescription: "",
     },

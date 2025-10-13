@@ -1,4 +1,4 @@
-import type { OnboardHelperCommand } from "../../types/OnboardHelperForm.types";
+import type { OnboardHelperCommand } from "../../onboard-helper/OnboardHelper.types";
 
 export class HelperCommandFixtures {
   static aValidCommand(
@@ -20,6 +20,8 @@ export class HelperCommandFixtures {
       birthdate: overrides?.birthdate ?? "1995-03-26",
       frenchCounty: overrides?.frenchCounty ?? "44",
       countryOfBirth: overrides?.countryOfBirth ?? "",
+      "city-of-birth": "",
+      "city-of-birth-zip-code": "",
       countryOfResidence: overrides?.countryOfResidence ?? "FR",
       professionalDescription:
         overrides?.professionalDescription ??
