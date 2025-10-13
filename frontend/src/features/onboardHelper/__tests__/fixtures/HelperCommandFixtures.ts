@@ -1,9 +1,9 @@
-import type { OnboardHelperFormData } from "../../types/OnboardHelperForm.types";
+import type { OnboardHelperCommand } from "../../types/OnboardHelperForm.types";
 
-export class HelperFormDataFixtures {
-  static aValidFormData(
-    overrides?: Partial<OnboardHelperFormData>
-  ): OnboardHelperFormData {
+export class HelperCommandFixtures {
+  static aValidCommand(
+    overrides?: Partial<OnboardHelperCommand>
+  ): OnboardHelperCommand {
     const professions = overrides?.professions ?? ["physiotherapist"];
     const defaultRppsNumbers: Record<string, string> = {};
     professions.forEach((profession) => {
@@ -27,27 +27,27 @@ export class HelperFormDataFixtures {
     };
   }
 
-  static withEmail(email: string): OnboardHelperFormData {
-    return this.aValidFormData({ email });
+  static withEmail(email: string): OnboardHelperCommand {
+    return this.aValidCommand({ email });
   }
 
-  static withFirstname(firstname: string): OnboardHelperFormData {
-    return this.aValidFormData({ firstname });
+  static withFirstname(firstname: string): OnboardHelperCommand {
+    return this.aValidCommand({ firstname });
   }
 
-  static withLastname(lastname: string): OnboardHelperFormData {
-    return this.aValidFormData({ lastname });
+  static withLastname(lastname: string): OnboardHelperCommand {
+    return this.aValidCommand({ lastname });
   }
 
-  static withPhoneNumber(phoneNumber: string): OnboardHelperFormData {
-    return this.aValidFormData({ phoneNumber });
+  static withPhoneNumber(phoneNumber: string): OnboardHelperCommand {
+    return this.aValidCommand({ phoneNumber });
   }
 
-  static withBirthdate(birthdate: string): OnboardHelperFormData {
-    return this.aValidFormData({ birthdate });
+  static withBirthdate(birthdate: string): OnboardHelperCommand {
+    return this.aValidCommand({ birthdate });
   }
 
-  static withFrenchCounty(frenchCounty: string): OnboardHelperFormData {
-    return this.aValidFormData({ frenchCounty });
+  static withFrenchCounty(frenchCounty: string): OnboardHelperCommand {
+    return this.aValidCommand({ frenchCounty });
   }
 }

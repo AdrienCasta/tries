@@ -2,10 +2,19 @@ import { describe, test, expect, vi, it } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { OnboardHelperForm } from "./OnboardHelperForm";
-import { HelperFormDataFixtures } from "../__tests__/fixtures/HelperFormDataFixtures";
-import type { OnboardHelperFormData } from "../types/OnboardHelperForm.types";
+import { HelperCommandFixtures } from "../__tests__/fixtures/HelperCommandFixtures";
+import type { OnboardHelperCommand } from "../types/OnboardHelperForm.types";
 import {
   submitForm,
+  renderForm,
+  renderFormWithSubmit,
+  fillFormWithBelgiumResidence,
+  fillBasicInfoOnly,
+  fillFormWithMultipleProfessions,
+  fillValidHelperForm,
+  expectSubmitToBeCalled,
+  expectSubmitToBeCalledWith,
+  expectSubmitNotToBeCalled,
   enterEmail,
   enterFirstname,
   enterLastname,
@@ -184,21 +193,12 @@ import {
 // });
 describe("Place of birth", () => {
   it("selects the country of birth", async () => {
-    const user = userEvent.setup();
-    render(<OnboardHelperForm />);
+    const { user } = renderForm();
 
+    await fillValidHelperForm(user);
     await selectCountryOfBirth(user);
     await enterCityOfBirth(user);
     await enterZipCode(user);
-    await selectCountryOfResidence(user);
-    await enterEmail(user);
-    await enterLastname(user);
-    await enterFirstname(user);
-    await enterPhoneNumber(user);
-    await enterBirthdate(user);
-    await selectAProfession(user);
-    await enterRppsNumber(user, "Physiotherapist", "12345678901");
-    await enterprofessionalDescription(user);
 
     await submitForm(user);
   });
@@ -259,52 +259,24 @@ describe("Country of Residence", () => {
   });
 
   it("successfully submits when Belgium selected without county", async () => {
-    const user = userEvent.setup();
-    const mockOnSubmit = vi.fn();
-    render(<OnboardHelperForm onSubmit={mockOnSubmit} />);
+    const { user, mockOnSubmit } = renderFormWithSubmit();
 
-    await enterEmail(user);
-    await enterFirstname(user);
-    await enterLastname(user);
-    await enterPhoneNumber(user);
-    await selectAProfession(user);
-    await enterRppsNumber(user, "Physiotherapist", "12345678901");
-    await enterBirthdate(user);
-    await selectCountryOfResidence(user, /belgium/i);
-    await enterprofessionalDescription(user);
-
+    await fillFormWithBelgiumResidence(user);
     await submitForm(user);
 
-    await waitFor(() => {
-      expect(mockOnSubmit).toHaveBeenCalled();
-    });
+    await expectSubmitToBeCalled(mockOnSubmit);
   });
 });
 
 describe("Multiple Professions", () => {
   it("stores selected profession in professions array", async () => {
-    const user = userEvent.setup();
-    const mockOnSubmit = vi.fn();
-    render(<OnboardHelperForm onSubmit={mockOnSubmit} />);
+    const { user, mockOnSubmit } = renderFormWithSubmit();
 
-    await enterEmail(user);
-    await enterFirstname(user);
-    await enterLastname(user);
-    await enterPhoneNumber(user);
-    await selectAProfession(user, /physiotherapist/i);
-    await enterRppsNumber(user, "Physiotherapist", "12345678901");
-    await enterBirthdate(user);
-    await selectCountryOfResidence(user, /belgium/i);
-    await enterprofessionalDescription(user);
-
+    await fillFormWithBelgiumResidence(user);
     await submitForm(user);
 
-    await waitFor(() => {
-      expect(mockOnSubmit).toHaveBeenCalledWith(
-        expect.objectContaining({
-          professions: ["physiotherapist"],
-        })
-      );
+    await expectSubmitToBeCalledWith(mockOnSubmit, {
+      professions: ["physiotherapist"],
     });
   });
 
@@ -318,35 +290,20 @@ describe("Multiple Professions", () => {
   });
 
   it("allows adding multiple professions", async () => {
-    const user = userEvent.setup();
-    const mockOnSubmit = vi.fn();
-    render(<OnboardHelperForm onSubmit={mockOnSubmit} />);
+    const { user, mockOnSubmit } = renderFormWithSubmit();
 
-    await enterEmail(user);
-    await enterFirstname(user);
-    await enterLastname(user);
-    await enterPhoneNumber(user);
-    await enterBirthdate(user);
-    await selectCountryOfResidence(user, /belgium/i);
-    await enterprofessionalDescription(user);
-
-    await selectAProfession(user, /doctor/i);
-    await enterRppsNumber(user, "Doctor", "11111111111");
-
-    await selectAProfession(user, /physiotherapist/i);
-    await enterRppsNumber(user, "Physiotherapist", "22222222222");
+    await fillFormWithMultipleProfessions(user, [
+      { name: /doctor/i, label: "Doctor", rpps: "11111111111" },
+      { name: /physiotherapist/i, label: "Physiotherapist", rpps: "22222222222" },
+    ]);
 
     expect(screen.getByText("Doctor")).toBeInTheDocument();
     expect(screen.getByText("Physiotherapist")).toBeInTheDocument();
 
     await submitForm(user);
 
-    await waitFor(() => {
-      expect(mockOnSubmit).toHaveBeenCalledWith(
-        expect.objectContaining({
-          professions: expect.arrayContaining(["doctor", "physiotherapist"]),
-        })
-      );
+    await expectSubmitToBeCalledWith(mockOnSubmit, {
+      professions: expect.arrayContaining(["doctor", "physiotherapist"]),
     });
   });
 
@@ -433,17 +390,9 @@ describe("Multiple Professions", () => {
   });
 
   it("complete flow: add, remove, and submit multiple professions", async () => {
-    const user = userEvent.setup();
-    const mockOnSubmit = vi.fn();
-    render(<OnboardHelperForm onSubmit={mockOnSubmit} />);
+    const { user, mockOnSubmit } = renderFormWithSubmit();
 
-    await enterEmail(user);
-    await enterFirstname(user);
-    await enterLastname(user);
-    await enterPhoneNumber(user);
-    await enterBirthdate(user);
-    await selectCountryOfResidence(user, /belgium/i);
-    await enterprofessionalDescription(user);
+    await fillBasicInfoOnly(user);
 
     await selectAProfession(user, /doctor/i);
     await enterRppsNumber(user, "Doctor", "11111111111");
@@ -465,12 +414,8 @@ describe("Multiple Professions", () => {
 
     await submitForm(user);
 
-    await waitFor(() => {
-      expect(mockOnSubmit).toHaveBeenCalledWith(
-        expect.objectContaining({
-          professions: ["physiotherapist", "sports_coach"],
-        })
-      );
+    await expectSubmitToBeCalledWith(mockOnSubmit, {
+      professions: ["physiotherapist", "sports_coach"],
     });
   });
 });
@@ -522,56 +467,34 @@ describe("RPPS Number for Each Profession", () => {
   });
 
   it("shows validation error when RPPS number is missing for a profession", async () => {
-    const user = userEvent.setup();
-    const mockOnSubmit = vi.fn();
-    render(<OnboardHelperForm onSubmit={mockOnSubmit} />);
+    const { user, mockOnSubmit } = renderFormWithSubmit();
 
-    await enterEmail(user);
-    await enterFirstname(user);
-    await enterLastname(user);
-    await enterPhoneNumber(user);
+    await fillBasicInfoOnly(user);
     await selectAProfession(user, /doctor/i);
-    await enterBirthdate(user);
-    await selectCountryOfResidence(user, /belgium/i);
-    await enterprofessionalDescription(user);
-
     await submitForm(user);
 
     expect(
       await screen.findByText(/RPPS number is required for each profession/i)
     ).toBeInTheDocument();
-    expect(mockOnSubmit).not.toHaveBeenCalled();
+    expectSubmitNotToBeCalled(mockOnSubmit);
   });
 
   it("successfully submits when RPPS numbers are provided for all professions", async () => {
-    const user = userEvent.setup();
-    const mockOnSubmit = vi.fn();
-    render(<OnboardHelperForm onSubmit={mockOnSubmit} />);
+    const { user, mockOnSubmit } = renderFormWithSubmit();
 
-    await enterEmail(user);
-    await enterFirstname(user);
-    await enterLastname(user);
-    await enterPhoneNumber(user);
-    await selectAProfession(user, /doctor/i);
-    await enterRppsNumber(user, "Doctor", "12345678901");
-    await selectAProfession(user, /physiotherapist/i);
-    await enterRppsNumber(user, "Physiotherapist", "98765432109");
-    await enterBirthdate(user);
-    await selectCountryOfResidence(user, /belgium/i);
-    await enterprofessionalDescription(user);
+    await fillFormWithMultipleProfessions(user, [
+      { name: /doctor/i, label: "Doctor", rpps: "12345678901" },
+      { name: /physiotherapist/i, label: "Physiotherapist", rpps: "98765432109" },
+    ]);
 
     await submitForm(user);
 
-    await waitFor(() => {
-      expect(mockOnSubmit).toHaveBeenCalledWith(
-        expect.objectContaining({
-          professions: ["doctor", "physiotherapist"],
-          rppsNumbers: {
-            doctor: "12345678901",
-            physiotherapist: "98765432109",
-          },
-        })
-      );
+    await expectSubmitToBeCalledWith(mockOnSubmit, {
+      professions: ["doctor", "physiotherapist"],
+      rppsNumbers: {
+        doctor: "12345678901",
+        physiotherapist: "98765432109",
+      },
     });
   });
 

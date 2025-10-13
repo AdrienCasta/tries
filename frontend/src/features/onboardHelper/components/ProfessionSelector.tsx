@@ -1,5 +1,5 @@
 import { type Control } from "react-hook-form";
-import type { OnboardHelperFormData } from "../types/OnboardHelperForm.types";
+import type { OnboardHelperCommand } from "../types/OnboardHelperForm.types";
 import {
   VALID_PROFESSIONS,
   type ProfessionCode,
@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 
 interface ProfessionSelectorProps {
-  control: Control<OnboardHelperFormData>;
+  control: Control<OnboardHelperCommand>;
   selectedProfessions: string[];
   availableProfessions: typeof VALID_PROFESSIONS;
   onAddProfession: (code: ProfessionCode) => void;

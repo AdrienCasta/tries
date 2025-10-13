@@ -1,13 +1,13 @@
 import { useCallback, useMemo } from "react";
 import { type UseFormReturn } from "react-hook-form";
-import type { OnboardHelperFormData } from "../types/OnboardHelperForm.types";
+import type { OnboardHelperCommand } from "../types/OnboardHelperForm.types";
 import {
   VALID_PROFESSIONS,
   type ProfessionCode,
 } from "../constants/professions";
 
 interface UseProfessionsProps {
-  form: UseFormReturn<OnboardHelperFormData>;
+  form: UseFormReturn<OnboardHelperCommand>;
   selectedProfessions: string[];
 }
 

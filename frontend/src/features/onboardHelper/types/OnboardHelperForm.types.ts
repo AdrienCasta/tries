@@ -1,4 +1,4 @@
-export interface OnboardHelperFormData {
+export interface OnboardHelperCommand {
   email: string;
   firstname: string;
   lastname: string;

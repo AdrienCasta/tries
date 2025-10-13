@@ -1,6 +1,6 @@
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { OnboardHelperFormData } from "../types/OnboardHelperForm.types";
+import type { OnboardHelperCommand } from "../types/OnboardHelperForm.types";
 import { onboardHelperSchema } from "../validators/schema";
 import { useProfessions } from "../hooks/useProfessions";
 import { ProfessionSelector } from "./ProfessionSelector";
@@ -8,6 +8,7 @@ import { LocationFields } from "./LocationFields";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Form,
   FormControl,
@@ -18,11 +19,15 @@ import {
 } from "@/components/ui/form";
 
 interface OnboardHelperFormProps {
-  onSubmit?: (data: OnboardHelperFormData) => void;
+  onSubmit?: (data: OnboardHelperCommand) => void;
+  isLoading?: boolean;
 }
 
-export function OnboardHelperForm({ onSubmit }: OnboardHelperFormProps = {}) {
-  const form = useForm<OnboardHelperFormData>({
+export function OnboardHelperForm({
+  onSubmit,
+  isLoading = false,
+}: OnboardHelperFormProps = {}) {
+  const form = useForm<OnboardHelperCommand>({
     resolver: zodResolver(onboardHelperSchema),
     defaultValues: {
       email: "",
@@ -53,11 +58,9 @@ export function OnboardHelperForm({ onSubmit }: OnboardHelperFormProps = {}) {
   const { availableProfessions, handleAddProfession, handleRemoveProfession } =
     useProfessions({ form, selectedProfessions });
 
-  const handleFormSubmit = (data: OnboardHelperFormData) => {
+  const handleFormSubmit = (data: OnboardHelperCommand) => {
     if (onSubmit) {
       onSubmit(data);
-    } else {
-      console.log(data);
     }
   };
 
@@ -183,7 +186,10 @@ export function OnboardHelperForm({ onSubmit }: OnboardHelperFormProps = {}) {
           )}
         />
 
-        <Button type="submit">Onboard Helper</Button>
+        <Button type="submit" disabled={isLoading}>
+          {isLoading && <Spinner />}
+          Onboard Helper
+        </Button>
       </form>
     </Form>
   );

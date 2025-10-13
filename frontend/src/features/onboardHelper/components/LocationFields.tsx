@@ -1,5 +1,5 @@
 import { type Control } from "react-hook-form";
-import type { OnboardHelperFormData } from "../types/OnboardHelperForm.types";
+import type { OnboardHelperCommand } from "../types/OnboardHelperForm.types";
 import { FRENCH_COUNTIES } from "../constants/frenchCounties";
 import { RESIDENCE_COUNTRIES } from "../constants/residenceCountries";
 import { Input } from "@/components/ui/input";
@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 
 interface LocationFieldsProps {
-  control: Control<OnboardHelperFormData>;
+  control: Control<OnboardHelperCommand>;
   countryOfResidence?: string;
 }
 

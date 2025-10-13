@@ -1,11 +1,28 @@
-import { screen } from "@testing-library/react";
+import { screen, render, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { vi } from "vitest";
+import type { OnboardHelperCommand } from "../types/OnboardHelperForm.types";
+import { HelperCommandFixtures } from "../__tests__/fixtures/HelperCommandFixtures";
+import { OnboardHelperForm } from "./OnboardHelperForm";
 
 // ==================== Setup Helpers ====================
 
 export const setupTest = () => {
   const user = userEvent.setup();
   return { user };
+};
+
+export const renderForm = () => {
+  const user = userEvent.setup();
+  render(<OnboardHelperForm />);
+  return { user };
+};
+
+export const renderFormWithSubmit = () => {
+  const user = userEvent.setup();
+  const mockOnSubmit = vi.fn();
+  render(<OnboardHelperForm onSubmit={mockOnSubmit} />);
+  return { user, mockOnSubmit };
 };
 
 // ==================== Form Action Helpers ====================
@@ -151,4 +168,91 @@ export const fillCompleteForm = async (
   await enterBirthdate(user);
   await selectCountryOfResidence(user);
   await enterprofessionalDescription(user);
+};
+
+export const fillValidHelperForm = async (
+  user: ReturnType<typeof userEvent.setup>,
+  command?: OnboardHelperCommand
+) => {
+  const cmd = command || HelperCommandFixtures.aValidCommand();
+
+  await enterEmail(user, cmd.email);
+  await enterFirstname(user, cmd.firstname);
+  await enterLastname(user, cmd.lastname);
+  await enterPhoneNumber(user, cmd.phoneNumber);
+  await enterBirthdate(user, cmd.birthdate);
+  await selectCountryOfBirth(user);
+  await selectCountryOfResidence(user, /belgium/i);
+  await selectAProfession(user, /physiotherapist/i);
+  await enterRppsNumber(user, "Physiotherapist", cmd.rppsNumbers.physiotherapist);
+  await enterprofessionalDescription(user, cmd.professionalDescription);
+};
+
+export const fillFormWithBelgiumResidence = async (
+  user: ReturnType<typeof userEvent.setup>
+) => {
+  await enterEmail(user);
+  await enterFirstname(user);
+  await enterLastname(user);
+  await enterPhoneNumber(user);
+  await enterBirthdate(user);
+  await selectCountryOfResidence(user, /belgium/i);
+  await selectAProfession(user, /physiotherapist/i);
+  await enterRppsNumber(user, "Physiotherapist", "12345678901");
+  await enterprofessionalDescription(user);
+};
+
+export const fillBasicInfoOnly = async (
+  user: ReturnType<typeof userEvent.setup>
+) => {
+  await enterEmail(user);
+  await enterFirstname(user);
+  await enterLastname(user);
+  await enterPhoneNumber(user);
+  await enterBirthdate(user);
+  await selectCountryOfResidence(user, /belgium/i);
+  await enterprofessionalDescription(user);
+};
+
+export const fillFormWithMultipleProfessions = async (
+  user: ReturnType<typeof userEvent.setup>,
+  professions: Array<{
+    name: string | RegExp;
+    label: string;
+    rpps: string;
+  }>
+) => {
+  await fillBasicInfoOnly(user);
+
+  for (const profession of professions) {
+    await selectAProfession(user, profession.name);
+    await enterRppsNumber(user, profession.label, profession.rpps);
+  }
+};
+
+// ==================== Assertion Helpers ====================
+
+export const expectSubmitToBeCalledWith = async (
+  mockOnSubmit: ReturnType<typeof vi.fn>,
+  expectedData: Partial<OnboardHelperCommand>
+) => {
+  await waitFor(() => {
+    expect(mockOnSubmit).toHaveBeenCalledWith(
+      expect.objectContaining(expectedData)
+    );
+  });
+};
+
+export const expectSubmitToBeCalled = async (
+  mockOnSubmit: ReturnType<typeof vi.fn>
+) => {
+  await waitFor(() => {
+    expect(mockOnSubmit).toHaveBeenCalled();
+  });
+};
+
+export const expectSubmitNotToBeCalled = (
+  mockOnSubmit: ReturnType<typeof vi.fn>
+) => {
+  expect(mockOnSubmit).not.toHaveBeenCalled();
 };
