@@ -1,7 +1,8 @@
 export const VALID_PROFESSIONS = [
-  'doctor',
-  'physiotherapist',
-  'sports_coach',
-] as const
+  { code: 'doctor', label: 'Doctor' },
+  { code: 'physiotherapist', label: 'Physiotherapist' },
+  { code: 'sports_coach', label: 'Sports Coach' },
+] as const;
 
-export type Profession = typeof VALID_PROFESSIONS[number]
+export const PROFESSION_CODES = VALID_PROFESSIONS.map(p => p.code);
+export type ProfessionCode = typeof PROFESSION_CODES[number];

@@ -1,22 +1,57 @@
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { OnboardHelperFormData } from "../types/OnboardHelperForm.types";
 import { onboardHelperSchema } from "../validators/schema";
-import { VALID_PROFESSIONS } from "../constants/professions";
-import { FRENCH_COUNTIES } from "../constants/frenchCounties";
+import { useProfessions } from "../hooks/useProfessions";
+import { ProfessionSelector } from "./ProfessionSelector";
+import { LocationFields } from "./LocationFields";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
 interface OnboardHelperFormProps {
   onSubmit?: (data: OnboardHelperFormData) => void;
 }
 
 export function OnboardHelperForm({ onSubmit }: OnboardHelperFormProps = {}) {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<OnboardHelperFormData>({
+  const form = useForm<OnboardHelperFormData>({
     resolver: zodResolver(onboardHelperSchema),
+    defaultValues: {
+      email: "",
+      firstname: "",
+      lastname: "",
+      phoneNumber: "",
+      professions: [],
+      rppsNumbers: {},
+      birthdate: "",
+      frenchCounty: "",
+      countryOfBirth: "",
+      countryOfResidence: "",
+      professionalDescription: "",
+    },
   });
+
+  const countryOfResidence = useWatch({
+    control: form.control,
+    name: "countryOfResidence",
+  });
+
+  const selectedProfessions =
+    useWatch({
+      control: form.control,
+      name: "professions",
+    }) || [];
+
+  const { availableProfessions, handleAddProfession, handleRemoveProfession } =
+    useProfessions({ form, selectedProfessions });
 
   const handleFormSubmit = (data: OnboardHelperFormData) => {
     if (onSubmit) {
@@ -27,130 +62,129 @@ export function OnboardHelperForm({ onSubmit }: OnboardHelperFormProps = {}) {
   };
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} noValidate>
-      <div>
-        <label htmlFor="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          aria-required="true"
-          aria-invalid={errors.email ? "true" : "false"}
-          {...register("email")}
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(handleFormSubmit)}
+        noValidate
+        className="space-y-6"
+      >
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input
+                  type="email"
+                  placeholder="email@example.com"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {errors.email && <span role="alert">{errors.email.message}</span>}
-      </div>
 
-      <div>
-        <label htmlFor="firstname">First Name</label>
-        <input
-          id="firstname"
-          type="text"
-          aria-required="true"
-          aria-invalid={errors.firstname ? "true" : "false"}
-          {...register("firstname")}
+        <FormField
+          control={form.control}
+          name="firstname"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>First Name</FormLabel>
+              <FormControl>
+                <Input type="text" placeholder="John" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {errors.firstname && (
-          <span role="alert">{errors.firstname.message}</span>
-        )}
-      </div>
 
-      <div>
-        <label htmlFor="lastname">Last Name</label>
-        <input
-          id="lastname"
-          type="text"
-          aria-required="true"
-          aria-invalid={errors.lastname ? "true" : "false"}
-          {...register("lastname")}
+        <FormField
+          control={form.control}
+          name="lastname"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Last Name</FormLabel>
+              <FormControl>
+                <Input type="text" placeholder="Doe" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {errors.lastname && <span role="alert">{errors.lastname.message}</span>}
-      </div>
 
-      <div>
-        <label htmlFor="phoneNumber">Phone Number</label>
-        <input
-          id="phoneNumber"
-          type="tel"
-          aria-required="true"
-          aria-invalid={errors.phoneNumber ? "true" : "false"}
-          {...register("phoneNumber")}
+        <FormField
+          control={form.control}
+          name="phoneNumber"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Phone Number</FormLabel>
+              <FormControl>
+                <Input type="tel" placeholder="+33612345678" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {errors.phoneNumber && (
-          <span role="alert">{errors.phoneNumber.message}</span>
-        )}
-      </div>
 
-      <div>
-        <label htmlFor="profession">Profession</label>
-        <select
-          id="profession"
-          aria-required="true"
-          aria-invalid={errors.profession ? "true" : "false"}
-          {...register("profession")}
-        >
-          <option value="">Select profession</option>
-          {VALID_PROFESSIONS.map((profession) => (
-            <option key={profession} value={profession}>
-              {profession.replace("_", " ")}
-            </option>
-          ))}
-        </select>
-        {errors.profession && (
-          <span role="alert">{errors.profession.message}</span>
-        )}
-      </div>
-
-      <div>
-        <label htmlFor="birthdate">Birthdate</label>
-        <input
-          id="birthdate"
-          type="date"
-          aria-required="true"
-          aria-invalid={errors.birthdate ? "true" : "false"}
-          {...register("birthdate")}
+        <ProfessionSelector
+          control={form.control}
+          selectedProfessions={selectedProfessions}
+          availableProfessions={availableProfessions}
+          onAddProfession={handleAddProfession}
+          onRemoveProfession={handleRemoveProfession}
         />
-        {errors.birthdate && (
-          <span role="alert">{errors.birthdate.message}</span>
-        )}
-      </div>
 
-      <div>
-        <label htmlFor="frenchCounty">French County</label>
-        <select
-          id="frenchCounty"
-          aria-required="true"
-          aria-invalid={errors.frenchCounty ? "true" : "false"}
-          {...register("frenchCounty")}
-        >
-          <option value="">Select county</option>
-          <optgroup label="Metropolitan France">
-            {FRENCH_COUNTIES.METROPOLITAN.map((county) => (
-              <option key={county} value={county}>
-                {county}
-              </option>
-            ))}
-          </optgroup>
-          <optgroup label="Corsica">
-            {FRENCH_COUNTIES.CORSICA.map((county) => (
-              <option key={county} value={county}>
-                {county}
-              </option>
-            ))}
-          </optgroup>
-          <optgroup label="Overseas">
-            {FRENCH_COUNTIES.OVERSEAS.map((county) => (
-              <option key={county} value={county}>
-                {county}
-              </option>
-            ))}
-          </optgroup>
-        </select>
-        {errors.frenchCounty && (
-          <span role="alert">{errors.frenchCounty.message}</span>
-        )}
-      </div>
+        <FormField
+          control={form.control}
+          name="rppsNumbers"
+          render={() => (
+            <FormItem>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <button type="submit">Onboard Helper</button>
-    </form>
+        <FormField
+          control={form.control}
+          name="birthdate"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Birthdate</FormLabel>
+              <FormControl>
+                <Input type="date" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <LocationFields
+          control={form.control}
+          countryOfResidence={countryOfResidence}
+        />
+
+        <FormField
+          control={form.control}
+          name="professionalDescription"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Professional Description</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Tell us about your professional experience, skills, and what makes you a great helper..."
+                  className="min-h-[120px] resize-y"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <Button type="submit">Onboard Helper</Button>
+      </form>
+    </Form>
   );
 }

@@ -1,22 +1,7 @@
-import { OnboardHelperForm } from "./components/OnboardHelperForm";
-import React from "react";
+import OnboardHelperPage from "./features/onboardHelper/OnboardHelper.page";
 
 function App() {
-  const [userOnboarded, setUserOnboarded] = React.useState(false);
-
-  if (userOnboarded) {
-    return <p>User onboarded</p>;
-  }
-
-  return (
-    <>
-      <OnboardHelperForm
-        onSubmit={() => {
-          setUserOnboarded(true);
-        }}
-      />
-    </>
-  );
+  return <OnboardHelperPage />;
 }
 
 export default App;
