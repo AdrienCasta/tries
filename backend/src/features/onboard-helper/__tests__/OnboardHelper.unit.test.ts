@@ -9,6 +9,7 @@ import { HelperCommandFixtures } from "./fixtures/HelperCommandFixtures.js";
 
 // @ts-ignore
 import featureContent from "../../../../../features/onboardHelper.feature?raw";
+import { OnboardHelperCommand } from "../OnboardHelper.command.js";
 const feature = await loadFeatureFromText(featureContent);
 
 const errorMessageMappedToErrorCode = {
@@ -22,6 +23,9 @@ const errorMessageMappedToErrorCode = {
   "this email address is already in use.": "EMAIL_ALREADY_IN_USE",
   "Invalid french county": "FRENCH_COUNTY_INVALID",
   "this phone number is already in use.": "PHONE_NUMBER_ALREADY_IN_USE",
+  "Rpps must be 11 digits long": "RPPS_INVALID",
+  "Adeli must be 9 digits long": "ADELI_INVALID",
+  "Profession requires different health id type": "WRONG_HEALTH_ID_TYPE",
 };
 setVitestCucumberConfiguration({
   ...getVitestCucumberConfiguration(),
@@ -188,6 +192,119 @@ describeFeature(
     );
 
     ScenarioOutline(
+      `Admin cannot onboard helper with invalid rpps id as a physiotherapist`,
+      ({ Given, When, Then, And }, { error: errorCode, rppsId }) => {
+        let command: OnboardHelperCommand;
+        Given(
+          `an admin attempts to onboard a helper as a physiotherapist with rpps id: <rppsId>`,
+          () => {
+            command = HelperCommandFixtures.withProfession("physiotherapist", {
+              rpps: rppsId,
+            });
+          }
+        );
+        When(`the admin submits the onboarding request`, async () => {
+          await harness.onboardUser(command);
+        });
+        Then(`the system rejects the request with <error>`, async () => {
+          await harness.assertHelperIsNotOnboardedWithError(
+            command.email,
+            errorCode
+          );
+        });
+        And(`no helper account is created`, async () => {});
+      }
+    );
+
+    ScenarioOutline(
+      `Admin cannot onboard helper with invalid adeli id as a sports coach`,
+      ({ Given, When, Then, And }, { error: errorCode, adeliId }) => {
+        let command: OnboardHelperCommand;
+        Given(
+          `an admin attempts to onboard a helper as a sports coach with adeli id: <adeliId>`,
+          () => {
+            command = HelperCommandFixtures.withProfession("sports_coach", {
+              adeli: adeliId,
+            });
+          }
+        );
+        When(`the admin submits the onboarding request`, async () => {
+          await harness.onboardUser(command);
+        });
+        Then(`the system rejects the request with <error>`, async () => {
+          await harness.assertHelperIsNotOnboardedWithError(
+            command.email,
+            errorCode
+          );
+        });
+        And(`no helper account is created`, async () => {});
+      }
+    );
+
+    ScenarioOutline(
+      `Admin onboards helper with valid health id for multi-type professions`,
+      (
+        { Given, When, Then, And },
+        { profession, healthIdType, healthIdValue }
+      ) => {
+        let command: OnboardHelperCommand;
+        Given(
+          `an admin attempts to onboard a helper with profession <profession> and health id type <healthIdType> with value <healthIdValue>`,
+          () => {
+            command = HelperCommandFixtures.withProfession(
+              profession,
+              // @ts-expect-error
+              {
+                [healthIdType]: healthIdValue,
+              }
+            );
+          }
+        );
+        When(`the admin submits the onboarding request`, async () => {
+          await harness.onboardUser(command);
+        });
+        Then(`a helper account is created`, async () => {
+          await harness.assertHelperOnboarded(command.email);
+        });
+        And(`a welcome email is sent`, async () => {
+          await harness.assertNotificationSent(command.email);
+        });
+      }
+    );
+
+    ScenarioOutline(
+      `Admin cannot onboard helper with wrong health id type`,
+      (
+        { Given, When, Then, And },
+        { error: errorCode, profession, healthIdType, healthIdValue }
+      ) => {
+        let command: OnboardHelperCommand;
+        Given(
+          `an admin attempts to onboard a helper with profession <profession> and health id type <healthIdType> with value <healthIdValue>`,
+          () => {
+            command = HelperCommandFixtures.withProfession(
+              profession,
+              // @ts-expect-error
+              {
+                [healthIdType]: healthIdValue,
+              }
+            );
+          }
+        );
+        When(`the admin submits the onboarding request`, async () => {
+          await harness.onboardUser(command);
+        });
+        Then(`the system rejects the request with <error>`, async () => {
+          await harness.assertHelperIsNotOnboardedWithError(
+            command.email,
+            errorCode
+          );
+        });
+        And(`no helper account is created`, async () => {});
+      }
+    );
+
+    ScenarioOutline(
       `Admin cannot onboard helper with invalid birthdate`,
       ({ Given, When, Then, And }, { birthdate, error: errorCode }) => {
         const command = HelperCommandFixtures.aValidCommand({
@@ -254,7 +371,7 @@ describeFeature(
         const command = HelperCommandFixtures.aValidCommand();
         Given("an admin has valid helper information", () => {});
         And("the system is temporarily unavailable in scenario <scenario>", () => {
-          harness.simulateInfrastructureFailure();
+            harness.simulateInfrastructureFailure();
         });
         When("the admin attempts to onboard the helper", async () => {
           await harness.onboardUser(command);

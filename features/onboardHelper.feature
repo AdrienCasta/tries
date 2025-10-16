@@ -163,6 +163,65 @@ Feature: Onboarding a new helper
       | 2022-10-07 | age requirement not met. You must be at least 16 yo. |
 
   @unit
+  @integration
+  Scenario Outline: Admin cannot onboard helper with invalid rpps id as a physiotherapist
+    Given an admin attempts to onboard a helper as a physiotherapist with rpps id: <rppsId>
+    When the admin submits the onboarding request
+    Then the system rejects the request with <error>
+    And no helper account is created
+
+    Examples: Invalid rppsId
+      | rppsId      | error                        |
+      |             | Rpps must be 11 digits long  |
+      | 123456789   | Rpps must be 11 digits long  |
+      | 1234567890  | Rpps must be 11 digits long  |
+      | 123456789012| Rpps must be 11 digits long  |
+      | abc12345678 | Rpps must be 11 digits long  |
+
+  @unit
+  @integration
+  Scenario Outline: Admin cannot onboard helper with invalid adeli id as a sports coach
+    Given an admin attempts to onboard a helper as a sports coach with adeli id: <adeliId>
+    When the admin submits the onboarding request
+    Then the system rejects the request with <error>
+    And no helper account is created
+
+    Examples: Invalid adeliId
+      | adeliId    | error                       |
+      |            | Adeli must be 9 digits long |
+      | 12345678   | Adeli must be 9 digits long |
+      | 1234567890 | Adeli must be 9 digits long |
+      | abc123456  | Adeli must be 9 digits long |
+
+  @unit
+  @integration
+  Scenario Outline: Admin onboards helper with valid health id for multi-type professions
+    Given an admin attempts to onboard a helper with profession <profession> and health id type <healthIdType> with value <healthIdValue>
+    When the admin submits the onboarding request
+    Then a helper account is created
+    And a welcome email is sent
+
+    Examples: Osteopath and chiropractor accept both rpps and adeli
+      | profession   | healthIdType | healthIdValue |
+      | osteopath    | adeli        | 123456789     |
+      | osteopath    | rpps         | 12345678901   |
+      | chiropractor | adeli        | 987654321     |
+      | chiropractor | rpps         | 98765432109   |
+
+  @unit
+  @integration
+  Scenario Outline: Admin cannot onboard helper with wrong health id type
+    Given an admin attempts to onboard a helper with profession <profession> and health id type <healthIdType> with value <healthIdValue>
+    When the admin submits the onboarding request
+    Then the system rejects the request with <error>
+    And no helper account is created
+
+    Examples: Wrong health id type
+      | profession       | healthIdType | healthIdValue | error                                        |
+      | physiotherapist  | adeli        | 123456789     | Profession requires different health id type |
+      | sports_coach     | rpps         | 12345678901   | Profession requires different health id type |
+
+  @unit
   Scenario Outline: Admin cannot onboard helper when system is unavailable
     Given an admin has valid helper information
     And the system is temporarily unavailable in scenario <scenario>

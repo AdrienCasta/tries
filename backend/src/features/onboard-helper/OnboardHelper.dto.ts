@@ -4,7 +4,10 @@ export interface OnboardHelperRequest {
   lastname: string;
   phoneNumber: string;
   birthdate: string;
-  professions: string[];
+  professions: {
+    code: string;
+    healthId: { rpps: string } | { adeli: string };
+  }[];
   frenchCounty: string;
   placeOfBirth: {
     country: string;

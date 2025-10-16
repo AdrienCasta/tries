@@ -11,7 +11,14 @@ export class HelperCommandFixtures {
       overrides?.email ?? EmailFixtures.aRandomEmail(),
       overrides?.firstname ?? "John",
       overrides?.lastname ?? "Doe",
-      overrides?.professions ?? ["physiotherapist"],
+      overrides?.professions ?? [
+        {
+          code: "physiotherapist",
+          healthId: {
+            rpps: "12345678901",
+          },
+        },
+      ],
       overrides?.birthdate ?? new Date("1995-03-26"),
       overrides?.phoneNumber ?? PhoneNumberFixtures.aRandomMobileNumber(),
       overrides?.frenchCounty ?? "44",
@@ -30,12 +37,18 @@ export class HelperCommandFixtures {
     return this.aValidCommand({ phoneNumber });
   }
 
-  static withProfession(profession: string): OnboardHelperCommand {
-    return this.aValidCommand({ professions: [profession] });
-  }
-
-  static withProfessions(professions: string[]): OnboardHelperCommand {
-    return this.aValidCommand({ professions });
+  static withProfession(
+    professionCode: string,
+    healthId: { rpps: string } | { adeli: string }
+  ): OnboardHelperCommand {
+    return this.aValidCommand({
+      professions: [
+        {
+          code: professionCode,
+          healthId: healthId,
+        },
+      ],
+    });
   }
 
   static withBirthdate(birthdate: Date): OnboardHelperCommand {
