@@ -19,9 +19,9 @@ import PhoneNumber, {
 import Profession, {
   ProfessionError,
 } from "@shared/domain/value-objects/Profession.js";
-import FrenchCounty, {
-  FrenchCountyError,
-} from "@shared/domain/value-objects/FrenchCounty.js";
+import Residence, {
+  ResidenceError,
+} from "@shared/domain/value-objects/Residence.js";
 import { OnboardedHelperNotificationService } from "@shared/domain/services/OnboardingHelperNotificationService.js";
 import { Clock } from "@shared/domain/services/Clock.js";
 import Password from "@shared/domain/value-objects/Password.js";
@@ -50,7 +50,7 @@ type ValidationError =
   | LastnameEmptyError
   | ProfessionError
   | PlaceOfBirthError
-  | FrenchCountyError;
+  | ResidenceError;
 
 type OnboardHelperError =
   | ValidationError
@@ -101,7 +101,7 @@ export class OnboardHelper {
       lastname: validated.value.lastname,
       birthdate: validated.value.birthdate,
       professions: validated.value.professions,
-      frenchCounty: validated.value.frenchCounty,
+      residence: validated.value.residence,
       placeOfBirth: validated.value.placeOfBirth,
     };
 
@@ -124,6 +124,34 @@ export class OnboardHelper {
   }
 
   private validateCommand(command: OnboardHelperCommand) {
+    // Validate: foreign countries cannot have french county
+    if (
+      command.residence.country !== "France" &&
+      command.residence.frenchCounty
+    ) {
+      return Result.combineObject({
+        email: HelperEmail.create(command.email),
+        firstname: Firstname.create(command.firstname),
+        lastname: Lastname.create(command.lastname),
+        phoneNumber: PhoneNumber.create(command.phoneNumber),
+        birthdate: Birthdate.create(command.birthdate, { clock: this.clock }),
+        professions: Profession.createMany(command.professions),
+        residence: Result.fail(
+          new ResidenceError(
+            command.residence.country,
+            command.residence.frenchCounty,
+            "French county not applicable for non-French countries"
+          )
+        ),
+        placeOfBirth: PlaceOfBirth.create(command.placeOfBirth),
+      });
+    }
+
+    const residence =
+      command.residence.country === "France"
+        ? Residence.createFrenchResidence(command.residence.frenchCounty)
+        : Residence.createForeignResidence(command.residence.country);
+
     return Result.combineObject({
       email: HelperEmail.create(command.email),
       firstname: Firstname.create(command.firstname),
@@ -131,7 +159,7 @@ export class OnboardHelper {
       phoneNumber: PhoneNumber.create(command.phoneNumber),
       birthdate: Birthdate.create(command.birthdate, { clock: this.clock }),
       professions: Profession.createMany(command.professions),
-      frenchCounty: FrenchCounty.create(command.frenchCounty),
+      residence,
       placeOfBirth: PlaceOfBirth.create(command.placeOfBirth),
     });
   }

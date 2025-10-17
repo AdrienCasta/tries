@@ -9,7 +9,10 @@ export class OnboardHelperCommand {
     }[],
     public readonly birthdate: Date,
     public readonly phoneNumber: string,
-    public readonly frenchCounty: string,
+    public readonly residence: {
+      country: string;
+      frenchCounty: string;
+    },
     public readonly placeOfBirth: {
       country: string;
       city: string;

@@ -4,5 +4,6 @@ export type HelperPersistenceModel = {
   firstname: string;
   lastname: string;
   birthdate: Date;
+  country: string;
   french_county: string;
 };

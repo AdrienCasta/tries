@@ -5,7 +5,7 @@ import Firstname from "@shared/domain/value-objects/Firstname.js";
 import Lastname from "@shared/domain/value-objects/Lastname.js";
 import HelperId from "@shared/domain/value-objects/HelperId.js";
 import Birthdate from "@shared/domain/value-objects/Birthdate.js";
-import FrenchCounty from "@shared/domain/value-objects/FrenchCounty.js";
+import Residence from "@shared/domain/value-objects/Residence.js";
 import Profession from "@shared/domain/value-objects/Profession.js";
 import DataMappingException from "@shared/infrastructure/DataMappingException.js";
 
@@ -17,7 +17,8 @@ export class HelperPersistenceMapper {
       firstname: helper.firstname.value,
       lastname: helper.lastname.value,
       birthdate: helper.birthdate.value,
-      french_county: helper.frenchCounty.value,
+      country: helper.residence.value.country,
+      french_county: helper.residence.value.frenchCounty,
     };
   }
 
@@ -59,12 +60,16 @@ export class HelperPersistenceMapper {
         );
       }
 
-      const frenchCountyResult = FrenchCounty.create(data.french_county);
-      if (!frenchCountyResult.success) {
+      const residenceResult =
+        data.country === "France"
+          ? Residence.createFrenchResidence(data.french_county)
+          : Residence.createForeignResidence(data.country);
+
+      if (!residenceResult.success) {
         throw DataMappingException.forField(
-          "french_county",
-          data.french_county,
-          frenchCountyResult.error.message
+          "residence",
+          { country: data.country, french_county: data.french_county },
+          residenceResult.error.message
         );
       }
 
@@ -89,7 +94,7 @@ export class HelperPersistenceMapper {
         firstname: firstnameResult.value,
         lastname: lastnameResult.value,
         birthdate: birthdateResult.value,
-        frenchCounty: frenchCountyResult.value,
+        residence: residenceResult.value,
         professions: professionsResult.value,
       };
     } catch (error) {

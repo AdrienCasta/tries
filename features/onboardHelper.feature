@@ -40,8 +40,26 @@ Feature: Onboarding a new helper
   
   @unit
   @integration
-  Scenario Outline: Admin cannot onboard helper from invalid french county
-    Given an admin attempts to onboard a helper from county "<county>"
+  Scenario Outline: Admin onboards helper from France with valid french county
+    Given an admin attempts to onboard a helper from France residing in county "<county>"
+    When the admin submits the onboarding request
+    Then a helper account is created
+    And a welcome email is sent
+
+    Examples: Valid french counties
+      | county |
+      | 01     |
+      | 2A     |
+      | 2B     |
+      | 44     |
+      | 75     |
+      | 971    |
+      | 974    |
+
+  @unit
+  @integration
+  Scenario Outline: Admin cannot onboard helper from France with invalid french county
+    Given an admin attempts to onboard a helper from France residing in county "<county>"
     When the admin submits the onboarding request
     Then the system rejects the request with "<error>"
     And no helper account is created
@@ -68,6 +86,51 @@ Feature: Onboarding a new helper
       | 1      | Invalid french county |
       | 001    | Invalid french county |
       | 4444   | Invalid french county |
+
+
+  @unit
+  @integration
+  Scenario Outline: Admin onboards helper from supported foreign countries
+    Given an admin attempts to onboard a helper residing in "<country>"
+    When the admin submits the onboarding request
+    Then a helper account is created
+    And a welcome email is sent
+
+    Examples: Supported foreign countries
+      | country     |
+      | Belgium     |
+      | Germany     |
+      | Switzerland |
+      | Spain       |
+      | Italy       |
+
+  @unit
+  @integration
+  Scenario Outline: Admin cannot onboard helper from unsupported country
+    Given an admin attempts to onboard a helper residing in "<country>"
+    When the admin submits the onboarding request
+    Then the system rejects the request with "<error>"
+    And no helper account is created
+
+    Examples: Unsupported countries
+      | country | error             |
+      | Canada  | Invalid residence |
+      | UK      | Invalid residence |
+      | Japan   | Invalid residence |
+
+  @unit
+  @integration
+  Scenario Outline: Admin cannot onboard helper from foreign country with french county
+    Given an admin attempts to onboard a helper from "<country>" with french county "<county>"
+    When the admin submits the onboarding request
+    Then the system rejects the request with "<error>"
+    And no helper account is created
+
+    Examples: Foreign countries with french county
+      | country     | county | error             |
+      | Belgium     | 75     | Invalid residence |
+      | Germany     | 44     | Invalid residence |
+      | Switzerland | 01     | Invalid residence |
 
   @unit
   @integration

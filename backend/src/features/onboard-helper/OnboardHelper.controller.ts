@@ -56,7 +56,7 @@ export default class OnboardHelperController {
       request.professions,
       new Date(request.birthdate),
       request.phoneNumber,
-      request.frenchCounty,
+      request.residence,
       request.placeOfBirth
     );
   }

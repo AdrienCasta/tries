@@ -45,7 +45,11 @@ const errorMessageMappedToErrorCode = {
   },
   "Invalid french county": {
     statusCode: 400,
-    errorBody: { code: "FRENCH_COUNTY_INVALID" },
+    errorBody: { code: "RESIDENCE_INVALID" },
+  },
+  "Invalid residence": {
+    statusCode: 400,
+    errorBody: { code: "RESIDENCE_INVALID" },
   },
   "this phone number is already in use.": {
     statusCode: 409,
@@ -112,12 +116,106 @@ describeFeature(
     );
 
     ScenarioOutline(
-      `Admin cannot onboard helper from invalid french county`,
+      `Admin onboards helper from France with valid french county`,
+      ({ Given, When, Then, And }, { county }) => {
+        let command: any;
+        Given(
+          `an admin attempts to onboard a helper from France residing in county "<county>"`,
+          () => {
+            command = HelperCommandFixtures.withFrenchCounty(county);
+          }
+        );
+        When(`the admin submits the onboarding request`, async () => {
+          await harness.onboardUser(command);
+        });
+        Then(`a helper account is created`, async () => {
+          await harness.assertHelperOnboarded(command.email);
+        });
+        And(`a welcome email is sent`, async () => {
+          await harness.assertNotificationSent(command.email);
+        });
+      }
+    );
+
+    ScenarioOutline(
+      `Admin cannot onboard helper from France with invalid french county`,
       ({ Given, When, Then, And }, { county, error }) => {
         const command = HelperCommandFixtures.withFrenchCounty(county);
         Given(
-          `an admin attempts to onboard a helper from county "<county>"`,
+          `an admin attempts to onboard a helper from France residing in county "<county>"`,
           () => {}
+        );
+        When(`the admin submits the onboarding request`, async () => {
+          await harness.onboardUser(command);
+        });
+        Then(`the system rejects the request with "<error>"`, async () => {
+          await harness.assertHelperIsNotOnboardedWithError(
+            error.statusCode,
+            error.errorBody
+          );
+        });
+        And(`no helper account is created`, async () => {
+          await harness.assertNotificationNotSent(command.email);
+        });
+      }
+    );
+
+    ScenarioOutline(
+      `Admin onboards helper from supported foreign countries`,
+      ({ Given, When, Then, And }, { country }) => {
+        let command: any;
+        Given(
+          `an admin attempts to onboard a helper residing in "<country>"`,
+          () => {
+            command = HelperCommandFixtures.withForeignResidence(country);
+          }
+        );
+        When(`the admin submits the onboarding request`, async () => {
+          await harness.onboardUser(command);
+        });
+        Then(`a helper account is created`, async () => {
+          await harness.assertHelperOnboarded(command.email);
+        });
+        And(`a welcome email is sent`, async () => {
+          await harness.assertNotificationSent(command.email);
+        });
+      }
+    );
+
+    ScenarioOutline(
+      `Admin cannot onboard helper from unsupported country`,
+      ({ Given, When, Then, And }, { country, error }) => {
+        let command: any;
+        Given(
+          `an admin attempts to onboard a helper residing in "<country>"`,
+          () => {
+            command = HelperCommandFixtures.withForeignResidence(country);
+          }
+        );
+        When(`the admin submits the onboarding request`, async () => {
+          await harness.onboardUser(command);
+        });
+        Then(`the system rejects the request with "<error>"`, async () => {
+          await harness.assertHelperIsNotOnboardedWithError(
+            error.statusCode,
+            error.errorBody
+          );
+        });
+        And(`no helper account is created`, async () => {
+          await harness.assertNotificationNotSent(command.email);
+        });
+      }
+    );
+
+    ScenarioOutline(
+      `Admin cannot onboard helper from foreign country with french county`,
+      ({ Given, When, Then, And }, { country, county, error }) => {
+        let command: any;
+        Given(
+          `an admin attempts to onboard a helper from "<country>" with french county "<county>"`,
+          () => {
+            command = HelperCommandFixtures.withResidence(country, county);
+          }
         );
         When(`the admin submits the onboarding request`, async () => {
           await harness.onboardUser(command);

@@ -8,7 +8,10 @@ export interface OnboardHelperRequest {
     code: string;
     healthId: { rpps: string } | { adeli: string };
   }[];
-  frenchCounty: string;
+  residence: {
+    country: string;
+    frenchCounty: string;
+  };
   placeOfBirth: {
     country: string;
     city: string;

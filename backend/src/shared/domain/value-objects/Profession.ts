@@ -2,23 +2,28 @@ import DomainError from "@shared/domain/DomainError";
 import { Result } from "@shared/infrastructure/Result.js";
 
 export const VALID_PROFESSIONS = [
-  "physiotherapist", // Kinésithérapeute
-  "osteopath", // Ostéopathe
-  "physical_trainer", // Préparateur Physique
-  "sports_coach", // Coach sportif
-  "first_responder", // Secouriste
-  "sports_physiotherapist", // Kinésithérapeute du sport
-  "acupuncturist", // Acupuncteur
-  "massage_therapist", // Masseur
-  "chiropractor", // Chiropracteur
-  "mental_coach", // Préparateur Mental
-  "microkinesitherapist", // Microkinesitherapeute
-  "nurse", // Infirmier
-  "doctor", // Médecin
-  "etiopath", // Étiopathe
+  "physiotherapist",
+  "osteopath",
+  "physical_trainer",
+  "sports_coach",
+  "first_responder",
+  "sports_physiotherapist",
+  "acupuncturist",
+  "massage_therapist",
+  "chiropractor",
+  "mental_coach",
+  "microkinesitherapist",
+  "nurse",
+  "doctor",
+  "etiopath",
 ] as const;
 
 export type ProfessionType = (typeof VALID_PROFESSIONS)[number];
+
+type ProfessionWithHealthId = {
+  code: ProfessionType;
+  healthId: { rpps: string } | { adeli: string };
+};
 
 export default class Profession {
   readonly value: string;
@@ -27,31 +32,24 @@ export default class Profession {
     this.value = value;
   }
 
-  static create(profession: string): Result<Profession, UnkwonProfessionError> {
-    if (VALID_PROFESSIONS.includes(profession as ProfessionType)) {
-      return Result.ok(new Profession(profession.trim()));
-    }
-
-    return Result.fail(new UnkwonProfessionError([profession]));
-  }
-
   static createMany(
-    professions: {
-      code: string;
-      healthId: { rpps: string } | { adeli: string };
-    }[]
-  ): Result<Profession[], UnkwonProfessionError | WrongHealthIdTypeError | RppsInvalidError | AdeliInvalidError> {
+    professions: ProfessionWithHealthId[]
+  ): Result<Profession[], ProfessionError> {
     const unknownProfessions = professions.filter(
       (profession) =>
         !VALID_PROFESSIONS.includes(profession.code as ProfessionType)
     );
 
     if (unknownProfessions.length > 0) {
-      return Result.fail(new UnkwonProfessionError(unknownProfessions.map(p => p.code)));
+      return Result.fail(
+        new UnkwonProfessionError(unknownProfessions.map((p) => p.code))
+      );
     }
 
     for (const profession of professions) {
-      const validationResult = hasValidHealthIdType(profession as { code: ProfessionType; healthId: { rpps: string } | { adeli: string }});
+      const validationResult = hasValidHealthIdType(
+        profession as ProfessionWithHealthId
+      );
       if (Result.isFailure(validationResult)) {
         return Result.fail(validationResult.error);
       }
@@ -87,40 +85,51 @@ const PROFESSION_HEALTH_ID_REQUIREMENTS: Record<
   etiopath: { adeli: true },
 };
 const isValidHealthIdFormat = (
-  healthIdType: 'rpps' | 'adeli',
+  healthIdType: "rpps" | "adeli",
   value: string
 ): boolean => {
-  if (healthIdType === 'rpps') {
+  if (healthIdType === "rpps") {
     return /^\d{11}$/.test(value);
   }
 
-  if (healthIdType === 'adeli') {
+  if (healthIdType === "adeli") {
     return /^\d{9}$/.test(value);
   }
 
   return false;
 };
 
-const hasValidHealthIdType = (profession: {
-  code: ProfessionType;
-  healthId: { rpps: string } | { adeli: string };
-}): Result<void, WrongHealthIdTypeError | RppsInvalidError | AdeliInvalidError> => {
-  const healthIdType = Object.keys(profession.healthId)[0] as 'rpps' | 'adeli';
-  const healthIdValue = 'rpps' in profession.healthId ? profession.healthId.rpps : profession.healthId.adeli;
+const hasValidHealthIdType = (
+  profession: ProfessionWithHealthId
+): Result<
+  void,
+  WrongHealthIdTypeError | RppsInvalidError | AdeliInvalidError
+> => {
+  const healthIdType = Object.keys(profession.healthId)[0] as "rpps" | "adeli";
+  const healthIdValue =
+    "rpps" in profession.healthId
+      ? profession.healthId.rpps
+      : profession.healthId.adeli;
   const requirements = PROFESSION_HEALTH_ID_REQUIREMENTS[profession.code];
 
   if (!requirements) {
-    return Result.fail(new WrongHealthIdTypeError(profession.code, healthIdType, []));
+    return Result.fail(
+      new WrongHealthIdTypeError(profession.code, healthIdType, [])
+    );
   }
 
   if (!requirements[healthIdType]) {
-    const acceptedTypes = Object.keys(requirements).filter(k => requirements[k as 'rpps' | 'adeli']) as ('rpps' | 'adeli')[];
-    return Result.fail(new WrongHealthIdTypeError(profession.code, healthIdType, acceptedTypes));
+    const acceptedTypes = Object.keys(requirements).filter(
+      (k) => requirements[k as "rpps" | "adeli"]
+    ) as ("rpps" | "adeli")[];
+    return Result.fail(
+      new WrongHealthIdTypeError(profession.code, healthIdType, acceptedTypes)
+    );
   }
 
   const isValidFormat = isValidHealthIdFormat(healthIdType, healthIdValue);
   if (!isValidFormat) {
-    if (healthIdType === 'rpps') {
+    if (healthIdType === "rpps") {
       return Result.fail(new RppsInvalidError(profession.code, healthIdValue));
     } else {
       return Result.fail(new AdeliInvalidError(profession.code, healthIdValue));
@@ -130,7 +139,12 @@ const hasValidHealthIdType = (profession: {
   return Result.ok(undefined);
 };
 
-export type ProfessionError = UnkwonProfessionError | InvalidProfessionHeathIdError | WrongHealthIdTypeError | RppsInvalidError | AdeliInvalidError;
+export type ProfessionError =
+  | UnkwonProfessionError
+  | InvalidProfessionHeathIdError
+  | WrongHealthIdTypeError
+  | RppsInvalidError
+  | AdeliInvalidError;
 
 export class UnkwonProfessionError extends DomainError {
   readonly code = "UNKNOWN_PROFESSION";
@@ -145,9 +159,11 @@ export class UnkwonProfessionError extends DomainError {
 export class InvalidProfessionHeathIdError extends DomainError {
   readonly code = "INVALID_PROFESSION_HEALTH_ID";
   constructor(professionCodes: string[]) {
-    const requirements = professionCodes.map(code => {
+    const requirements = professionCodes.map((code) => {
       const req = PROFESSION_HEALTH_ID_REQUIREMENTS[code as ProfessionType];
-      const validTypes = req ? Object.keys(req).filter(k => req[k as 'rpps' | 'adeli']) : [];
+      const validTypes = req
+        ? Object.keys(req).filter((k) => req[k as "rpps" | "adeli"])
+        : [];
       return { code, validHealthIdTypes: validTypes };
     });
 
@@ -159,7 +175,11 @@ export class InvalidProfessionHeathIdError extends DomainError {
 
 export class WrongHealthIdTypeError extends DomainError {
   readonly code = "WRONG_HEALTH_ID_TYPE";
-  constructor(professionCode: string, providedType: 'rpps' | 'adeli', acceptedTypes: ('rpps' | 'adeli')[]) {
+  constructor(
+    professionCode: string,
+    providedType: "rpps" | "adeli",
+    acceptedTypes: ("rpps" | "adeli")[]
+  ) {
     super("Profession requires different health id type", {
       professionCode,
       providedType,

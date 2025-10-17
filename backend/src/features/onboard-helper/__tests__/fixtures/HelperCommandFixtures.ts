@@ -21,7 +21,10 @@ export class HelperCommandFixtures {
       ],
       overrides?.birthdate ?? new Date("1995-03-26"),
       overrides?.phoneNumber ?? PhoneNumberFixtures.aRandomMobileNumber(),
-      overrides?.frenchCounty ?? "44",
+      overrides?.residence ?? {
+        country: "France",
+        frenchCounty: "44",
+      },
       overrides?.placeOfBirth ?? PlaceOfBirthFixtures.aRandomPlaceOfBirth()
     );
   }
@@ -29,8 +32,14 @@ export class HelperCommandFixtures {
   static withEmail(email: string): OnboardHelperCommand {
     return this.aValidCommand({ email });
   }
+
   static withFrenchCounty(frenchCounty: string): OnboardHelperCommand {
-    return this.aValidCommand({ frenchCounty });
+    return this.aValidCommand({
+      residence: {
+        country: "France",
+        frenchCounty,
+      },
+    });
   }
 
   static withPhoneNumber(phoneNumber: string): OnboardHelperCommand {
@@ -53,5 +62,26 @@ export class HelperCommandFixtures {
 
   static withBirthdate(birthdate: Date): OnboardHelperCommand {
     return this.aValidCommand({ birthdate });
+  }
+
+  static withForeignResidence(country: string): OnboardHelperCommand {
+    return this.aValidCommand({
+      residence: {
+        country,
+        frenchCounty: "",
+      },
+    });
+  }
+
+  static withResidence(
+    country: string,
+    frenchCounty: string
+  ): OnboardHelperCommand {
+    return this.aValidCommand({
+      residence: {
+        country,
+        frenchCounty,
+      },
+    });
   }
 }

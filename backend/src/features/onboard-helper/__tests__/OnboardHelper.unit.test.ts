@@ -21,7 +21,8 @@ const errorMessageMappedToErrorCode = {
   "Phone number invalid": "PHONE_NUMBER_INVALID",
   "Profession invalid": "UNKNOWN_PROFESSION",
   "this email address is already in use.": "EMAIL_ALREADY_IN_USE",
-  "Invalid french county": "FRENCH_COUNTY_INVALID",
+  "Invalid french county": "RESIDENCE_INVALID",
+  "Invalid residence": "RESIDENCE_INVALID",
   "this phone number is already in use.": "PHONE_NUMBER_ALREADY_IN_USE",
   "Rpps must be 11 digits long": "RPPS_INVALID",
   "Adeli must be 9 digits long": "ADELI_INVALID",
@@ -69,11 +70,33 @@ describeFeature(
     );
 
     ScenarioOutline(
-      `Admin cannot onboard helper from invalid french county`,
+      `Admin onboards helper from France with valid french county`,
+      ({ Given, When, Then, And }, { county }) => {
+        let command: OnboardHelperCommand;
+        Given(
+          `an admin attempts to onboard a helper from France residing in county "<county>"`,
+          () => {
+            command = HelperCommandFixtures.withFrenchCounty(county);
+          }
+        );
+        When(`the admin submits the onboarding request`, async () => {
+          await harness.onboardUser(command);
+        });
+        Then(`a helper account is created`, async () => {
+          await harness.assertHelperOnboarded(command.email);
+        });
+        And(`a welcome email is sent`, async () => {
+          await harness.assertNotificationSent(command.email);
+        });
+      }
+    );
+
+    ScenarioOutline(
+      `Admin cannot onboard helper from France with invalid french county`,
       ({ Given, When, Then, And }, { county, error: errorCode }) => {
         const command = HelperCommandFixtures.withFrenchCounty(county);
         Given(
-          `an admin attempts to onboard a helper from county "<county>"`,
+          `an admin attempts to onboard a helper from France residing in county "<county>"`,
           () => {}
         );
         When(`the admin submits the onboarding request`, async () => {
@@ -307,9 +330,9 @@ describeFeature(
     ScenarioOutline(
       `Admin cannot onboard helper with invalid birthdate`,
       ({ Given, When, Then, And }, { birthdate, error: errorCode }) => {
-        const command = HelperCommandFixtures.aValidCommand({
-          birthdate: new Date(birthdate),
-        });
+        const command = HelperCommandFixtures.withBirthdate(
+          new Date(birthdate)
+        );
         Given("it is {date}", (ctx, date) => {
           harness.setup(date);
         });
@@ -334,16 +357,13 @@ describeFeature(
     ScenarioOutline(
       `Admin cannot onboard a helper with phone number already in use`,
       ({ Given, When, Then, And }, { phoneNumber, error: errorCode }) => {
-        const secondCommand = HelperCommandFixtures.aValidCommand({
-          phoneNumber,
-        });
+        const secondCommand =
+          HelperCommandFixtures.withPhoneNumber(phoneNumber);
         Given(
           "a helper with phone number <phoneNumber> is already onboarded",
           async () => {
             await harness.onboardUser(
-              HelperCommandFixtures.aValidCommand({
-                phoneNumber,
-              })
+              HelperCommandFixtures.withPhoneNumber(phoneNumber)
             );
           }
         );
@@ -366,13 +386,88 @@ describeFeature(
     );
 
     ScenarioOutline(
+      `Admin onboards helper from supported foreign countries`,
+      ({ Given, When, Then, And }, { country }) => {
+        let command: OnboardHelperCommand;
+        Given(
+          `an admin attempts to onboard a helper residing in "<country>"`,
+          () => {
+            command = HelperCommandFixtures.withForeignResidence(country);
+          }
+        );
+        When(`the admin submits the onboarding request`, async () => {
+          await harness.onboardUser(command);
+        });
+        Then(`a helper account is created`, async () => {
+          await harness.assertHelperOnboarded(command.email);
+        });
+        And(`a welcome email is sent`, async () => {
+          await harness.assertNotificationSent(command.email);
+        });
+      }
+    );
+
+    ScenarioOutline(
+      `Admin cannot onboard helper from unsupported country`,
+      ({ Given, When, Then, And }, { country, error: errorCode }) => {
+        let command: OnboardHelperCommand;
+        Given(
+          `an admin attempts to onboard a helper residing in "<country>"`,
+          () => {
+            command = HelperCommandFixtures.withForeignResidence(country);
+          }
+        );
+        When(`the admin submits the onboarding request`, async () => {
+          await harness.onboardUser(command);
+        });
+        Then(`the system rejects the request with "<error>"`, async () => {
+          await harness.assertHelperIsNotOnboardedWithError(
+            command.email,
+            errorCode
+          );
+        });
+        And(`no helper account is created`, async () => {
+          await harness.assertNotificationNotSent(command.email);
+        });
+      }
+    );
+
+    ScenarioOutline(
+      `Admin cannot onboard helper from foreign country with french county`,
+      ({ Given, When, Then, And }, { country, county, error: errorCode }) => {
+        let command: OnboardHelperCommand;
+        Given(
+          `an admin attempts to onboard a helper from "<country>" with french county "<county>"`,
+          () => {
+            command = HelperCommandFixtures.withResidence(country, county);
+          }
+        );
+        When(`the admin submits the onboarding request`, async () => {
+          await harness.onboardUser(command);
+        });
+        Then(`the system rejects the request with "<error>"`, async () => {
+          await harness.assertHelperIsNotOnboardedWithError(
+            command.email,
+            errorCode
+          );
+        });
+        And(`no helper account is created`, async () => {
+          await harness.assertNotificationNotSent(command.email);
+        });
+      }
+    );
+
+    ScenarioOutline(
       `Admin cannot onboard helper when system is unavailable`,
       ({ Given, And, When, Then }, { scenario }) => {
         const command = HelperCommandFixtures.aValidCommand();
         Given("an admin has valid helper information", () => {});
-        And("the system is temporarily unavailable in scenario <scenario>", () => {
+        And(
+          "the system is temporarily unavailable in scenario <scenario>",
+          () => {
             harness.simulateInfrastructureFailure();
-        });
+          }
+        );
         When("the admin attempts to onboard the helper", async () => {
           await harness.onboardUser(command);
         });
@@ -392,7 +487,10 @@ describeFeature(
       `System rolls back account when helper save fails`,
       ({ Given, And, But, When, Then }, { scenario }) => {
         const command = HelperCommandFixtures.aValidCommand();
-        Given("an admin has valid helper information in scenario <scenario>", () => {});
+        Given(
+          "an admin has valid helper information in scenario <scenario>",
+          () => {}
+        );
         And("the helper account creation will succeed", () => {});
         But("the helper profile save will fail", () => {
           harness.simulateHelperRepositoryFailure();
