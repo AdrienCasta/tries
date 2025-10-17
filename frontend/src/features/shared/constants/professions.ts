@@ -4,5 +4,5 @@ export const VALID_PROFESSIONS = [
   { code: 'sports_coach', label: 'Sports Coach' },
 ] as const;
 
-export const PROFESSION_CODES = VALID_PROFESSIONS.map(p => p.code);
-export type ProfessionCode = typeof PROFESSION_CODES[number];
+export const PROFESSION_CODES = VALID_PROFESSIONS.map(p => p.code) as readonly string[];
+export type ProfessionCode = typeof VALID_PROFESSIONS[number]['code'];

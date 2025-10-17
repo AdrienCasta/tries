@@ -244,6 +244,7 @@ export const fillFormWithBelgiumResidence = async (
   await enterLastname(user);
   await enterPhoneNumber(user);
   await enterBirthdate(user);
+  await selectCountryOfBirth(user);
   await selectCountryOfResidence(user, /belgium/i);
   await selectAProfession(user, /physiotherapist/i);
   await enterRppsNumber(user, "Physiotherapist", "12345678901");
@@ -258,6 +259,7 @@ export const fillBasicInfoOnly = async (
   await enterLastname(user);
   await enterPhoneNumber(user);
   await enterBirthdate(user);
+  await selectCountryOfBirth(user);
   await selectCountryOfResidence(user, /belgium/i);
   await enterprofessionalDescription(user);
 };

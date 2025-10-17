@@ -17,6 +17,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 interface OnboardHelperFormProps {
   onSubmit?: (data: OnboardHelperCommand) => void;
@@ -38,9 +45,11 @@ export function OnboardHelperForm({
       rppsNumbers: {},
       birthdate: "",
       frenchCounty: "",
-      countryOfBirth: "",
-      "city-of-birth": "",
-      "city-of-birth-zip-code": "",
+      placeOfBirth: {
+        country: "",
+        city: "",
+        zipCode: "",
+      },
       countryOfResidence: "",
       professionalDescription: "",
     },
@@ -67,132 +76,142 @@ export function OnboardHelperForm({
   };
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(handleFormSubmit)}
-        noValidate
-        className="space-y-6"
-      >
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input
-                  type="email"
-                  placeholder="email@example.com"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+    <Card>
+      <CardHeader>
+        <CardTitle>Onboard a helper</CardTitle>
+        <CardDescription>
+          Enter helper information below to create its account
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleFormSubmit)}
+            noValidate
+            className="space-y-6"
+          >
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="email@example.com"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <FormField
-          control={form.control}
-          name="firstname"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>First Name</FormLabel>
-              <FormControl>
-                <Input type="text" placeholder="John" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <FormField
+              control={form.control}
+              name="firstname"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>First Name</FormLabel>
+                  <FormControl>
+                    <Input type="text" placeholder="John" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <FormField
-          control={form.control}
-          name="lastname"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Last Name</FormLabel>
-              <FormControl>
-                <Input type="text" placeholder="Doe" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <FormField
+              control={form.control}
+              name="lastname"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Last Name</FormLabel>
+                  <FormControl>
+                    <Input type="text" placeholder="Doe" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <FormField
-          control={form.control}
-          name="phoneNumber"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Phone Number</FormLabel>
-              <FormControl>
-                <Input type="tel" placeholder="+33612345678" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <FormField
+              control={form.control}
+              name="phoneNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone Number</FormLabel>
+                  <FormControl>
+                    <Input type="tel" placeholder="+33612345678" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <ProfessionSelector
-          control={form.control}
-          selectedProfessions={selectedProfessions}
-          availableProfessions={availableProfessions}
-          onAddProfession={handleAddProfession}
-          onRemoveProfession={handleRemoveProfession}
-        />
+            <ProfessionSelector
+              control={form.control}
+              selectedProfessions={selectedProfessions}
+              availableProfessions={availableProfessions}
+              onAddProfession={handleAddProfession}
+              onRemoveProfession={handleRemoveProfession}
+            />
 
-        <FormField
-          control={form.control}
-          name="rppsNumbers"
-          render={() => (
-            <FormItem>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <FormField
+              control={form.control}
+              name="rppsNumbers"
+              render={() => (
+                <FormItem>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <FormField
-          control={form.control}
-          name="birthdate"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Birthdate</FormLabel>
-              <FormControl>
-                <Input type="date" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <FormField
+              control={form.control}
+              name="birthdate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Birthdate</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <LocationFields
-          control={form.control}
-          countryOfResidence={countryOfResidence}
-        />
+            <LocationFields
+              control={form.control}
+              countryOfResidence={countryOfResidence}
+            />
 
-        <FormField
-          control={form.control}
-          name="professionalDescription"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Professional Description</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Tell us about your professional experience, skills, and what makes you a great helper..."
-                  className="min-h-[120px] resize-y"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <FormField
+              control={form.control}
+              name="professionalDescription"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Professional Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Tell us about your professional experience, skills, and what makes you a great helper..."
+                      className="min-h-[120px] resize-y"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <Button type="submit" disabled={isLoading}>
-          {isLoading && <Spinner />}
-          Onboard Helper
-        </Button>
-      </form>
-    </Form>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading && <Spinner />}
+              Onboard Helper
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
 }

@@ -7,9 +7,11 @@ export interface OnboardHelperCommand {
   rppsNumbers: Record<string, string>;
   birthdate: string;
   frenchCounty: string;
-  countryOfBirth: string;
-  "city-of-birth": string;
-  "city-of-birth-zip-code": string;
+  placeOfBirth: {
+    country: string;
+    city?: string;
+    zipCode?: string;
+  };
   countryOfResidence: string;
-  professionalDescription: string;
+  professionalDescription?: string;
 }

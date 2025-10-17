@@ -23,8 +23,8 @@ export function useOnboardHelper() {
     }
   }, [status]);
 
-  const onboard = async (data: OnboardHelperCommand) => {
-    await handler.execute(data);
+  const onboard = async (command: OnboardHelperCommand) => {
+    await handler.execute(command);
   };
 
   return {

@@ -33,7 +33,7 @@ export function LocationFields({
     <>
       <FormField
         control={control}
-        name="countryOfBirth"
+        name="placeOfBirth.country"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Country of birth</FormLabel>
@@ -58,7 +58,7 @@ export function LocationFields({
 
       <FormField
         control={control}
-        name="city-of-birth"
+        name="placeOfBirth.city"
         render={({ field }) => (
           <FormItem>
             <FormLabel>City of birth</FormLabel>
@@ -72,7 +72,7 @@ export function LocationFields({
 
       <FormField
         control={control}
-        name="city-of-birth-zip-code"
+        name="placeOfBirth.zipCode"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Zip code</FormLabel>

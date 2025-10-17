@@ -4,6 +4,7 @@ import { ALL_FRENCH_COUNTIES } from "../shared/constants/counties";
 import { RESIDENCE_COUNTRY_CODES } from "../shared/constants/countries";
 
 const phoneRegex = /^(\+33|0)[1-9]\d{8}$/;
+const MINIMUM_AGE = 16;
 
 export const onboardHelperSchema = z
   .object({
@@ -24,7 +25,7 @@ export const onboardHelperSchema = z
       .array(z.string())
       .min(1, "At least one profession is required")
       .refine(
-        (arr) => arr.every((code) => PROFESSION_CODES.includes(code as any)),
+        (arr) => arr.every((code) => PROFESSION_CODES.includes(code)),
         { message: "Invalid profession selected" }
       ),
     rppsNumbers: z.record(
@@ -41,16 +42,18 @@ export const onboardHelperSchema = z
       .refine((val) => {
         const date = new Date(val);
         const age = new Date().getFullYear() - date.getFullYear();
-        return age >= 16;
-      }, "Must be at least 16 years old"),
+        return age >= MINIMUM_AGE;
+      }, `Must be at least ${MINIMUM_AGE} years old`),
     frenchCounty: z.string().optional(),
-    countryOfBirth: z.string(),
-    "city-of-birth": z.string().optional().or(z.literal("")),
-    "city-of-birth-zip-code": z.string().optional().or(z.literal("")),
+    placeOfBirth: z.object({
+      country: z.string().min(1, "Country of birth is required"),
+      city: z.string().optional(),
+      zipCode: z.string().optional(),
+    }),
     countryOfResidence: z
       .string()
       .min(1, "Country of residence is required")
-      .refine((val) => RESIDENCE_COUNTRY_CODES.includes(val as any), {
+      .refine((val) => RESIDENCE_COUNTRY_CODES.includes(val), {
         message: "Invalid country of residence",
       }),
     professionalDescription: z
@@ -60,8 +63,7 @@ export const onboardHelperSchema = z
         "Please provide at least 50 characters describing your experience"
       )
       .max(1000, "Description must not exceed 1000 characters")
-      .optional()
-      .or(z.literal("")),
+      .optional(),
   })
   .refine(
     (data) => {
@@ -91,7 +93,7 @@ export const onboardHelperSchema = z
     (data) => {
       return data.professions.every((profession) => {
         const rppsNumber = data.rppsNumbers[profession];
-        return rppsNumber && rppsNumber.trim().length > 0;
+        return rppsNumber && rppsNumber.length > 0;
       });
     },
     {

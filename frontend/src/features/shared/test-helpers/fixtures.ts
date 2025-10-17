@@ -19,9 +19,11 @@ export class HelperCommandFixtures {
       rppsNumbers: overrides?.rppsNumbers ?? defaultRppsNumbers,
       birthdate: overrides?.birthdate ?? "1995-03-26",
       frenchCounty: overrides?.frenchCounty ?? "44",
-      countryOfBirth: overrides?.countryOfBirth ?? "",
-      "city-of-birth": "",
-      "city-of-birth-zip-code": "",
+      placeOfBirth: overrides?.placeOfBirth ?? {
+        country: "FR",
+        city: "Nantes",
+        zipCode: "44000",
+      },
       countryOfResidence: overrides?.countryOfResidence ?? "FR",
       professionalDescription:
         overrides?.professionalDescription ??
