@@ -26,14 +26,12 @@ export default class Firstname {
 }
 
 export class FirstnameTooShortError extends DomainError {
-  readonly code = "FIRSTNAME_TOO_SHORT";
   constructor(firstname: string) {
     super("First name too short", { firstname });
   }
 }
 
 export class FirstnameEmptyError extends DomainError {
-  readonly code = "FIRSTNAME_EMPTY";
   constructor(firstname: string) {
     super("First name is required", { firstname });
   }
