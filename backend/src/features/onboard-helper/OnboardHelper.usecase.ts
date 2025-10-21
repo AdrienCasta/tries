@@ -1,9 +1,9 @@
 import { OnboardHelperCommand } from "./OnboardHelper.command.js";
 import { Helper } from "@shared/domain/entities/Helper.js";
-import { HelperAccount } from "@shared/domain/entities/HelperAccount.js";
+import { AuthUser } from "@shared/domain/entities/AuthUser.js";
 import HelperId from "@shared/domain/value-objects/HelperId.js";
 import { HelperRepository } from "@shared/domain/repositories/HelperRepository.js";
-import { HelperAccountRepository } from "@shared/domain/repositories/HelperAccountRepository.js";
+import { AuthRepository } from "@shared/domain/repositories/HelperAccountRepository.js";
 import HelperEmail from "@shared/domain/value-objects/HelperEmail.js";
 import Firstname, {
   FirstnameEmptyError,
@@ -25,7 +25,7 @@ import Residence, {
 import { OnboardedHelperNotificationService } from "@shared/domain/services/OnboardingHelperNotificationService.js";
 import { Clock } from "@shared/domain/services/Clock.js";
 import Password from "@shared/domain/value-objects/Password.js";
-import CreateHelperAccountException from "@shared/infrastructure/CreateHelperAccountException.js";
+import InviteAuthUserException from "@shared/infrastructure/InviteAuthUserException.js";
 import Birthdate, {
   BirthdateInFuturError,
   TooYoungToWorkError,
@@ -56,13 +56,13 @@ type OnboardHelperError =
   | ValidationError
   | EmailAlreadyUsedError
   | PhoneAlreadyUsedError
-  | CreateHelperAccountException
+  | InviteAuthUserException
   | SaveHelperError;
 
 export class OnboardHelper {
   constructor(
     private readonly helperRepository: HelperRepository,
-    private readonly helperAccountRepository: HelperAccountRepository,
+    private readonly helperAccountRepository: AuthRepository,
     private readonly notif: OnboardedHelperNotificationService,
     private readonly clock: Clock
   ) {}
@@ -78,7 +78,7 @@ export class OnboardHelper {
 
     const helperId = HelperId.generate();
 
-    const helperAccount: HelperAccount = {
+    const invitationData: AuthUser = {
       helperId,
       password: await Password.generateTemporary(),
       email: validated.value.email,
@@ -86,8 +86,8 @@ export class OnboardHelper {
       phoneNumber: validated.value.phoneNumber,
     };
 
-    const accountResult = await this.helperAccountRepository.create(
-      helperAccount
+    const accountResult = await this.helperAccountRepository.inviteUser(
+      invitationData
     );
 
     if (Result.isFailure(accountResult)) {
@@ -126,7 +126,7 @@ export class OnboardHelper {
   private validateCommand(command: OnboardHelperCommand) {
     // Validate: foreign countries cannot have french county
     if (
-      command.residence.country !== "France" &&
+      command.residence.country !== "FR" &&
       command.residence.frenchCounty
     ) {
       return Result.combineObject({
@@ -148,9 +148,13 @@ export class OnboardHelper {
     }
 
     const residence =
-      command.residence.country === "France"
-        ? Residence.createFrenchResidence(command.residence.frenchCounty)
-        : Residence.createForeignResidence(command.residence.country);
+      command.residence.country === "FR"
+        ? Residence.createFrenchResidence(
+            command.residence.frenchCounty
+          )
+        : Residence.createForeignResidence(
+            command.residence.country
+          );
 
     return Result.combineObject({
       email: HelperEmail.create(command.email),

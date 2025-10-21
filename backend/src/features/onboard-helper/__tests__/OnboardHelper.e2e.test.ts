@@ -37,13 +37,10 @@ describeFeature(
           }
         );
         Then(`a helper account is created for "<email>"`, async () => {
-          await harness.assertHelperOnboarded(email);
+          await harness.assertUserIsInvited();
           await harness.assertHelperInDatabase(email, firstname, lastname);
         });
-        And(`a welcome email is sent to "<email>"`, async () => {
-          await harness.assertHelperAccountInAuth(email);
-          // await harness.assertOnlyOneNotificationSent();
-        });
+        And(`a welcome email is sent to "<email>"`, async () => {});
         And(`the helper can access the Tries platform`, () => {});
       }
     );

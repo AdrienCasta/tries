@@ -4,7 +4,7 @@ import { HttpServer } from "@infrastructure/http/HttpServer.js";
 import { createApp } from "../../../app/createApp.js";
 import { FastifyHttpServer } from "@infrastructure/http/FastifyHttpServer.js";
 import { SupabaseHelperRepository } from "@infrastructure/persistence/SupabaseHelperRepository.js";
-import { SupabaseHelperAccountRepository } from "@infrastructure/persistence/SupabaseHelperAccountRepository.js";
+import { SupabaseAuthRepository } from "@infrastructure/persistence/SupabaseAuthRepository.js";
 import { SupabaseOnboardedHelperNotificationService } from "@infrastructure/notifications/SupabaseOnboardedHelperNotificationService.js";
 import { FixedClock } from "@infrastructure/time/FixedClock.js";
 import InMemoryEventBus from "@infrastructure/events/InMemoryEventBus.js";
@@ -31,9 +31,7 @@ export default class OnboardHelperE2eHarnessTest {
     );
 
     const helperRepository = new SupabaseHelperRepository(this.supabase);
-    const helperAccountRepository = new SupabaseHelperAccountRepository(
-      this.supabase
-    );
+    const helperAccountRepository = new SupabaseAuthRepository(this.supabase);
     this.notificationService = new SupabaseOnboardedHelperNotificationService(
       this.supabase
     );
@@ -67,19 +65,18 @@ export default class OnboardHelperE2eHarnessTest {
 
   async cleanupEmail(email: string): Promise<void> {
     try {
-      const { data } = await this.supabase.auth.admin.listUsers();
-      const user = data.users.find((u) => u.email === email);
-      if (user) {
-        await this.supabase.auth.admin.deleteUser(user.id);
+      // Get user ID from auth.users
+      const { data: authData } = await this.supabase.auth.admin.listUsers();
+      const authUser = authData.users.find(u => u.email === email);
+
+      if (authUser) {
+        // Delete from helpers table first (due to foreign key)
+        await this.supabase.from("helpers").delete().eq("id", authUser.id);
+        // Then delete from auth
+        await this.supabase.auth.admin.deleteUser(authUser.id);
       }
     } catch (error) {
-      console.error(`Cleanup Auth failed for ${email}:`, error);
-    }
-
-    try {
-      await this.supabase.from("helpers").delete().eq("email", email);
-    } catch (error) {
-      console.error(`Cleanup helpers table failed for ${email}:`, error);
+      console.error(`Cleanup failed for ${email}:`, error);
     }
   }
 
@@ -102,7 +99,8 @@ export default class OnboardHelperE2eHarnessTest {
     this.registerEmailForCleanup(command.email);
   }
 
-  async assertHelperOnboarded(email: string): Promise<void> {
+  async assertUserIsInvited(): Promise<void> {
+    console.log(this.lastResponse.json());
     expect(this.lastResponse.statusCode).toBe(201);
     const body = this.lastResponse.json();
     expect(body.helperId).toBeDefined();
@@ -113,16 +111,20 @@ export default class OnboardHelperE2eHarnessTest {
     firstname: string,
     lastname: string
   ): Promise<void> {
+    // Get user ID from auth.users first
+    const { data: authData } = await this.supabase.auth.admin.listUsers();
+    const authUser = authData.users.find(u => u.email === email);
+    expect(authUser).toBeDefined();
+
     const { data: helper } = await this.supabase
       .from("helpers")
       .select("*")
-      .eq("email", email)
+      .eq("id", authUser!.id)
       .single();
 
     expect(helper).toBeDefined();
-    expect(helper.email).toBe(email);
-    expect(helper.firstname).toBe(firstname);
-    expect(helper.lastname).toBe(lastname);
+    expect(helper.first_name).toBe(firstname);
+    expect(helper.last_name).toBe(lastname);
   }
 
   async assertHelperAccountInAuth(email: string): Promise<void> {
@@ -144,15 +146,20 @@ export default class OnboardHelperE2eHarnessTest {
     expectedFirstname: string,
     expectedLastname: string
   ): Promise<void> {
+    // Get user ID from auth.users first
+    const { data: authData } = await this.supabase.auth.admin.listUsers();
+    const authUser = authData.users.find(u => u.email === email);
+    expect(authUser).toBeDefined();
+
     const { data: helper } = await this.supabase
       .from("helpers")
       .select("*")
-      .eq("email", email)
+      .eq("id", authUser!.id)
       .single();
 
     expect(helper).not.toBeNull();
-    expect(helper.firstname).toBe(expectedFirstname);
-    expect(helper.lastname).toBe(expectedLastname);
+    expect(helper.first_name).toBe(expectedFirstname);
+    expect(helper.last_name).toBe(expectedLastname);
   }
 
   async assertOnlyOneNotificationSent(): Promise<void> {

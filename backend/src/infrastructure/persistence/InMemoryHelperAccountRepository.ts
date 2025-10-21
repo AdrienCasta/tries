@@ -1,30 +1,26 @@
-import { HelperAccount } from "@shared/domain/entities/HelperAccount.js";
-import { HelperAccountRepository } from "@shared/domain/repositories/HelperAccountRepository.js";
+import { AuthUser } from "@shared/domain/entities/AuthUser.js";
+import { AuthRepository } from "@shared/domain/repositories/HelperAccountRepository.js";
 import HelperId from "@shared/domain/value-objects/HelperId.js";
 import { Result } from "@shared/infrastructure/Result.js";
-import CreateHelperAccountException from "@shared/infrastructure/CreateHelperAccountException.js";
+import InviteAuthUserException from "@shared/infrastructure/InviteAuthUserException.js";
 import EmailAlreadyUsedError from "@shared/infrastructure/EmailAlreadyUsedError.js";
 import PhoneAlreadyUsedError from "@shared/infrastructure/PhoneAlreadyUsedError.js";
 
-export class InMemoryHelperAccountRepository
-  implements HelperAccountRepository
-{
-  private accounts: Map<string, HelperAccount> = new Map();
+export class InMemoryHelperAccountRepository implements AuthRepository {
+  private accounts: Map<string, AuthUser> = new Map();
   private shouldFail: boolean = false;
 
-  async create(
-    account: HelperAccount
+  async inviteUser(
+    account: AuthUser
   ): Promise<
     Result<
-      HelperAccount,
-      | CreateHelperAccountException
-      | EmailAlreadyUsedError
-      | PhoneAlreadyUsedError
+      AuthUser,
+      InviteAuthUserException | EmailAlreadyUsedError | PhoneAlreadyUsedError
     >
   > {
     if (this.shouldFail) {
       return Result.fail(
-        new CreateHelperAccountException("Infrastructure failure simulated")
+        new InviteAuthUserException("Infrastructure failure simulated")
       );
     }
 
@@ -52,18 +48,18 @@ export class InMemoryHelperAccountRepository
     this.shouldFail = true;
   }
 
-  async findByHelperId(helperId: HelperId): Promise<HelperAccount | null> {
+  async findByHelperId(helperId: HelperId): Promise<AuthUser | null> {
     return this.accounts.get(helperId.toValue()) || null;
   }
 
-  async findByEmail(email: string): Promise<HelperAccount | null> {
+  async findByEmail(email: string): Promise<AuthUser | null> {
     return (
       Array.from(this.accounts.values()).find(
         (account) => account.email.value === email
       ) || null
     );
   }
-  async findByPhone(phone: string): Promise<HelperAccount | null> {
+  async findByPhone(phone: string): Promise<AuthUser | null> {
     return (
       Array.from(this.accounts.values()).find(
         (account) => account.phoneNumber?.value === phone

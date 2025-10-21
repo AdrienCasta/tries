@@ -57,7 +57,6 @@ Feature: Onboarding a new helper
       | 974    |
 
   @unit
-  @integration
   Scenario Outline: Admin cannot onboard helper from France with invalid french county
     Given an admin attempts to onboard a helper from France residing in county "<county>"
     When the admin submits the onboarding request
@@ -97,12 +96,12 @@ Feature: Onboarding a new helper
     And a welcome email is sent
 
     Examples: Supported foreign countries
-      | country     |
-      | Belgium     |
-      | Germany     |
-      | Switzerland |
-      | Spain       |
-      | Italy       |
+      | country |
+      | BE      |
+      | DE      |
+      | CH      |
+      | ES      |
+      | IT      |
 
   @unit
   @integration
@@ -114,9 +113,9 @@ Feature: Onboarding a new helper
 
     Examples: Unsupported countries
       | country | error             |
-      | Canada  | Invalid residence |
-      | UK      | Invalid residence |
-      | Japan   | Invalid residence |
+      | CA      | Invalid residence |
+      | GB      | Invalid residence |
+      | JP      | Invalid residence |
 
   @unit
   @integration
@@ -127,13 +126,12 @@ Feature: Onboarding a new helper
     And no helper account is created
 
     Examples: Foreign countries with french county
-      | country     | county | error             |
-      | Belgium     | 75     | Invalid residence |
-      | Germany     | 44     | Invalid residence |
-      | Switzerland | 01     | Invalid residence |
+      | country | county | error             |
+      | BE      | 75     | Invalid residence |
+      | DE      | 44     | Invalid residence |
+      | CH      | 01     | Invalid residence |
 
   @unit
-  @integration
   Scenario Outline: Admin cannot onboard helper with invalid email
     Given an admin attempts to onboard a helper with email "<email>"
     When the admin submits the onboarding request
@@ -152,7 +150,6 @@ Feature: Onboarding a new helper
       |       | Email is required |
 
   @unit
-  @integration                                                                                                                                                                           
   Scenario Outline: Admin cannot onboard a helper with phone number already in use                                                                                                    
     Given a helper with phone number <phoneNumber> is already onboarded                                                                                                        
     When an admin attempts to onboard a user with the same phone number                                                                                                          
@@ -164,7 +161,6 @@ Feature: Onboarding a new helper
       | +33612345678 | this phone number is already in use. | 
 
   @unit
-  @integration
   Scenario Outline: Admin cannot onboard helper with invalid name
     Given an admin attempts to onboard a helper named "<firstname>" "<lastname>"
     When the admin submits the onboarding request
@@ -182,7 +178,6 @@ Feature: Onboarding a new helper
       | John      | D        | Last name too short    |
 
  @unit
- @integration
   Scenario Outline: Admin cannot onboard helper with invalid phone number
     Given an admin attempts to onboard a helper with phone number "<phoneNumber>"
     When the admin submits the onboarding request
@@ -198,7 +193,6 @@ Feature: Onboarding a new helper
 
 
   @unit
-  @integration
   Scenario Outline: Admin cannot onboard helper with invalid profession(s)
     Given an admin attempts to onboard a helper with professions <professions>
     When the admin submits the onboarding request
@@ -212,7 +206,6 @@ Feature: Onboarding a new helper
       | physiotherapist, invalidprof | Profession invalid |
 
   @unit
-  @integration
   Scenario Outline: Admin cannot onboard helper with invalid birthdate
     Given it is 2025-10-06
     And an admin attempts to onboard a helper born on <birthdate>
@@ -226,7 +219,6 @@ Feature: Onboarding a new helper
       | 2022-10-07 | age requirement not met. You must be at least 16 yo. |
 
   @unit
-  @integration
   Scenario Outline: Admin cannot onboard helper with invalid rpps id as a physiotherapist
     Given an admin attempts to onboard a helper as a physiotherapist with rpps id: <rppsId>
     When the admin submits the onboarding request
@@ -242,7 +234,6 @@ Feature: Onboarding a new helper
       | abc12345678 | Rpps must be 11 digits long  |
 
   @unit
-  @integration
   Scenario Outline: Admin cannot onboard helper with invalid adeli id as a sports coach
     Given an admin attempts to onboard a helper as a sports coach with adeli id: <adeliId>
     When the admin submits the onboarding request

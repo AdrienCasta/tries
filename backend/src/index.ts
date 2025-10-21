@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 import { FastifyHttpServer } from "@infrastructure/http/FastifyHttpServer.js";
 import { SupabaseHelperRepository } from "@infrastructure/persistence/SupabaseHelperRepository.js";
-import { SupabaseHelperAccountRepository } from "@infrastructure/persistence/SupabaseHelperAccountRepository.js";
+import { SupabaseAuthRepository } from "@infrastructure/persistence/SupabaseAuthRepository.js";
 import { SupabaseOnboardedHelperNotificationService } from "@infrastructure/notifications/SupabaseOnboardedHelperNotificationService.js";
 import { SupabaseEmailConfirmationService } from "@infrastructure/services/SupabaseEmailConfirmationService.js";
 import { SystemClock } from "@infrastructure/time/SystemClock.js";
@@ -25,7 +25,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 const dependencies = {
   helperRepository: new SupabaseHelperRepository(supabase),
-  helperAccountRepository: new SupabaseHelperAccountRepository(supabase),
+  helperAccountRepository: new SupabaseAuthRepository(supabase),
   notificationService: new SupabaseOnboardedHelperNotificationService(supabase),
   emailConfirmationService: new SupabaseEmailConfirmationService(supabase),
   clock: new SystemClock(),

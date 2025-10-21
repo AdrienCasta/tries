@@ -1,4 +1,4 @@
-import { HelperAccount } from "@shared/domain/entities/HelperAccount.js";
+import { AuthUser } from "@shared/domain/entities/AuthUser.js";
 import {
   HelperAccountWriteModel,
   HelperAccountReadModel,
@@ -8,17 +8,15 @@ import HelperEmail from "@shared/domain/value-objects/HelperEmail.js";
 import PhoneNumber from "@shared/domain/value-objects/PhoneNumber.js";
 import DataMappingException from "@shared/infrastructure/DataMappingException.js";
 
-export class HelperAccountPersistenceMapper {
-  static toPersistence(account: HelperAccount): HelperAccountWriteModel {
+export class AuthUserPersistenceMapper {
+  static toPersistence(account: AuthUser): HelperAccountWriteModel {
     return {
       email: account.email.value,
-      password: account.password?.value,
       phone: account.phoneNumber?.value,
-      email_confirm: false,
     };
   }
 
-  static toDomain(data: HelperAccountReadModel): HelperAccount {
+  static toDomain(data: HelperAccountReadModel): AuthUser {
     try {
       const emailResult = HelperEmail.create(data.email);
       if (!emailResult.success) {

@@ -7,7 +7,7 @@ import {
 import { createApp } from "../../../app/createApp.js";
 import { FastifyHttpServer } from "@infrastructure/http/FastifyHttpServer.js";
 import { SupabaseHelperRepository } from "@infrastructure/persistence/SupabaseHelperRepository.js";
-import { SupabaseHelperAccountRepository } from "@infrastructure/persistence/SupabaseHelperAccountRepository.js";
+import { SupabaseAuthRepository } from "@infrastructure/persistence/SupabaseAuthRepository.js";
 import { SupabaseOnboardedHelperNotificationService } from "@infrastructure/notifications/SupabaseOnboardedHelperNotificationService.js";
 import { SupabaseEmailConfirmationService } from "@infrastructure/services/SupabaseEmailConfirmationService.js";
 import { FixedClock } from "@infrastructure/time/FixedClock.js";
@@ -29,9 +29,7 @@ export default class ConfirmHelperEmailE2ETest {
     );
 
     const helperRepository = new SupabaseHelperRepository(this.supabase);
-    const helperAccountRepository = new SupabaseHelperAccountRepository(
-      this.supabase
-    );
+    const helperAccountRepository = new SupabaseAuthRepository(this.supabase);
     const notificationService = new SupabaseOnboardedHelperNotificationService(
       this.supabase
     );
@@ -122,11 +120,12 @@ export default class ConfirmHelperEmailE2ETest {
   }
 
   async confirmEmail(token: string): Promise<void> {
-    this.confirmEmailResponse = await this.server.inject<ConfirmHelperEmailControllerResponseBody>({
-      method: "POST",
-      url: "/api/helpers/confirm-email",
-      payload: { token },
-    });
+    this.confirmEmailResponse =
+      await this.server.inject<ConfirmHelperEmailControllerResponseBody>({
+        method: "POST",
+        url: "/api/helpers/confirm-email",
+        payload: { token },
+      });
   }
 
   getValidToken(): string {

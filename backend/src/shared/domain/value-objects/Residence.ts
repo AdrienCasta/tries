@@ -3,11 +3,11 @@ import { Result } from "../../infrastructure/Result.js";
 import FrenchCounty from "./FrenchCounty.js";
 
 const COUNTRIES_WITHOUT_FRENCH_COUNTY_REQUIREMENT = [
-  "Belgium",
-  "Germany",
-  "Switzerland",
-  "Spain",
-  "Italy",
+  "BE",
+  "DE",
+  "CH",
+  "ES",
+  "IT",
 ] as const;
 
 export default class Residence {
@@ -24,17 +24,17 @@ export default class Residence {
 
     if (Result.isFailure(countyResult)) {
       return Result.fail(
-        new ResidenceError("France", frenchCounty, countyResult.error.message)
+        new ResidenceError("FR", frenchCounty, countyResult.error.message)
       );
     }
 
-    return Result.ok(new Residence({ country: "France", frenchCounty }));
+    return Result.ok(new Residence({ country: "FR", frenchCounty }));
   }
 
   static createForeignResidence(
     country: string
   ): Result<Residence, ResidenceError> {
-    if (country === "France") {
+    if (country === "FR") {
       return Result.fail(
         new ResidenceError(country, "", "Use createFrenchResidence for France")
       );
@@ -59,7 +59,10 @@ export default class Residence {
   }
 }
 
-type ResidenceValue = { country: string; frenchCounty: string };
+type ResidenceValue = {
+  country: string;
+  frenchCounty: string;
+};
 
 export class ResidenceError extends DomainError {
   readonly code = "RESIDENCE_INVALID";

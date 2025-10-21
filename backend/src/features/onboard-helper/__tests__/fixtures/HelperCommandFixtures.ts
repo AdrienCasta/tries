@@ -22,7 +22,7 @@ export class HelperCommandFixtures {
       overrides?.birthdate ?? new Date("1995-03-26"),
       overrides?.phoneNumber ?? PhoneNumberFixtures.aRandomMobileNumber(),
       overrides?.residence ?? {
-        country: "France",
+        country: "FR",
         frenchCounty: "44",
       },
       overrides?.placeOfBirth ?? PlaceOfBirthFixtures.aRandomPlaceOfBirth()
@@ -36,7 +36,7 @@ export class HelperCommandFixtures {
   static withFrenchCounty(frenchCounty: string): OnboardHelperCommand {
     return this.aValidCommand({
       residence: {
-        country: "France",
+        country: "FR",
         frenchCounty,
       },
     });

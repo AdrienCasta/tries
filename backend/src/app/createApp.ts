@@ -1,7 +1,7 @@
 import { OnboardHelper } from "@features/onboard-helper/OnboardHelper.usecase.js";
 import { ConfirmHelperEmail } from "@features/confirm-helper-email/ConfirmHelperEmail.usecase.js";
 import { HelperRepository } from "@shared/domain/repositories/HelperRepository.js";
-import { HelperAccountRepository } from "@shared/domain/repositories/HelperAccountRepository.js";
+import { AuthRepository } from "@shared/domain/repositories/HelperAccountRepository.js";
 import { OnboardedHelperNotificationService } from "@shared/domain/services/OnboardingHelperNotificationService.js";
 import { EmailConfirmationService } from "@shared/domain/services/EmailConfirmationService.js";
 import { Clock } from "@shared/domain/services/Clock.js";
@@ -14,7 +14,7 @@ import { HttpServer } from "@infrastructure/http/HttpServer.js";
 
 export interface AppDependencies {
   helperRepository: HelperRepository;
-  helperAccountRepository: HelperAccountRepository;
+  helperAccountRepository: AuthRepository;
   notificationService: OnboardedHelperNotificationService;
   emailConfirmationService: EmailConfirmationService;
   clock: Clock;

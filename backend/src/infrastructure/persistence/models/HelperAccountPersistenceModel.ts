@@ -1,8 +1,6 @@
 export type HelperAccountWriteModel = {
   email: string;
-  password?: string;
   phone?: string;
-  email_confirm?: boolean;
 };
 
 export type HelperAccountReadModel = {

@@ -23,19 +23,39 @@ export class SupabaseHelperRepository implements HelperRepository {
   }
 
   async findByEmail(email: string): Promise<Helper | null> {
+    // Query auth.users first to get the user ID
+    const { data: authData, error: authError } = await this.supabase.auth.admin.listUsers();
+
+    if (authError) {
+      throw new Error(`Failed to query auth users: ${authError.message}`);
+    }
+
+    const authUser = authData.users.find(u => u.email === email);
+    if (!authUser) {
+      return null;
+    }
+
+    // Then query helpers table with the user ID
     const { data, error } = await this.supabase
       .from("helpers")
       .select(
         `
         id,
-        email,
-        firstname,
-        lastname,
-        birthdate,
-        french_county
+        first_name,
+        last_name,
+        birth_date,
+        birth_country_code,
+        birth_city,
+        residence_country_code,
+        residence_french_county_code,
+        helper_professions (
+          professions (
+            name
+          )
+        )
       `
       )
-      .eq("email", email)
+      .eq("id", authUser.id)
       .maybeSingle();
 
     if (error) {
@@ -46,6 +66,6 @@ export class SupabaseHelperRepository implements HelperRepository {
       return null;
     }
 
-    return HelperPersistenceMapper.toDomain(data);
+    return HelperPersistenceMapper.toDomain({ ...data, email });
   }
 }

@@ -7,18 +7,20 @@ import HelperId from "@shared/domain/value-objects/HelperId.js";
 import Birthdate from "@shared/domain/value-objects/Birthdate.js";
 import Residence from "@shared/domain/value-objects/Residence.js";
 import Profession from "@shared/domain/value-objects/Profession.js";
+import PlaceOfBirth from "@shared/domain/value-objects/PlaceOfBirth.js";
 import DataMappingException from "@shared/infrastructure/DataMappingException.js";
 
 export class HelperPersistenceMapper {
   static toPersistence(helper: Helper): HelperPersistenceModel {
     return {
       id: helper.id.value,
-      email: helper.email.value,
-      firstname: helper.firstname.value,
-      lastname: helper.lastname.value,
-      birthdate: helper.birthdate.value,
-      country: helper.residence.value.country,
-      french_county: helper.residence.value.frenchCounty,
+      first_name: helper.firstname.value,
+      last_name: helper.lastname.value,
+      birth_date: helper.birthdate.value,
+      birth_country_code: helper.placeOfBirth.value.country,
+      birth_city: helper.placeOfBirth.value.city,
+      residence_country_code: helper.residence.value.country,
+      residence_french_county_code: helper.residence.value.frenchCounty,
     };
   }
 
@@ -61,15 +63,28 @@ export class HelperPersistenceMapper {
       }
 
       const residenceResult =
-        data.country === "France"
-          ? Residence.createFrenchResidence(data.french_county)
-          : Residence.createForeignResidence(data.country);
+        data.residence_country_code === "FR"
+          ? Residence.createFrenchResidence(data.residence_french_county_code)
+          : Residence.createForeignResidence(data.residence_country_code);
 
       if (!residenceResult.success) {
         throw DataMappingException.forField(
           "residence",
-          { country: data.country, french_county: data.french_county },
+          { country: data.residence_country_code, frenchCounty: data.residence_french_county_code },
           residenceResult.error.message
+        );
+      }
+
+      const placeOfBirthResult = PlaceOfBirth.create({
+        country: data.birth_country_code,
+        city: data.birth_city,
+      });
+
+      if (!placeOfBirthResult.success) {
+        throw DataMappingException.forField(
+          "placeOfBirth",
+          { country: data.birth_country_code, city: data.birth_city },
+          placeOfBirthResult.error.message
         );
       }
 
@@ -96,6 +111,7 @@ export class HelperPersistenceMapper {
         birthdate: birthdateResult.value,
         residence: residenceResult.value,
         professions: professionsResult.value,
+        placeOfBirth: placeOfBirthResult.value,
       };
     } catch (error) {
       if (error instanceof DataMappingException) {
