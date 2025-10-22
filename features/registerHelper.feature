@@ -67,3 +67,13 @@ Background:
     Examples: Duplicate email
       | email           | error                                 |
       | john@domain.com | this email address is already in use. |
+
+  Scenario Outline: Cannot register with duplicate phone number
+    Given a helper with phone number "<phoneNumber>" is already registered
+    When I attempt to register with the same phone number
+    Then I am notified it went wrong because <error>
+    And I must use a different phone number to proceed
+
+    Examples: Duplicate phone number
+      | phoneNumber  | error                                    |
+      | +33612345678 | this phone number is already in use. |

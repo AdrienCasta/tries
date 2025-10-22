@@ -25,12 +25,12 @@ const errorMessageMappedToErrorCode = {
   "Last name too short": "LastnameTooShortError",
   "Phone number invalid": "PhoneNumberError",
   "this email address is already in use.": "EmailAlreadyInUseError",
+  "this phone number is already in use.": "PhoneAlreadyInUseError",
   // "birthdate provided is set to the future.": "BIRTHDATE_IN_FUTUR",
   // "age requirement not met. You must be at least 16 yo.": "TOO_YOUNG_TO_WORK",
   // "Profession invalid": "UNKNOWN_PROFESSION",
   // "Invalid french county": "RESIDENCE_INVALID",
   // "Invalid residence": "RESIDENCE_INVALID",
-  // "this phone number is already in use.": "PHONE_NUMBER_ALREADY_IN_USE",
   // "Rpps must be 11 digits long": "RPPS_INVALID",
   // "Adeli must be 9 digits long": "ADELI_INVALID",
   // "Profession requires different health id type": "WRONG_HEALTH_ID_TYPE",
@@ -175,6 +175,38 @@ describeFeature(
         });
       }
     );
+
+    ScenarioOutline(
+      "Cannot register with duplicate phone number",
+      ({ Given, When, Then, And }, { phoneNumber, error }) => {
+        const existingCommand = RegisterHelperCommandFixture.aValidCommand({
+          phoneNumber,
+        });
+        const duplicateCommand = RegisterHelperCommandFixture.aValidCommand({
+          phoneNumber,
+        });
+
+        Given(
+          'a helper with phone number "<phoneNumber>" is already registered',
+          async () => {
+            await harness.registerHelper(existingCommand);
+            expect(harness.didHelperRegisterSuccessfully()).toBe(true);
+          }
+        );
+
+        When("I attempt to register with the same phone number", async () => {
+          await harness.registerHelper(duplicateCommand);
+        });
+
+        Then("I am notified it went wrong because <error>", () => {
+          expect(harness.didHelperRegisterSuccessfully()).toBe(false);
+        });
+
+        And("I must use a different phone number to proceed", () => {
+          harness.expectRegistrationFailedWithError(error);
+        });
+      }
+    );
   }
 );
 
@@ -189,17 +221,20 @@ interface AuthUserRead {
   firstname: string;
   lastname: string;
   email: string;
+  phoneNumber: string;
   emailConfirmed: boolean;
 }
 interface AuthUserWrite {
   firstname: string;
   lastname: string;
   email: string;
+  phoneNumber: string;
 }
 
 interface AuthUserRepository {
   createUser(authUser: AuthUserWrite): Promise<void>;
   existsByEmail(email: string): Promise<boolean>;
+  existsByPhoneNumber(phoneNumber: string): Promise<boolean>;
 }
 
 class EmailAlreadyInUseError extends Error {
@@ -209,15 +244,34 @@ class EmailAlreadyInUseError extends Error {
   }
 }
 
+class PhoneAlreadyInUseError extends Error {
+  readonly name = "PhoneAlreadyInUseError";
+  constructor(readonly phoneNumber: string) {
+    super("this phone number is already in use.");
+  }
+}
+
 class InMemoryAuthUserRepository implements AuthUserRepository {
   authUsers: Map<string, AuthUserRead> = new Map();
 
   async createUser(authUser: AuthUserWrite): Promise<void> {
-    this.authUsers.set(authUser.email, { ...authUser, emailConfirmed: false });
+    this.authUsers.set(authUser.email, {
+      ...authUser,
+      emailConfirmed: false,
+    });
   }
 
   async existsByEmail(email: string): Promise<boolean> {
     return this.authUsers.has(email);
+  }
+
+  async existsByPhoneNumber(phoneNumber: string): Promise<boolean> {
+    for (const user of this.authUsers.values()) {
+      if (user.phoneNumber === phoneNumber) {
+        return true;
+      }
+    }
+    return false;
   }
 }
 
@@ -237,9 +291,16 @@ class RegisterHelper {
       return guard;
     }
 
-    const duplicateCheck = await this.checkDuplicateEmail(command.email);
-    if (Result.isFailure(duplicateCheck)) {
-      return duplicateCheck;
+    const duplicateEmailCheck = await this.checkDuplicateEmail(command.email);
+    if (Result.isFailure(duplicateEmailCheck)) {
+      return duplicateEmailCheck;
+    }
+
+    const duplicatePhoneCheck = await this.checkDuplicatePhoneNumber(
+      command.phoneNumber
+    );
+    if (Result.isFailure(duplicatePhoneCheck)) {
+      return duplicatePhoneCheck;
     }
 
     try {
@@ -254,6 +315,18 @@ class RegisterHelper {
     const exists = await this.authUserRepository.existsByEmail(email);
     if (exists) {
       return Result.fail(new EmailAlreadyInUseError(email));
+    }
+    return Result.ok(undefined);
+  }
+
+  private async checkDuplicatePhoneNumber(
+    phoneNumber: string
+  ): Promise<Result<undefined, PhoneAlreadyInUseError>> {
+    const exists = await this.authUserRepository.existsByPhoneNumber(
+      phoneNumber
+    );
+    if (exists) {
+      return Result.fail(new PhoneAlreadyInUseError(phoneNumber));
     }
     return Result.ok(undefined);
   }
