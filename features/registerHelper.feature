@@ -139,10 +139,5 @@ Background:
 
     Examples: Unsupported country
       | country | frenchAreaCode | error             |
-      | CA      |              | Invalid residence |
-      | GB      |              | Invalid residence |
-
-    Examples: Foreign country with french county
-      | country | frenchAreaCode | error             |
-      | BE      | 75           | Invalid residence |
-      | DE      | 44           | Invalid residence |
+      | CA      |                | Invalid residence |
+      | GB      |                | Invalid residence |

@@ -440,7 +440,12 @@ class RegisterHelper {
       birthdate: Birthdate.create(command.birthdate, { clock: this.clock }),
       placeOfBirth: this.validatePlaceOfBirth(command.placeOfBirth),
       professions: Profession.createMany(command.professions as any),
-      residence: this.validateResidence(command.residence),
+      residence:
+        command.residence.country === "FR"
+          ? Residence.createFrenchResidence(
+              command.residence.frenchAreaCode as string
+            )
+          : Residence.createForeignResidence(command.residence.country),
     });
 
     if (Result.isFailure(guard)) {
@@ -473,25 +478,6 @@ class RegisterHelper {
       return Result.fail(new PlaceOfBirthIncompleteError());
     }
     return Result.ok(placeOfBirth);
-  }
-
-  private validateResidence(residence: {
-    country: string;
-    frenchAreaCode?: string;
-  }): Result<Residence, ResidenceError> {
-    if (residence.country !== "FR" && residence.frenchAreaCode) {
-      return Result.fail(
-        new ResidenceError(
-          residence.country,
-          residence.frenchAreaCode,
-          "French county not applicable for non-French countries"
-        )
-      );
-    }
-
-    return residence.country === "FR"
-      ? Residence.createFrenchResidence(residence.frenchAreaCode as string)
-      : Residence.createForeignResidence(residence.country);
   }
 
   private async checkDuplicateEmail(
