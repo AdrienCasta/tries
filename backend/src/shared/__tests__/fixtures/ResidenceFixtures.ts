@@ -12,25 +12,30 @@ export class ResidenceFixtures {
     return result.value;
   }
 
-  static withCounty(frenchCounty: string): Residence {
-    const result = Residence.createFrenchResidence(frenchCounty);
+  static withCounty(frenchAreaCode: string): Residence {
+    const result = Residence.createFrenchResidence(frenchAreaCode);
 
     if (Result.isFailure(result)) {
-      throw new Error(`Failed to create residence with county ${frenchCounty}`);
+      throw new Error(
+        `Failed to create residence with county ${frenchAreaCode}`
+      );
     }
 
     return result.value;
   }
 
-  static withCountryAndCounty(country: string, frenchCounty: string): Residence {
+  static withCountryAndCounty(
+    country: string,
+    frenchAreaCode: string
+  ): Residence {
     const result =
       country === "France"
-        ? Residence.createFrenchResidence(frenchCounty)
+        ? Residence.createFrenchResidence(frenchAreaCode)
         : Residence.createForeignResidence(country);
 
     if (Result.isFailure(result)) {
       throw new Error(
-        `Failed to create residence with country ${country} and county ${frenchCounty}`
+        `Failed to create residence with country ${country} and county ${frenchAreaCode}`
       );
     }
 

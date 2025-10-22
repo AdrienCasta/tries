@@ -37,7 +37,7 @@ const errorMessageMappedToErrorCode = {
   "Rpps must be 11 digits long": "RppsInvalidError",
   "Adeli must be 9 digits long": "AdeliInvalidError",
   "Profession requires different health id type": "WrongHealthIdTypeError",
-  "Invalid french county": "ResidenceError",
+  "Invalid French area code": "ResidenceError",
   "Invalid residence": "ResidenceError",
 };
 setVitestCucumberConfiguration({
@@ -66,7 +66,7 @@ class RegisterHelperCommandFixture {
       ],
       residence: overrides?.residence ?? {
         country: "FR",
-        frenchCounty: "75",
+        frenchAreaCode: "75",
       },
     };
   }
@@ -282,7 +282,9 @@ describeFeature(
           'I submit my profession as "<profession>" with health ID "<healthIdType>" "<healthId>"',
           async () => {
             const healthIdObj =
-              healthIdType === "rpps" ? { rpps: healthId } : { adeli: healthId };
+              healthIdType === "rpps"
+                ? { rpps: healthId }
+                : { adeli: healthId };
             const command = RegisterHelperCommandFixture.aValidCommand({
               professions: [
                 {
@@ -307,14 +309,14 @@ describeFeature(
 
     ScenarioOutline(
       "Cannot register with invalid residence",
-      ({ When, Then, And }, { country, frenchCounty, error }) => {
+      ({ When, Then, And }, { country, frenchAreaCode, error }) => {
         When(
-          'I submit my residence with country "<country>" and french county "<frenchCounty>"',
+          'I submit my residence with country "<country>" and French area code "<frenchAreaCode>"',
           async () => {
             const command = RegisterHelperCommandFixture.aValidCommand({
               residence: {
                 country,
-                frenchCounty: frenchCounty || undefined,
+                frenchAreaCode: frenchAreaCode || undefined,
               },
             });
             await harness.registerHelper(command);
@@ -349,7 +351,7 @@ type RegisterHelperCommand = {
   }>;
   residence: {
     country: string;
-    frenchCounty?: string;
+    frenchAreaCode?: string;
   };
 };
 
@@ -477,30 +479,38 @@ class RegisterHelper {
     return Result.ok(undefined);
   }
 
-  private validatePlaceOfBirth(placeOfBirth: { country: string; city: string }): Result<{ country: string; city: string }, PlaceOfBirthIncompleteError> {
+  private validatePlaceOfBirth(placeOfBirth: {
+    country: string;
+    city: string;
+  }): Result<{ country: string; city: string }, PlaceOfBirthIncompleteError> {
     if (!placeOfBirth.country || !placeOfBirth.city) {
       return Result.fail(new PlaceOfBirthIncompleteError());
     }
     return Result.ok(placeOfBirth);
   }
 
-  private validateResidence(residence: { country: string; frenchCounty?: string }): Result<Residence, ResidenceError> {
-    if (residence.country !== "FR" && residence.frenchCounty) {
+  private validateResidence(residence: {
+    country: string;
+    frenchAreaCode?: string;
+  }): Result<Residence, ResidenceError> {
+    if (residence.country !== "FR" && residence.frenchAreaCode) {
       return Result.fail(
         new ResidenceError(
           residence.country,
-          residence.frenchCounty,
+          residence.frenchAreaCode,
           "French county not applicable for non-French countries"
         )
       );
     }
 
     return residence.country === "FR"
-      ? Residence.createFrenchResidence(residence.frenchCounty || "")
+      ? Residence.createFrenchResidence(residence.frenchAreaCode as string)
       : Residence.createForeignResidence(residence.country);
   }
 
-  private validateBirthdate(birthdate: Date): Result<Date, BirthdateInFutureError | TooYoungToWorkError> {
+  private validateBirthdate(
+    birthdate: Date
+  ): Result<Date, BirthdateInFutureError | TooYoungToWorkError> {
     if (birthdate > this.currentDate) {
       return Result.fail(new BirthdateInFutureError());
     }

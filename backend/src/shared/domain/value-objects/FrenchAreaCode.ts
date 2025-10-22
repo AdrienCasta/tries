@@ -1,21 +1,21 @@
 import DomainError from "@shared/domain/DomainError.js";
 import { Result } from "../../infrastructure/Result.js";
 
-export default class FrenchCounty {
+export default class FrenchAreaCode {
   readonly value: string;
 
   private constructor(value: string) {
     this.value = value.trim();
   }
 
-  static create(county: string): Result<FrenchCounty, FrenchCountyError> {
+  static create(county: string): Result<FrenchAreaCode, FrenchAreaCodeError> {
     const trimmedCounty = county?.trim();
 
-    if (!isValidFrenchCounty(trimmedCounty)) {
-      return Result.fail(new FrenchCountyError(county));
+    if (!isValidfrenchAreaCodes(trimmedCounty)) {
+      return Result.fail(new FrenchAreaCodeError(county));
     }
 
-    return Result.ok(new FrenchCounty(trimmedCounty));
+    return Result.ok(new FrenchAreaCode(trimmedCounty));
   }
 
   toValue(): string {
@@ -23,7 +23,7 @@ export default class FrenchCounty {
   }
 }
 
-function isValidFrenchCounty(county: string): boolean {
+function isValidfrenchAreaCodes(county: string): boolean {
   if (!county || county === "") {
     return false;
   }
@@ -32,9 +32,9 @@ function isValidFrenchCounty(county: string): boolean {
   return countyRegex.test(county);
 }
 
-export class FrenchCountyError extends DomainError {
-  readonly code = "FRENCH_COUNTY_INVALID";
+export class FrenchAreaCodeError extends DomainError {
+  readonly code = "FRENCH_AREA_CODE_INVALID";
   constructor(county: string) {
-    super("Invalid french county", { county });
+    super("Invalid French area code", { county });
   }
 }

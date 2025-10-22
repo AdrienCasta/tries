@@ -18,7 +18,7 @@ export class HelperCommandFixtures {
       professions,
       rppsNumbers: overrides?.rppsNumbers ?? defaultRppsNumbers,
       birthdate: overrides?.birthdate ?? "1995-03-26",
-      frenchCounty: overrides?.frenchCounty ?? "44",
+      frenchAreaCode: overrides?.frenchAreaCode ?? "44",
       placeOfBirth: overrides?.placeOfBirth ?? {
         country: "FR",
         city: "Nantes",
@@ -51,7 +51,7 @@ export class HelperCommandFixtures {
     return this.aValidCommand({ birthdate });
   }
 
-  static withFrenchCounty(frenchCounty: string): OnboardHelperCommand {
-    return this.aValidCommand({ frenchCounty });
+  static withfrenchAreaCodes(frenchAreaCode: string): OnboardHelperCommand {
+    return this.aValidCommand({ frenchAreaCode });
   }
 }

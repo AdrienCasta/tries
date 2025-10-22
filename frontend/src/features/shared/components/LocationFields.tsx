@@ -116,7 +116,7 @@ export function LocationFields({
       {countryOfResidence === "FR" && (
         <FormField
           control={control}
-          name="frenchCounty"
+          name="frenchAreaCode"
           render={({ field }) => (
             <FormItem>
               <FormLabel>French County</FormLabel>

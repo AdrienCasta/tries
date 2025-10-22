@@ -122,7 +122,7 @@ describeFeature(
         Given(
           `an admin attempts to onboard a helper from France residing in county "<county>"`,
           () => {
-            command = HelperCommandFixtures.withFrenchCounty(county);
+            command = HelperCommandFixtures.withfrenchAreaCodes(county);
           }
         );
         When(`the admin submits the onboarding request`, async () => {
@@ -140,7 +140,7 @@ describeFeature(
     ScenarioOutline(
       `Admin cannot onboard helper from France with invalid french county`,
       ({ Given, When, Then, And }, { county, error }) => {
-        const command = HelperCommandFixtures.withFrenchCounty(county);
+        const command = HelperCommandFixtures.withfrenchAreaCodes(county);
         Given(
           `an admin attempts to onboard a helper from France residing in county "<county>"`,
           () => {}
@@ -459,7 +459,10 @@ describeFeature(
 
     ScenarioOutline(
       `Admin onboards helper with valid health id for multi-type professions`,
-      ({ Given, When, Then, And }, { profession, healthIdType, healthIdValue }) => {
+      (
+        { Given, When, Then, And },
+        { profession, healthIdType, healthIdValue }
+      ) => {
         let command: any;
         Given(
           `an admin attempts to onboard a helper with profession <profession> and health id type <healthIdType> with value <healthIdValue>`,
@@ -490,7 +493,10 @@ describeFeature(
 
     ScenarioOutline(
       `Admin cannot onboard helper with wrong health id type`,
-      ({ Given, When, Then, And }, { error, profession, healthIdType, healthIdValue }) => {
+      (
+        { Given, When, Then, And },
+        { error, profession, healthIdType, healthIdValue }
+      ) => {
         let command: any;
         Given(
           `an admin attempts to onboard a helper with profession <profession> and health id type <healthIdType> with value <healthIdValue>`,

@@ -11,7 +11,7 @@ export class OnboardHelperCommand {
     public readonly phoneNumber: string,
     public readonly residence: {
       country: string;
-      frenchCounty: string;
+      frenchAreaCode: string;
     },
     public readonly placeOfBirth: {
       country: string;

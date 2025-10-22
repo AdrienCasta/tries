@@ -10,7 +10,7 @@ export interface OnboardHelperRequest {
   }[];
   residence: {
     country: string;
-    frenchCounty: string;
+    frenchAreaCode: string;
   };
   placeOfBirth: {
     country: string;

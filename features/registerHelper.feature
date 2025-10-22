@@ -127,22 +127,22 @@ Background:
       | physiotherapist | adeli        | 123456789 | Profession requires different health id type |
 
   Scenario Outline: Cannot register with invalid residence
-    When I submit my residence with country "<country>" and french county "<frenchCounty>"
+    When I submit my residence with country "<country>" and French area code "<frenchAreaCode>"
     Then I am notified it went wrong because <error>
     And I must provide a valid residence to proceed
 
-    Examples: Invalid french county
-      | country | frenchCounty | error                 |
-      | FR      | 99           | Invalid french county |
-      | FR      | 00           | Invalid french county |
-      | FR      |              | Invalid french county |
+    Examples: Invalid French area code
+      | country | frenchAreaCode | error                     |
+      | FR      | 99             | Invalid French area code |
+      | FR      | 00             | Invalid French area code |
+      | FR      |                | Invalid French area code |
 
     Examples: Unsupported country
-      | country | frenchCounty | error             |
+      | country | frenchAreaCode | error             |
       | CA      |              | Invalid residence |
       | GB      |              | Invalid residence |
 
     Examples: Foreign country with french county
-      | country | frenchCounty | error             |
+      | country | frenchAreaCode | error             |
       | BE      | 75           | Invalid residence |
       | DE      | 44           | Invalid residence |

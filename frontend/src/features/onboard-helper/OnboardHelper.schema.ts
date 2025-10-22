@@ -24,10 +24,9 @@ export const onboardHelperSchema = z
     professions: z
       .array(z.string())
       .min(1, "At least one profession is required")
-      .refine(
-        (arr) => arr.every((code) => PROFESSION_CODES.includes(code)),
-        { message: "Invalid profession selected" }
-      ),
+      .refine((arr) => arr.every((code) => PROFESSION_CODES.includes(code)), {
+        message: "Invalid profession selected",
+      }),
     rppsNumbers: z.record(
       z.string(),
       z.string().regex(/^\d{11}$/, "Rpps must be exactly 11 digits.")
@@ -44,7 +43,7 @@ export const onboardHelperSchema = z
         const age = new Date().getFullYear() - date.getFullYear();
         return age >= MINIMUM_AGE;
       }, `Must be at least ${MINIMUM_AGE} years old`),
-    frenchCounty: z.string().optional(),
+    frenchAreaCode: z.string().optional(),
     placeOfBirth: z.object({
       country: z.string().min(1, "Country of birth is required"),
       city: z.string().optional(),
@@ -68,25 +67,25 @@ export const onboardHelperSchema = z
   .refine(
     (data) => {
       if (data.countryOfResidence === "FR") {
-        return data.frenchCounty && data.frenchCounty.length > 0;
+        return data.frenchAreaCode && data.frenchAreaCode.length > 0;
       }
       return true;
     },
     {
       message: "French county is required for residents of France",
-      path: ["frenchCounty"],
+      path: ["frenchAreaCode"],
     }
   )
   .refine(
     (data) => {
-      if (data.frenchCounty && data.frenchCounty.length > 0) {
-        return ALL_FRENCH_COUNTIES.includes(data.frenchCounty);
+      if (data.frenchAreaCode && data.frenchAreaCode.length > 0) {
+        return ALL_FRENCH_COUNTIES.includes(data.frenchAreaCode);
       }
       return true;
     },
     {
       message: "Invalid French county",
-      path: ["frenchCounty"],
+      path: ["frenchAreaCode"],
     }
   )
   .refine(

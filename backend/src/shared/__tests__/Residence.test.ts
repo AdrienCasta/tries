@@ -4,14 +4,14 @@ import { Result } from "../infrastructure/Result.js";
 
 describe("Residence", () => {
   describe("createFrenchResidence", () => {
-    it("should create a valid French residence with valid french county", () => {
+    it("should create a valid French residence with valid French area code", () => {
       const result = Residence.createFrenchResidence("75");
 
       expect(Result.isSuccess(result)).toBe(true);
       if (Result.isSuccess(result)) {
         expect(result.value.toValue()).toEqual({
           country: "France",
-          frenchCounty: "75",
+          frenchAreaCode: "75",
         });
       }
     });
@@ -25,7 +25,7 @@ describe("Residence", () => {
       }
     });
 
-    it("should fail with invalid french county", () => {
+    it("should fail with invalid French area code", () => {
       const result = Residence.createFrenchResidence("99");
 
       expect(Result.isFailure(result)).toBe(true);
@@ -34,7 +34,7 @@ describe("Residence", () => {
       }
     });
 
-    it("should fail with empty french county", () => {
+    it("should fail with empty French area code", () => {
       const result = Residence.createFrenchResidence("");
 
       expect(Result.isFailure(result)).toBe(true);
@@ -43,7 +43,7 @@ describe("Residence", () => {
       }
     });
 
-    it("should handle various valid french counties", () => {
+    it("should handle various valid French area codes", () => {
       const validCounties = ["01", "2A", "2B", "75", "971", "974", "976"];
 
       validCounties.forEach((county) => {
@@ -52,23 +52,22 @@ describe("Residence", () => {
         expect(Result.isSuccess(result)).toBe(true);
       });
     });
-
   });
 
   describe("createForeignResidence", () => {
-    it("should create residence for Belgium without french county", () => {
+    it("should create residence for Belgium without French area code", () => {
       const result = Residence.createForeignResidence("Belgium");
 
       expect(Result.isSuccess(result)).toBe(true);
       if (Result.isSuccess(result)) {
         expect(result.value.toValue()).toEqual({
           country: "Belgium",
-          frenchCounty: "",
+          frenchAreaCode: "",
         });
       }
     });
 
-    it("should create residence for Germany without french county", () => {
+    it("should create residence for Germany without French area code", () => {
       const result = Residence.createForeignResidence("Germany");
 
       expect(Result.isSuccess(result)).toBe(true);
@@ -77,19 +76,19 @@ describe("Residence", () => {
       }
     });
 
-    it("should create residence for Switzerland without french county", () => {
+    it("should create residence for Switzerland without French area code", () => {
       const result = Residence.createForeignResidence("Switzerland");
 
       expect(Result.isSuccess(result)).toBe(true);
     });
 
-    it("should create residence for Spain without french county", () => {
+    it("should create residence for Spain without French area code", () => {
       const result = Residence.createForeignResidence("Spain");
 
       expect(Result.isSuccess(result)).toBe(true);
     });
 
-    it("should create residence for Italy without french county", () => {
+    it("should create residence for Italy without French area code", () => {
       const result = Residence.createForeignResidence("Italy");
 
       expect(Result.isSuccess(result)).toBe(true);
@@ -113,5 +112,4 @@ describe("Residence", () => {
       }
     });
   });
-
 });

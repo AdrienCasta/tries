@@ -20,7 +20,7 @@ export class HelperPersistenceMapper {
       birth_country_code: helper.placeOfBirth.value.country,
       birth_city: helper.placeOfBirth.value.city,
       residence_country_code: helper.residence.value.country,
-      residence_french_county_code: helper.residence.value.frenchCounty,
+      residence_french_county_code: helper.residence.value.frenchAreaCode,
     };
   }
 
@@ -70,7 +70,10 @@ export class HelperPersistenceMapper {
       if (!residenceResult.success) {
         throw DataMappingException.forField(
           "residence",
-          { country: data.residence_country_code, frenchCounty: data.residence_french_county_code },
+          {
+            country: data.residence_country_code,
+            frenchAreaCode: data.residence_french_county_code,
+          },
           residenceResult.error.message
         );
       }

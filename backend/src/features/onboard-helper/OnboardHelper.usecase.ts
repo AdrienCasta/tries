@@ -127,7 +127,7 @@ export class OnboardHelper {
     // Validate: foreign countries cannot have french county
     if (
       command.residence.country !== "FR" &&
-      command.residence.frenchCounty
+      command.residence.frenchAreaCode
     ) {
       return Result.combineObject({
         email: HelperEmail.create(command.email),
@@ -139,7 +139,7 @@ export class OnboardHelper {
         residence: Result.fail(
           new ResidenceError(
             command.residence.country,
-            command.residence.frenchCounty,
+            command.residence.frenchAreaCode,
             "French county not applicable for non-French countries"
           )
         ),
@@ -149,12 +149,8 @@ export class OnboardHelper {
 
     const residence =
       command.residence.country === "FR"
-        ? Residence.createFrenchResidence(
-            command.residence.frenchCounty
-          )
-        : Residence.createForeignResidence(
-            command.residence.country
-          );
+        ? Residence.createFrenchResidence(command.residence.frenchAreaCode)
+        : Residence.createForeignResidence(command.residence.country);
 
     return Result.combineObject({
       email: HelperEmail.create(command.email),

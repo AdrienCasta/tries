@@ -1,8 +1,8 @@
 import DomainError from "@shared/domain/DomainError.js";
 import { Result } from "../../infrastructure/Result.js";
-import FrenchCounty from "./FrenchCounty.js";
+import FrenchAreaCode from "./FrenchAreaCode.js";
 
-const COUNTRIES_WITHOUT_FRENCH_COUNTY_REQUIREMENT = [
+const COUNTRIES_WITHOUT_FRENCH_AREA_CODE_REQUIREMENT = [
   "BE",
   "DE",
   "CH",
@@ -18,17 +18,17 @@ export default class Residence {
   }
 
   static createFrenchResidence(
-    frenchCounty: string
+    frenchAreaCode: string
   ): Result<Residence, ResidenceError> {
-    const countyResult = FrenchCounty.create(frenchCounty);
+    const countyResult = FrenchAreaCode.create(frenchAreaCode);
 
     if (Result.isFailure(countyResult)) {
       return Result.fail(
-        new ResidenceError("FR", frenchCounty, countyResult.error.message)
+        new ResidenceError("FR", frenchAreaCode, countyResult.error.message)
       );
     }
 
-    return Result.ok(new Residence({ country: "FR", frenchCounty }));
+    return Result.ok(new Residence({ country: "FR", frenchAreaCode }));
   }
 
   static createForeignResidence(
@@ -40,7 +40,7 @@ export default class Residence {
       );
     }
 
-    const validCountries = COUNTRIES_WITHOUT_FRENCH_COUNTY_REQUIREMENT;
+    const validCountries = COUNTRIES_WITHOUT_FRENCH_AREA_CODE_REQUIREMENT;
     if (!validCountries.includes(country as any)) {
       return Result.fail(
         new ResidenceError(
@@ -51,7 +51,7 @@ export default class Residence {
       );
     }
 
-    return Result.ok(new Residence({ country, frenchCounty: "" }));
+    return Result.ok(new Residence({ country }));
   }
 
   toValue() {
@@ -61,12 +61,13 @@ export default class Residence {
 
 type ResidenceValue = {
   country: string;
-  frenchCounty: string;
+  frenchAreaCode?: string;
 };
 
 export class ResidenceError extends DomainError {
   readonly code = "RESIDENCE_INVALID";
-  constructor(country: string, frenchCounty: string, reason?: string) {
-    super("Invalid residence", { country, frenchCounty, reason });
+  constructor(country: string, frenchAreaCode: string, reason?: string) {
+    super("Invalid residence", { country, frenchAreaCode, reason });
+    this.name = this.constructor.name;
   }
 }

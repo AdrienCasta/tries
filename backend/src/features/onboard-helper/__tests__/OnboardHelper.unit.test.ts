@@ -76,7 +76,7 @@ describeFeature(
         Given(
           `an admin attempts to onboard a helper from France residing in county "<county>"`,
           () => {
-            command = HelperCommandFixtures.withFrenchCounty(county);
+            command = HelperCommandFixtures.withfrenchAreaCodes(county);
           }
         );
         When(`the admin submits the onboarding request`, async () => {
@@ -94,7 +94,7 @@ describeFeature(
     ScenarioOutline(
       `Admin cannot onboard helper from France with invalid french county`,
       ({ Given, When, Then, And }, { county, error: errorCode }) => {
-        const command = HelperCommandFixtures.withFrenchCounty(county);
+        const command = HelperCommandFixtures.withfrenchAreaCodes(county);
         Given(
           `an admin attempts to onboard a helper from France residing in county "<county>"`,
           () => {}

@@ -23,7 +23,7 @@ export class HelperCommandFixtures {
       overrides?.phoneNumber ?? PhoneNumberFixtures.aRandomMobileNumber(),
       overrides?.residence ?? {
         country: "FR",
-        frenchCounty: "44",
+        frenchAreaCode: "44",
       },
       overrides?.placeOfBirth ?? PlaceOfBirthFixtures.aRandomPlaceOfBirth()
     );
@@ -33,11 +33,11 @@ export class HelperCommandFixtures {
     return this.aValidCommand({ email });
   }
 
-  static withFrenchCounty(frenchCounty: string): OnboardHelperCommand {
+  static withfrenchAreaCodes(frenchAreaCode: string): OnboardHelperCommand {
     return this.aValidCommand({
       residence: {
         country: "FR",
-        frenchCounty,
+        frenchAreaCode,
       },
     });
   }
@@ -68,19 +68,19 @@ export class HelperCommandFixtures {
     return this.aValidCommand({
       residence: {
         country,
-        frenchCounty: "",
+        frenchAreaCode: "",
       },
     });
   }
 
   static withResidence(
     country: string,
-    frenchCounty: string
+    frenchAreaCode: string
   ): OnboardHelperCommand {
     return this.aValidCommand({
       residence: {
         country,
-        frenchCounty,
+        frenchAreaCode,
       },
     });
   }

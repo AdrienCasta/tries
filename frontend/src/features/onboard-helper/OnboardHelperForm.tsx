@@ -44,7 +44,7 @@ export function OnboardHelperForm({
       professions: [],
       rppsNumbers: {},
       birthdate: "",
-      frenchCounty: "",
+      frenchAreaCode: "",
       placeOfBirth: {
         country: "",
         city: "",

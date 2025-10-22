@@ -6,7 +6,7 @@ export interface OnboardHelperCommand {
   professions: string[];
   rppsNumbers: Record<string, string>;
   birthdate: string;
-  frenchCounty: string;
+  frenchAreaCode: string;
   placeOfBirth: {
     country: string;
     city?: string;
