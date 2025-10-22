@@ -43,6 +43,8 @@ const errorMessageMappedToErrorCode = {
   "Profession requires different health id type": "WrongHealthIdTypeError",
   "Invalid French area code": "ResidenceError",
   "Invalid residence": "ResidenceError",
+  "Diploma must be in PDF format": "InvalidDiplomaFormatError",
+  "Diploma file size exceeds 10MB limit": "DiplomaSizeExceededError",
 };
 setVitestCucumberConfiguration({
   ...getVitestCucumberConfiguration(),
@@ -72,6 +74,7 @@ class RegisterHelperCommandFixture {
         country: "FR",
         frenchAreaCode: "75",
       },
+      diploma: overrides?.diploma,
     };
   }
 }
@@ -336,6 +339,54 @@ describeFeature(
         });
       }
     );
+
+    ScenarioOutline(
+      "Cannot register with invalid diploma file format",
+      ({ When, Then, And }, { fileType, error }) => {
+        When(
+          'I submit my registration with a diploma file of type "<fileType>"',
+          async () => {
+            const command = RegisterHelperCommandFixture.aValidCommand({
+              diploma: { fileType },
+            });
+            await harness.registerHelper(command);
+          }
+        );
+
+        Then("I am notified it went wrong because <error>", async () => {
+          expect(harness.didHelperRegisterSuccessfully()).toBe(false);
+        });
+
+        And("I must provide a valid PDF diploma to proceed", async () => {
+          harness.expectRegistrationFailedWithError(error);
+        });
+      }
+    );
+
+    ScenarioOutline(
+      "Cannot register with diploma file exceeding size limit",
+      ({ When, Then, And }, { fileSize, error }) => {
+        const fileSizeInBytes = parseInt(fileSize) * 1024 * 1024;
+
+        When(
+          "I submit my registration with a diploma file of size <fileSize>",
+          async () => {
+            const command = RegisterHelperCommandFixture.aValidCommand({
+              diploma: { fileType: ".pdf", fileSize: fileSizeInBytes },
+            });
+            await harness.registerHelper(command);
+          }
+        );
+
+        Then("I am notified it went wrong because <error>", async () => {
+          expect(harness.didHelperRegisterSuccessfully()).toBe(false);
+        });
+
+        And("I must provide a diploma within the size limit to proceed", async () => {
+          harness.expectRegistrationFailedWithError(error);
+        });
+      }
+    );
   }
 );
 
@@ -356,6 +407,10 @@ type RegisterHelperCommand = {
   residence: {
     country: string;
     frenchAreaCode?: string;
+  };
+  diploma?: {
+    fileType: string;
+    fileSize?: number;
   };
 };
 
@@ -393,6 +448,20 @@ class PhoneAlreadyInUseError extends Error {
   }
 }
 
+class InvalidDiplomaFormatError extends Error {
+  readonly name = "InvalidDiplomaFormatError";
+  constructor() {
+    super("Diploma must be in PDF format");
+  }
+}
+
+class DiplomaSizeExceededError extends Error {
+  readonly name = "DiplomaSizeExceededError";
+  constructor() {
+    super("Diploma file size exceeds 10MB limit");
+  }
+}
+
 class InMemoryAuthUserRepository implements AuthUserRepository {
   authUsers: Map<string, AuthUserRead> = new Map();
 
@@ -418,6 +487,8 @@ class InMemoryAuthUserRepository implements AuthUserRepository {
 }
 
 class RegisterHelper {
+  private static readonly MAX_DIPLOMA_SIZE_BYTES = 10 * 1024 * 1024;
+
   constructor(
     private readonly authUserRepository: AuthUserRepository,
     private readonly clock: Clock
@@ -426,6 +497,15 @@ class RegisterHelper {
   async execute(
     command: RegisterHelperCommand
   ): Promise<Result<undefined, Error>> {
+    if (command.diploma) {
+      if (command.diploma.fileType !== ".pdf") {
+        return Result.fail(new InvalidDiplomaFormatError());
+      }
+      if (command.diploma.fileSize && command.diploma.fileSize > RegisterHelper.MAX_DIPLOMA_SIZE_BYTES) {
+        return Result.fail(new DiplomaSizeExceededError());
+      }
+    }
+
     const guard = Result.combineObject({
       email: HelperEmail.create(command.email),
       firstname: Firstname.create(command.firstname),

@@ -141,3 +141,26 @@ Background:
       | country | frenchAreaCode | error             |
       | CA      |                | Invalid residence |
       | GB      |                | Invalid residence |
+
+  Scenario Outline: Cannot register with invalid diploma file format
+    When I submit my registration with a diploma file of type "<fileType>"
+    Then I am notified it went wrong because <error>
+    And I must provide a valid PDF diploma to proceed
+
+    Examples: Invalid file formats
+      | fileType | error                         |
+      | .jpg     | Diploma must be in PDF format |
+      | .png     | Diploma must be in PDF format |
+      | .docx    | Diploma must be in PDF format |
+      | .txt     | Diploma must be in PDF format |
+      | .exe     | Diploma must be in PDF format |
+
+  Scenario Outline: Cannot register with diploma file exceeding size limit
+    When I submit my registration with a diploma file of size <fileSize>
+    Then I am notified it went wrong because <error>
+    And I must provide a diploma within the size limit to proceed
+
+    Examples: File too large
+      | fileSize | error                                |
+      | 11MB     | Diploma file size exceeds 10MB limit |
+      | 50MB     | Diploma file size exceeds 10MB limit |
