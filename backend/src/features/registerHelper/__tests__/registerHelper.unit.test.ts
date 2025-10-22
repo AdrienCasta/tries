@@ -13,7 +13,9 @@ import Firstname from "@shared/domain/value-objects/Firstname";
 import Lastname from "@shared/domain/value-objects/Lastname";
 import { EmailFixtures } from "@shared/__tests__/fixtures/EmailFixtures";
 import DomainError from "@shared/domain/DomainError";
-import PhoneNumber, { PhoneNumberError } from "@shared/domain/value-objects/PhoneNumber";
+import PhoneNumber, {
+  PhoneNumberError,
+} from "@shared/domain/value-objects/PhoneNumber";
 const feature = await loadFeatureFromText(featureContent);
 
 const errorMessageMappedToErrorCode = {
@@ -22,10 +24,10 @@ const errorMessageMappedToErrorCode = {
   "First name too short": "FirstnameTooShortError",
   "Last name too short": "LastnameTooShortError",
   "Phone number invalid": "PhoneNumberError",
+  "this email address is already in use.": "EmailAlreadyInUseError",
   // "birthdate provided is set to the future.": "BIRTHDATE_IN_FUTUR",
   // "age requirement not met. You must be at least 16 yo.": "TOO_YOUNG_TO_WORK",
   // "Profession invalid": "UNKNOWN_PROFESSION",
-  // "this email address is already in use.": "EMAIL_ALREADY_IN_USE",
   // "Invalid french county": "RESIDENCE_INVALID",
   // "Invalid residence": "RESIDENCE_INVALID",
   // "this phone number is already in use.": "PHONE_NUMBER_ALREADY_IN_USE",
@@ -133,7 +135,42 @@ describeFeature(
         Then("I am notified it went wrong because <error>", async () => {
           expect(harness.didHelperRegisterSuccessfully()).toBe(false);
         });
-        And("notified I have to change my phone number information", async () => {
+        And(
+          "notified I have to change my phone number information",
+          async () => {
+            harness.expectRegistrationFailedWithError(error);
+          }
+        );
+      }
+    );
+
+    ScenarioOutline(
+      "Cannot register with duplicate email",
+      ({ Given, When, Then, And }, { email, error }) => {
+        const existingCommand = RegisterHelperCommandFixture.aValidCommand({
+          email,
+        });
+        const duplicateCommand = RegisterHelperCommandFixture.aValidCommand({
+          email,
+        });
+
+        Given(
+          'a helper with email "<email>" is already registered',
+          async () => {
+            await harness.registerHelper(existingCommand);
+            expect(harness.didHelperRegisterSuccessfully()).toBe(true);
+          }
+        );
+
+        When("I attempt to register with the same email", async () => {
+          await harness.registerHelper(duplicateCommand);
+        });
+
+        Then("I am notified it went wrong because <error>", () => {
+          expect(harness.didHelperRegisterSuccessfully()).toBe(false);
+        });
+
+        And("I must use a different email to proceed", () => {
           harness.expectRegistrationFailedWithError(error);
         });
       }
@@ -162,6 +199,14 @@ interface AuthUserWrite {
 
 interface AuthUserRepository {
   createUser(authUser: AuthUserWrite): Promise<void>;
+  existsByEmail(email: string): Promise<boolean>;
+}
+
+class EmailAlreadyInUseError extends Error {
+  readonly name = "EmailAlreadyInUseError";
+  constructor(readonly email: string) {
+    super("this email address is already in use.");
+  }
 }
 
 class InMemoryAuthUserRepository implements AuthUserRepository {
@@ -169,6 +214,10 @@ class InMemoryAuthUserRepository implements AuthUserRepository {
 
   async createUser(authUser: AuthUserWrite): Promise<void> {
     this.authUsers.set(authUser.email, { ...authUser, emailConfirmed: false });
+  }
+
+  async existsByEmail(email: string): Promise<boolean> {
+    return this.authUsers.has(email);
   }
 }
 
@@ -188,9 +237,24 @@ class RegisterHelper {
       return guard;
     }
 
+    const duplicateCheck = await this.checkDuplicateEmail(command.email);
+    if (Result.isFailure(duplicateCheck)) {
+      return duplicateCheck;
+    }
+
     try {
       await this.authUserRepository.createUser(command);
     } catch (error) {}
+    return Result.ok(undefined);
+  }
+
+  private async checkDuplicateEmail(
+    email: string
+  ): Promise<Result<undefined, EmailAlreadyInUseError>> {
+    const exists = await this.authUserRepository.existsByEmail(email);
+    if (exists) {
+      return Result.fail(new EmailAlreadyInUseError(email));
+    }
     return Result.ok(undefined);
   }
 }

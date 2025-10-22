@@ -57,3 +57,13 @@ Background:
     Examples: Empty phone number
       | phoneNumber      | error                  |
       |                  | Phone number invalid   |
+
+  Scenario Outline: Cannot register with duplicate email
+    Given a helper with email "<email>" is already registered
+    When I attempt to register with the same email
+    Then I am notified it went wrong because <error>
+    And I must use a different email to proceed
+
+    Examples: Duplicate email
+      | email           | error                                 |
+      | john@domain.com | this email address is already in use. |
