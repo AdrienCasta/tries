@@ -42,18 +42,18 @@ Background:
       | J         | Doe      | First name too short   |
       | John      | D        | Last name too short    |
 
-#   Scenario Outline: Fail to register with invalid phone number
-#     When I submit my information with an invalid phone number: <phoneNumber>  
-#     Then I am notified it went wrong because <error>
-#     And notified I have to change my name information
+  Scenario Outline: Fail to register with invalid phone number
+    When I submit my information with an invalid phone number: <phoneNumber>
+    Then I am notified it went wrong because <error>
+    And notified I have to change my phone number information
 
-#     Examples: Invalid phone number formats
-#       | phoneNumber      | error                  |
-#       | 06 123 456 789   | Phone number invalid   |
-#       | 011 23 45 67 89  | Phone number invalid   |
-#       | 612345678        | Phone number invalid   |
-#       | 06 12 34 56 7    | Phone number invalid   |
+    Examples: Invalid phone number formats
+      | phoneNumber      | error                  |
+      | 06 123 456 789   | Phone number invalid   |
+      | 011 23 45 67 89  | Phone number invalid   |
+      | 612345678        | Phone number invalid   |
+      | 06 12 34 56 7    | Phone number invalid   |
 
-#     Examples: Empty phone number
-#       | phoneNumber      | error                  |
-#       |                  | Phone number invalid   |
+    Examples: Empty phone number
+      | phoneNumber      | error                  |
+      |                  | Phone number invalid   |

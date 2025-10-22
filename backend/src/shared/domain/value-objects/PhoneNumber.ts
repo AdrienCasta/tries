@@ -29,7 +29,6 @@ function isValidPhoneNumber(phone: string): boolean {
 }
 
 export class PhoneNumberError extends DomainError {
-  readonly code = "PHONE_NUMBER_INVALID";
   constructor(phone: string) {
     super("Phone number must be in E.164 format (e.g., +33612345678)", {
       phone,

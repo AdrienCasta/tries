@@ -13,6 +13,7 @@ import Firstname from "@shared/domain/value-objects/Firstname";
 import Lastname from "@shared/domain/value-objects/Lastname";
 import { EmailFixtures } from "@shared/__tests__/fixtures/EmailFixtures";
 import DomainError from "@shared/domain/DomainError";
+import PhoneNumber, { PhoneNumberError } from "@shared/domain/value-objects/PhoneNumber";
 const feature = await loadFeatureFromText(featureContent);
 
 const errorMessageMappedToErrorCode = {
@@ -20,9 +21,9 @@ const errorMessageMappedToErrorCode = {
   "Invalid email format": "InvalidEmailError",
   "First name too short": "FirstnameTooShortError",
   "Last name too short": "LastnameTooShortError",
+  "Phone number invalid": "PhoneNumberError",
   // "birthdate provided is set to the future.": "BIRTHDATE_IN_FUTUR",
   // "age requirement not met. You must be at least 16 yo.": "TOO_YOUNG_TO_WORK",
-  // "Phone number invalid": "PHONE_NUMBER_INVALID",
   // "Profession invalid": "UNKNOWN_PROFESSION",
   // "this email address is already in use.": "EMAIL_ALREADY_IN_USE",
   // "Invalid french county": "RESIDENCE_INVALID",
@@ -44,6 +45,7 @@ class RegisterHelperCommandFixture {
       email: overrides?.email ?? EmailFixtures.aRandomEmail(),
       firstname: overrides?.firstname ?? "John",
       lastname: overrides?.lastname ?? "Doe",
+      phoneNumber: overrides?.phoneNumber ?? "+33612345678",
     };
   }
 }
@@ -115,6 +117,27 @@ describeFeature(
         });
       }
     );
+
+    ScenarioOutline(
+      "Fail to register with invalid phone number",
+      ({ When, Then, And }, { phoneNumber, error }) => {
+        const command = RegisterHelperCommandFixture.aValidCommand({
+          phoneNumber,
+        });
+        When(
+          "I submit my information with an invalid phone number: <phoneNumber>",
+          () => {
+            harness.registerHelper(command);
+          }
+        );
+        Then("I am notified it went wrong because <error>", async () => {
+          expect(harness.didHelperRegisterSuccessfully()).toBe(false);
+        });
+        And("notified I have to change my phone number information", async () => {
+          harness.expectRegistrationFailedWithError(error);
+        });
+      }
+    );
   }
 );
 
@@ -122,6 +145,7 @@ type RegisterHelperCommand = {
   firstname: string;
   lastname: string;
   email: string;
+  phoneNumber: string;
 };
 
 interface AuthUserRead {
@@ -157,6 +181,7 @@ class RegisterHelper {
       email: HelperEmail.create(command.email),
       firstname: Firstname.create(command.firstname),
       lastname: Lastname.create(command.lastname),
+      phoneNumber: PhoneNumber.create(command.phoneNumber),
     });
 
     if (Result.isFailure(guard)) {
