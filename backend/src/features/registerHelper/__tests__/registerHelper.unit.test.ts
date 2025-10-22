@@ -20,6 +20,9 @@ import Profession from "@shared/domain/value-objects/Profession";
 import Residence, {
   ResidenceError,
 } from "@shared/domain/value-objects/Residence";
+import { Clock } from "@shared/domain/services/Clock";
+import Birthdate from "@shared/domain/value-objects/Birthdate";
+import { FixedClock } from "@infrastructure/time/FixedClock";
 const feature = await loadFeatureFromText(featureContent);
 
 const errorMessageMappedToErrorCode = {
@@ -232,7 +235,7 @@ describeFeature(
       "Cannot register with invalid birthdate",
       ({ Given, When, Then, And }, { currentDate, birthdate, error }) => {
         Given("it is <currentDate>", () => {
-          harness.setCurrentDate(new Date(currentDate));
+          harness = RegisterHelperUnitTestHarness.setup(new Date(currentDate));
         });
 
         When("I submit my birthdate as <birthdate>", async () => {
@@ -389,20 +392,6 @@ class PhoneAlreadyInUseError extends Error {
   }
 }
 
-class BirthdateInFutureError extends Error {
-  readonly name = "BirthdateInFutureError";
-  constructor() {
-    super("birthdate provided is set to the future.");
-  }
-}
-
-class TooYoungToWorkError extends Error {
-  readonly name = "TooYoungToWorkError";
-  constructor() {
-    super("age requirement not met. You must be at least 16 yo.");
-  }
-}
-
 class PlaceOfBirthIncompleteError extends Error {
   readonly name = "PlaceOfBirthIncompleteError";
   constructor() {
@@ -435,13 +424,10 @@ class InMemoryAuthUserRepository implements AuthUserRepository {
 }
 
 class RegisterHelper {
-  private currentDate: Date = new Date();
-
-  constructor(private readonly authUserRepository: AuthUserRepository) {}
-
-  setCurrentDate(date: Date): void {
-    this.currentDate = date;
-  }
+  constructor(
+    private readonly authUserRepository: AuthUserRepository,
+    private readonly clock: Clock
+  ) {}
 
   async execute(
     command: RegisterHelperCommand
@@ -451,7 +437,7 @@ class RegisterHelper {
       firstname: Firstname.create(command.firstname),
       lastname: Lastname.create(command.lastname),
       phoneNumber: PhoneNumber.create(command.phoneNumber),
-      birthdate: this.validateBirthdate(command.birthdate),
+      birthdate: Birthdate.create(command.birthdate, { clock: this.clock }),
       placeOfBirth: this.validatePlaceOfBirth(command.placeOfBirth),
       professions: Profession.createMany(command.professions as any),
       residence: this.validateResidence(command.residence),
@@ -508,29 +494,6 @@ class RegisterHelper {
       : Residence.createForeignResidence(residence.country);
   }
 
-  private validateBirthdate(
-    birthdate: Date
-  ): Result<Date, BirthdateInFutureError | TooYoungToWorkError> {
-    if (birthdate > this.currentDate) {
-      return Result.fail(new BirthdateInFutureError());
-    }
-
-    const age = this.currentDate.getFullYear() - birthdate.getFullYear();
-    const monthDiff = this.currentDate.getMonth() - birthdate.getMonth();
-    const dayDiff = this.currentDate.getDate() - birthdate.getDate();
-
-    let actualAge = age;
-    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-      actualAge--;
-    }
-
-    if (actualAge < 16) {
-      return Result.fail(new TooYoungToWorkError());
-    }
-
-    return Result.ok(birthdate);
-  }
-
   private async checkDuplicateEmail(
     email: string
   ): Promise<Result<undefined, EmailAlreadyInUseError>> {
@@ -568,14 +531,13 @@ class RegisterHelperUnitTestHarness {
     private readonly registerHelperUsecase: RegisterHelper
   ) {}
 
-  static setup() {
+  static setup(currentTime?: Date) {
     const authUserRepository = new InMemoryAuthUserRepository();
-    const registerHelper = new RegisterHelper(authUserRepository);
+    const registerHelper = new RegisterHelper(
+      authUserRepository,
+      new FixedClock(currentTime)
+    );
     return new this(authUserRepository, registerHelper);
-  }
-
-  setCurrentDate(date: Date): void {
-    this.registerHelperUsecase.setCurrentDate(date);
   }
 
   async registerHelper(command: RegisterHelperCommand) {
