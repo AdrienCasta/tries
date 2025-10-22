@@ -22,6 +22,7 @@ const errorMessageMappedToErrorCode = {
   "Email is required": "InvalidEmailError",
   "Password is required": "PasswordEmptyError",
   "Password too short": "PasswordTooShortError",
+  "Password format invalid": "PasswordFormatError",
   "Invalid email format": "InvalidEmailError",
   "First name too short": "FirstnameTooShortError",
   "Last name too short": "LastnameTooShortError",

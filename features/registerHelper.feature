@@ -38,9 +38,13 @@ Background:
       |          | Password is required |
       
 
-    Examples: Invamid password format
-      | password | error              |
-      | pswd123  | Password too short |
+    Examples: Invalid password format
+      | password     | error                   |
+      | pswd123      | Password too short      |
+      | aaaaaaaaaaa  | Password format invalid |
+      | AAAAAAAAAAA  | Password format invalid |
+      | Abbbbbbbbbb  | Password format invalid |
+      | Abbb3bbbbbb  | Password format invalid |
 
   Scenario Outline: Fail to register with invalid name
     When I submit my information with an invalid name <firstname> <lastname>  
