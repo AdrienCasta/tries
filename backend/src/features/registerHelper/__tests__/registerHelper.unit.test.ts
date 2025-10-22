@@ -16,6 +16,7 @@ import DomainError from "@shared/domain/DomainError";
 import PhoneNumber, {
   PhoneNumberError,
 } from "@shared/domain/value-objects/PhoneNumber";
+import Profession from "@shared/domain/value-objects/Profession";
 const feature = await loadFeatureFromText(featureContent);
 
 const errorMessageMappedToErrorCode = {
@@ -26,14 +27,15 @@ const errorMessageMappedToErrorCode = {
   "Phone number invalid": "PhoneNumberError",
   "this email address is already in use.": "EmailAlreadyInUseError",
   "this phone number is already in use.": "PhoneAlreadyInUseError",
-  // "birthdate provided is set to the future.": "BIRTHDATE_IN_FUTUR",
-  // "age requirement not met. You must be at least 16 yo.": "TOO_YOUNG_TO_WORK",
-  // "Profession invalid": "UNKNOWN_PROFESSION",
+  "birthdate provided is set to the future.": "BirthdateInFutureError",
+  "age requirement not met. You must be at least 16 yo.": "TooYoungToWorkError",
+  "Place of birth incomplete": "PlaceOfBirthIncompleteError",
+  "Profession unkwown": "UnkwonProfessionError",
+  "Rpps must be 11 digits long": "RppsInvalidError",
+  "Adeli must be 9 digits long": "AdeliInvalidError",
+  "Profession requires different health id type": "WrongHealthIdTypeError",
   // "Invalid french county": "RESIDENCE_INVALID",
   // "Invalid residence": "RESIDENCE_INVALID",
-  // "Rpps must be 11 digits long": "RPPS_INVALID",
-  // "Adeli must be 9 digits long": "ADELI_INVALID",
-  // "Profession requires different health id type": "WRONG_HEALTH_ID_TYPE",
 };
 setVitestCucumberConfiguration({
   ...getVitestCucumberConfiguration(),
@@ -48,6 +50,17 @@ class RegisterHelperCommandFixture {
       firstname: overrides?.firstname ?? "John",
       lastname: overrides?.lastname ?? "Doe",
       phoneNumber: overrides?.phoneNumber ?? "+33612345678",
+      birthdate: overrides?.birthdate ?? new Date("1990-01-01"),
+      placeOfBirth: overrides?.placeOfBirth ?? {
+        country: "FR",
+        city: "Paris",
+      },
+      professions: overrides?.professions ?? [
+        {
+          code: "physiotherapist",
+          healthId: { rpps: "12345678901" },
+        },
+      ],
     };
   }
 }
@@ -207,6 +220,83 @@ describeFeature(
         });
       }
     );
+
+    ScenarioOutline(
+      "Cannot register with invalid birthdate",
+      ({ Given, When, Then, And }, { currentDate, birthdate, error }) => {
+        Given("it is <currentDate>", () => {
+          harness.setCurrentDate(new Date(currentDate));
+        });
+
+        When("I submit my birthdate as <birthdate>", async () => {
+          const command = RegisterHelperCommandFixture.aValidCommand({
+            birthdate: new Date(birthdate),
+          });
+          await harness.registerHelper(command);
+        });
+
+        Then("I am notified it went wrong because <error>", () => {
+          expect(harness.didHelperRegisterSuccessfully()).toBe(false);
+        });
+
+        And("I must provide a valid birthdate to proceed", () => {
+          harness.expectRegistrationFailedWithError(error);
+        });
+      }
+    );
+
+    ScenarioOutline(
+      "Cannot register with invalid place of birth",
+      ({ When, Then, And }, { country, city, error }) => {
+        When(
+          'I submit my place of birth with country "<country>" and city "<city>"',
+          async () => {
+            const command = RegisterHelperCommandFixture.aValidCommand({
+              placeOfBirth: { country, city },
+            });
+            await harness.registerHelper(command);
+          }
+        );
+
+        Then("I am notified it went wrong because <error>", () => {
+          expect(harness.didHelperRegisterSuccessfully()).toBe(false);
+        });
+
+        And("I must provide a valid place of birth to proceed", () => {
+          harness.expectRegistrationFailedWithError(error);
+        });
+      }
+    );
+
+    ScenarioOutline(
+      "Cannot register with invalid profession",
+      ({ When, Then, And }, { profession, healthIdType, healthId, error }) => {
+        When(
+          'I submit my profession as "<profession>" with health ID "<healthIdType>" "<healthId>"',
+          async () => {
+            const healthIdObj =
+              healthIdType === "rpps" ? { rpps: healthId } : { adeli: healthId };
+            const command = RegisterHelperCommandFixture.aValidCommand({
+              professions: [
+                {
+                  code: profession,
+                  healthId: healthIdObj,
+                },
+              ],
+            });
+            await harness.registerHelper(command);
+          }
+        );
+
+        Then("I am notified it went wrong because <error>", () => {
+          expect(harness.didHelperRegisterSuccessfully()).toBe(false);
+        });
+
+        And("I must provide valid profession information to proceed", () => {
+          harness.expectRegistrationFailedWithError(error);
+        });
+      }
+    );
   }
 );
 
@@ -215,6 +305,15 @@ type RegisterHelperCommand = {
   lastname: string;
   email: string;
   phoneNumber: string;
+  birthdate: Date;
+  placeOfBirth: {
+    country: string;
+    city: string;
+  };
+  professions: Array<{
+    code: string;
+    healthId: { rpps: string } | { adeli: string };
+  }>;
 };
 
 interface AuthUserRead {
@@ -251,6 +350,27 @@ class PhoneAlreadyInUseError extends Error {
   }
 }
 
+class BirthdateInFutureError extends Error {
+  readonly name = "BirthdateInFutureError";
+  constructor() {
+    super("birthdate provided is set to the future.");
+  }
+}
+
+class TooYoungToWorkError extends Error {
+  readonly name = "TooYoungToWorkError";
+  constructor() {
+    super("age requirement not met. You must be at least 16 yo.");
+  }
+}
+
+class PlaceOfBirthIncompleteError extends Error {
+  readonly name = "PlaceOfBirthIncompleteError";
+  constructor() {
+    super("Place of birth incomplete");
+  }
+}
+
 class InMemoryAuthUserRepository implements AuthUserRepository {
   authUsers: Map<string, AuthUserRead> = new Map();
 
@@ -276,7 +396,14 @@ class InMemoryAuthUserRepository implements AuthUserRepository {
 }
 
 class RegisterHelper {
+  private currentDate: Date = new Date();
+
   constructor(private readonly authUserRepository: AuthUserRepository) {}
+
+  setCurrentDate(date: Date): void {
+    this.currentDate = date;
+  }
+
   async execute(
     command: RegisterHelperCommand
   ): Promise<Result<undefined, Error>> {
@@ -285,6 +412,9 @@ class RegisterHelper {
       firstname: Firstname.create(command.firstname),
       lastname: Lastname.create(command.lastname),
       phoneNumber: PhoneNumber.create(command.phoneNumber),
+      birthdate: this.validateBirthdate(command.birthdate),
+      placeOfBirth: this.validatePlaceOfBirth(command.placeOfBirth),
+      professions: Profession.createMany(command.professions as any),
     });
 
     if (Result.isFailure(guard)) {
@@ -307,6 +437,34 @@ class RegisterHelper {
       await this.authUserRepository.createUser(command);
     } catch (error) {}
     return Result.ok(undefined);
+  }
+
+  private validatePlaceOfBirth(placeOfBirth: { country: string; city: string }): Result<{ country: string; city: string }, PlaceOfBirthIncompleteError> {
+    if (!placeOfBirth.country || !placeOfBirth.city) {
+      return Result.fail(new PlaceOfBirthIncompleteError());
+    }
+    return Result.ok(placeOfBirth);
+  }
+
+  private validateBirthdate(birthdate: Date): Result<Date, BirthdateInFutureError | TooYoungToWorkError> {
+    if (birthdate > this.currentDate) {
+      return Result.fail(new BirthdateInFutureError());
+    }
+
+    const age = this.currentDate.getFullYear() - birthdate.getFullYear();
+    const monthDiff = this.currentDate.getMonth() - birthdate.getMonth();
+    const dayDiff = this.currentDate.getDate() - birthdate.getDate();
+
+    let actualAge = age;
+    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+      actualAge--;
+    }
+
+    if (actualAge < 16) {
+      return Result.fail(new TooYoungToWorkError());
+    }
+
+    return Result.ok(birthdate);
   }
 
   private async checkDuplicateEmail(
@@ -350,6 +508,10 @@ class RegisterHelperUnitTestHarness {
     const authUserRepository = new InMemoryAuthUserRepository();
     const registerHelper = new RegisterHelper(authUserRepository);
     return new this(authUserRepository, registerHelper);
+  }
+
+  setCurrentDate(date: Date): void {
+    this.registerHelperUsecase.setCurrentDate(date);
   }
 
   async registerHelper(command: RegisterHelperCommand) {

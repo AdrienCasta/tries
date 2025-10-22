@@ -77,3 +77,51 @@ Background:
     Examples: Duplicate phone number
       | phoneNumber  | error                                    |
       | +33612345678 | this phone number is already in use. |
+
+  Scenario Outline: Cannot register with invalid birthdate
+    Given it is <currentDate>
+    When I submit my birthdate as <birthdate>
+    Then I am notified it went wrong because <error>
+    And I must provide a valid birthdate to proceed
+
+    Examples: Future birthdate
+      | currentDate | birthdate  | error                                    |
+      | 2025-10-06  | 2025-10-07 | birthdate provided is set to the future. |
+
+    Examples: Too young to work
+      | currentDate | birthdate  | error                                            |
+      | 2025-10-06  | 2022-10-07 | age requirement not met. You must be at least 16 yo. |
+
+  Scenario Outline: Cannot register with invalid place of birth
+    When I submit my place of birth with country "<country>" and city "<city>"
+    Then I am notified it went wrong because <error>
+    And I must provide a valid place of birth to proceed
+
+    Examples: Missing country
+      | country | city      | error                     |
+      |         | Paris     | Place of birth incomplete |
+
+    Examples: Missing city
+      | country | city | error                     |
+      | FR      |      | Place of birth incomplete |
+
+  Scenario Outline: Cannot register with invalid profession
+    When I submit my profession as "<profession>" with health ID "<healthIdType>" "<healthId>"
+    Then I am notified it went wrong because <error>
+    And I must provide valid profession information to proceed
+
+    Examples: Unknown profession
+      | profession  | healthIdType | healthId    | error              |
+      | invalidprof | rpps         | 12345678901 | Profession unkwown |
+
+    Examples: Invalid RPPS format
+      | profession      | healthIdType | healthId   | error                       |
+      | physiotherapist | rpps         | 123456789  | Rpps must be 11 digits long |
+
+    Examples: Invalid ADELI format
+      | profession   | healthIdType | healthId  | error                       |
+      | sports_coach | adeli        | 12345678  | Adeli must be 9 digits long |
+
+    Examples: Wrong health ID type for profession
+      | profession      | healthIdType | healthId  | error                                        |
+      | physiotherapist | adeli        | 123456789 | Profession requires different health id type |
