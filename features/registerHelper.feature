@@ -125,3 +125,24 @@ Background:
     Examples: Wrong health ID type for profession
       | profession      | healthIdType | healthId  | error                                        |
       | physiotherapist | adeli        | 123456789 | Profession requires different health id type |
+
+  Scenario Outline: Cannot register with invalid residence
+    When I submit my residence with country "<country>" and french county "<frenchCounty>"
+    Then I am notified it went wrong because <error>
+    And I must provide a valid residence to proceed
+
+    Examples: Invalid french county
+      | country | frenchCounty | error                 |
+      | FR      | 99           | Invalid french county |
+      | FR      | 00           | Invalid french county |
+      | FR      |              | Invalid french county |
+
+    Examples: Unsupported country
+      | country | frenchCounty | error             |
+      | CA      |              | Invalid residence |
+      | GB      |              | Invalid residence |
+
+    Examples: Foreign country with french county
+      | country | frenchCounty | error             |
+      | BE      | 75           | Invalid residence |
+      | DE      | 44           | Invalid residence |

@@ -17,6 +17,9 @@ import PhoneNumber, {
   PhoneNumberError,
 } from "@shared/domain/value-objects/PhoneNumber";
 import Profession from "@shared/domain/value-objects/Profession";
+import Residence, {
+  ResidenceError,
+} from "@shared/domain/value-objects/Residence";
 const feature = await loadFeatureFromText(featureContent);
 
 const errorMessageMappedToErrorCode = {
@@ -34,8 +37,8 @@ const errorMessageMappedToErrorCode = {
   "Rpps must be 11 digits long": "RppsInvalidError",
   "Adeli must be 9 digits long": "AdeliInvalidError",
   "Profession requires different health id type": "WrongHealthIdTypeError",
-  // "Invalid french county": "RESIDENCE_INVALID",
-  // "Invalid residence": "RESIDENCE_INVALID",
+  "Invalid french county": "ResidenceError",
+  "Invalid residence": "ResidenceError",
 };
 setVitestCucumberConfiguration({
   ...getVitestCucumberConfiguration(),
@@ -61,6 +64,10 @@ class RegisterHelperCommandFixture {
           healthId: { rpps: "12345678901" },
         },
       ],
+      residence: overrides?.residence ?? {
+        country: "FR",
+        frenchCounty: "75",
+      },
     };
   }
 }
@@ -297,6 +304,32 @@ describeFeature(
         });
       }
     );
+
+    ScenarioOutline(
+      "Cannot register with invalid residence",
+      ({ When, Then, And }, { country, frenchCounty, error }) => {
+        When(
+          'I submit my residence with country "<country>" and french county "<frenchCounty>"',
+          async () => {
+            const command = RegisterHelperCommandFixture.aValidCommand({
+              residence: {
+                country,
+                frenchCounty: frenchCounty || undefined,
+              },
+            });
+            await harness.registerHelper(command);
+          }
+        );
+
+        Then("I am notified it went wrong because <error>", () => {
+          expect(harness.didHelperRegisterSuccessfully()).toBe(false);
+        });
+
+        And("I must provide a valid residence to proceed", () => {
+          harness.expectRegistrationFailedWithError(error);
+        });
+      }
+    );
   }
 );
 
@@ -314,6 +347,10 @@ type RegisterHelperCommand = {
     code: string;
     healthId: { rpps: string } | { adeli: string };
   }>;
+  residence: {
+    country: string;
+    frenchCounty?: string;
+  };
 };
 
 interface AuthUserRead {
@@ -415,6 +452,7 @@ class RegisterHelper {
       birthdate: this.validateBirthdate(command.birthdate),
       placeOfBirth: this.validatePlaceOfBirth(command.placeOfBirth),
       professions: Profession.createMany(command.professions as any),
+      residence: this.validateResidence(command.residence),
     });
 
     if (Result.isFailure(guard)) {
@@ -444,6 +482,22 @@ class RegisterHelper {
       return Result.fail(new PlaceOfBirthIncompleteError());
     }
     return Result.ok(placeOfBirth);
+  }
+
+  private validateResidence(residence: { country: string; frenchCounty?: string }): Result<Residence, ResidenceError> {
+    if (residence.country !== "FR" && residence.frenchCounty) {
+      return Result.fail(
+        new ResidenceError(
+          residence.country,
+          residence.frenchCounty,
+          "French county not applicable for non-French countries"
+        )
+      );
+    }
+
+    return residence.country === "FR"
+      ? Residence.createFrenchResidence(residence.frenchCounty || "")
+      : Residence.createForeignResidence(residence.country);
   }
 
   private validateBirthdate(birthdate: Date): Result<Date, BirthdateInFutureError | TooYoungToWorkError> {
