@@ -21,6 +21,7 @@ const feature = await loadFeatureFromText(featureContent);
 const errorMessageMappedToErrorCode = {
   "Email is required": "InvalidEmailError",
   "Password is required": "PasswordEmptyError",
+  "Password too short": "PasswordTooShortError",
   "Invalid email format": "InvalidEmailError",
   "First name too short": "FirstnameTooShortError",
   "Last name too short": "LastnameTooShortError",

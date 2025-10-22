@@ -38,9 +38,9 @@ Background:
       |          | Password is required |
       
 
-    # Examples: Missing email
-    #   | email | error             |
-    #   |       | Email is required |
+    Examples: Invamid password format
+      | password | error              |
+      | pswd123  | Password too short |
 
   Scenario Outline: Fail to register with invalid name
     When I submit my information with an invalid name <firstname> <lastname>  
