@@ -23,6 +23,7 @@ import Residence, {
 import { Clock } from "@shared/domain/services/Clock";
 import Birthdate from "@shared/domain/value-objects/Birthdate";
 import { FixedClock } from "@infrastructure/time/FixedClock";
+import PlaceOfBirth from "@shared/domain/value-objects/PlaceOfBirth";
 const feature = await loadFeatureFromText(featureContent);
 
 const errorMessageMappedToErrorCode = {
@@ -392,13 +393,6 @@ class PhoneAlreadyInUseError extends Error {
   }
 }
 
-class PlaceOfBirthIncompleteError extends Error {
-  readonly name = "PlaceOfBirthIncompleteError";
-  constructor() {
-    super("Place of birth incomplete");
-  }
-}
-
 class InMemoryAuthUserRepository implements AuthUserRepository {
   authUsers: Map<string, AuthUserRead> = new Map();
 
@@ -438,7 +432,7 @@ class RegisterHelper {
       lastname: Lastname.create(command.lastname),
       phoneNumber: PhoneNumber.create(command.phoneNumber),
       birthdate: Birthdate.create(command.birthdate, { clock: this.clock }),
-      placeOfBirth: this.validatePlaceOfBirth(command.placeOfBirth),
+      placeOfBirth: PlaceOfBirth.create(command.placeOfBirth),
       professions: Profession.createMany(command.professions as any),
       residence:
         command.residence.country === "FR"
@@ -468,16 +462,6 @@ class RegisterHelper {
       await this.authUserRepository.createUser(command);
     } catch (error) {}
     return Result.ok(undefined);
-  }
-
-  private validatePlaceOfBirth(placeOfBirth: {
-    country: string;
-    city: string;
-  }): Result<{ country: string; city: string }, PlaceOfBirthIncompleteError> {
-    if (!placeOfBirth.country || !placeOfBirth.city) {
-      return Result.fail(new PlaceOfBirthIncompleteError());
-    }
-    return Result.ok(placeOfBirth);
   }
 
   private async checkDuplicateEmail(

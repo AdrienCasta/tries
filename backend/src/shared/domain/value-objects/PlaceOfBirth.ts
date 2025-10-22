@@ -11,9 +11,11 @@ export default class PlaceOfBirth {
   static create({
     country,
     city,
-    zipCode,
-  }: PlaceOfBirthValue): Result<PlaceOfBirth, PlaceOfBirthError> {
-    return Result.ok(new PlaceOfBirth({ country, city, zipCode }));
+  }: PlaceOfBirthValue): Result<PlaceOfBirth, PlaceOfBirthIncompleteError> {
+    if (!country || !city) {
+      return Result.fail(new PlaceOfBirthIncompleteError(country, city));
+    }
+    return Result.ok(new PlaceOfBirth({ country, city }));
   }
 
   toValue() {
@@ -21,11 +23,11 @@ export default class PlaceOfBirth {
   }
 }
 
-type PlaceOfBirthValue = { country: string; city: string; zipCode?: string };
+type PlaceOfBirthValue = { country: string; city: string };
 
-export class PlaceOfBirthError extends DomainError {
-  readonly code = "PLACE_OF_BIRTH_INVALID";
-  constructor(country: string, city: string, zipCode?: string) {
-    super("Invalid place of birth", { country, city, zipCode });
+export class PlaceOfBirthIncompleteError extends DomainError {
+  constructor(country: string, city: string) {
+    super("Invalid place of birth", { country, city });
+    this.name = this.constructor.name;
   }
 }
