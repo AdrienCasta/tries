@@ -164,3 +164,35 @@ Background:
       | fileSize | error                                |
       | 11MB     | Diploma file size exceeds 10MB limit |
       | 50MB     | Diploma file size exceeds 10MB limit |
+
+  Scenario Outline: Cannot register with invalid criminal record certificate file format
+    When I submit my registration with a criminal record certificate file of type "<fileType>"
+    Then I am notified it went wrong because <error>
+    And I must provide a valid PDF criminal record certificate to proceed
+
+    Examples: Invalid file formats
+      | fileType | error                                                 |
+      | .jpg     | Criminal record certificate must be in PDF format |
+      | .png     | Criminal record certificate must be in PDF format |
+      | .docx    | Criminal record certificate must be in PDF format |
+      | .txt     | Criminal record certificate must be in PDF format |
+      | .exe     | Criminal record certificate must be in PDF format |
+
+  Scenario Outline: Cannot register with criminal record certificate file exceeding size limit
+    When I submit my registration with a criminal record certificate file of size <fileSize>
+    Then I am notified it went wrong because <error>
+    And I must provide a criminal record certificate within the size limit to proceed
+
+    Examples: File too large
+      | fileSize | error                                                        |
+      | 11MB     | Criminal record certificate file size exceeds 10MB limit |
+      | 50MB     | Criminal record certificate file size exceeds 10MB limit |
+
+  Scenario Outline: Cannot register with empty criminal record certificate file
+    When I submit my registration with an empty criminal record certificate file
+    Then I am notified it went wrong because <error>
+    And I must provide a valid criminal record certificate file to proceed
+
+    Examples: Empty file
+      | error                                           |
+      | Criminal record certificate file is empty |

@@ -24,6 +24,15 @@ import { Clock } from "@shared/domain/services/Clock";
 import Birthdate from "@shared/domain/value-objects/Birthdate";
 import { FixedClock } from "@infrastructure/time/FixedClock";
 import PlaceOfBirth from "@shared/domain/value-objects/PlaceOfBirth";
+import Diploma, {
+  InvalidDiplomaFormatError,
+  DiplomaSizeExceededError,
+} from "@shared/domain/value-objects/Diploma";
+import CriminalRecordCertificate, {
+  InvalidCriminalRecordCertificateFormatError,
+  CriminalRecordCertificateSizeExceededError,
+  EmptyCriminalRecordCertificateFileError,
+} from "@shared/domain/value-objects/CriminalRecordCertificate";
 const feature = await loadFeatureFromText(featureContent);
 
 const errorMessageMappedToErrorCode = {
@@ -45,6 +54,9 @@ const errorMessageMappedToErrorCode = {
   "Invalid residence": "ResidenceError",
   "Diploma must be in PDF format": "InvalidDiplomaFormatError",
   "Diploma file size exceeds 10MB limit": "DiplomaSizeExceededError",
+  "Criminal record certificate must be in PDF format": "InvalidCriminalRecordCertificateFormatError",
+  "Criminal record certificate file size exceeds 10MB limit": "CriminalRecordCertificateSizeExceededError",
+  "Criminal record certificate file is empty": "EmptyCriminalRecordCertificateFileError",
 };
 setVitestCucumberConfiguration({
   ...getVitestCucumberConfiguration(),
@@ -75,6 +87,7 @@ class RegisterHelperCommandFixture {
         frenchAreaCode: "75",
       },
       diploma: overrides?.diploma,
+      criminalRecordCertificate: overrides?.criminalRecordCertificate,
     };
   }
 }
@@ -387,6 +400,77 @@ describeFeature(
         });
       }
     );
+
+    ScenarioOutline(
+      "Cannot register with invalid criminal record certificate file format",
+      ({ When, Then, And }, { fileType, error }) => {
+        When(
+          'I submit my registration with a criminal record certificate file of type "<fileType>"',
+          async () => {
+            const command = RegisterHelperCommandFixture.aValidCommand({
+              criminalRecordCertificate: { fileType },
+            });
+            await harness.registerHelper(command);
+          }
+        );
+
+        Then("I am notified it went wrong because <error>", async () => {
+          expect(harness.didHelperRegisterSuccessfully()).toBe(false);
+        });
+
+        And("I must provide a valid PDF criminal record certificate to proceed", async () => {
+          harness.expectRegistrationFailedWithError(error);
+        });
+      }
+    );
+
+    ScenarioOutline(
+      "Cannot register with criminal record certificate file exceeding size limit",
+      ({ When, Then, And }, { fileSize, error }) => {
+        const fileSizeInBytes = parseInt(fileSize) * 1024 * 1024;
+
+        When(
+          "I submit my registration with a criminal record certificate file of size <fileSize>",
+          async () => {
+            const command = RegisterHelperCommandFixture.aValidCommand({
+              criminalRecordCertificate: { fileType: ".pdf", fileSize: fileSizeInBytes },
+            });
+            await harness.registerHelper(command);
+          }
+        );
+
+        Then("I am notified it went wrong because <error>", async () => {
+          expect(harness.didHelperRegisterSuccessfully()).toBe(false);
+        });
+
+        And("I must provide a criminal record certificate within the size limit to proceed", async () => {
+          harness.expectRegistrationFailedWithError(error);
+        });
+      }
+    );
+
+    ScenarioOutline(
+      "Cannot register with empty criminal record certificate file",
+      ({ When, Then, And }, { error }) => {
+        When(
+          "I submit my registration with an empty criminal record certificate file",
+          async () => {
+            const command = RegisterHelperCommandFixture.aValidCommand({
+              criminalRecordCertificate: { fileType: ".pdf", fileSize: 0 },
+            });
+            await harness.registerHelper(command);
+          }
+        );
+
+        Then("I am notified it went wrong because <error>", async () => {
+          expect(harness.didHelperRegisterSuccessfully()).toBe(false);
+        });
+
+        And("I must provide a valid criminal record certificate file to proceed", async () => {
+          harness.expectRegistrationFailedWithError(error);
+        });
+      }
+    );
   }
 );
 
@@ -409,6 +493,10 @@ type RegisterHelperCommand = {
     frenchAreaCode?: string;
   };
   diploma?: {
+    fileType: string;
+    fileSize?: number;
+  };
+  criminalRecordCertificate?: {
     fileType: string;
     fileSize?: number;
   };
@@ -448,20 +536,6 @@ class PhoneAlreadyInUseError extends Error {
   }
 }
 
-class InvalidDiplomaFormatError extends Error {
-  readonly name = "InvalidDiplomaFormatError";
-  constructor() {
-    super("Diploma must be in PDF format");
-  }
-}
-
-class DiplomaSizeExceededError extends Error {
-  readonly name = "DiplomaSizeExceededError";
-  constructor() {
-    super("Diploma file size exceeds 10MB limit");
-  }
-}
-
 class InMemoryAuthUserRepository implements AuthUserRepository {
   authUsers: Map<string, AuthUserRead> = new Map();
 
@@ -487,8 +561,6 @@ class InMemoryAuthUserRepository implements AuthUserRepository {
 }
 
 class RegisterHelper {
-  private static readonly MAX_DIPLOMA_SIZE_BYTES = 10 * 1024 * 1024;
-
   constructor(
     private readonly authUserRepository: AuthUserRepository,
     private readonly clock: Clock
@@ -497,15 +569,6 @@ class RegisterHelper {
   async execute(
     command: RegisterHelperCommand
   ): Promise<Result<undefined, Error>> {
-    if (command.diploma) {
-      if (command.diploma.fileType !== ".pdf") {
-        return Result.fail(new InvalidDiplomaFormatError());
-      }
-      if (command.diploma.fileSize && command.diploma.fileSize > RegisterHelper.MAX_DIPLOMA_SIZE_BYTES) {
-        return Result.fail(new DiplomaSizeExceededError());
-      }
-    }
-
     const guard = Result.combineObject({
       email: HelperEmail.create(command.email),
       firstname: Firstname.create(command.firstname),
@@ -520,6 +583,14 @@ class RegisterHelper {
               command.residence.frenchAreaCode as string
             )
           : Residence.createForeignResidence(command.residence.country),
+      ...(command.diploma ? { diploma: Diploma.create(command.diploma) } : {}),
+      ...(command.criminalRecordCertificate
+        ? {
+            criminalRecordCertificate: CriminalRecordCertificate.create(
+              command.criminalRecordCertificate
+            ),
+          }
+        : {}),
     });
 
     if (Result.isFailure(guard)) {
