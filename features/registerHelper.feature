@@ -26,6 +26,21 @@ Background:
     Examples: Missing email
       | email | error             |
       |       | Email is required |
+  
+
+  Scenario Outline: Helper fail to register with invalid password
+    When I submit my information with an invalid password <password>  
+    Then I am notified it went wrong because of <error>
+    And notified I have to change my password
+
+    Examples: Missing password
+      | password | error                |
+      |          | Password is required |
+      
+
+    # Examples: Missing email
+    #   | email | error             |
+    #   |       | Email is required |
 
   Scenario Outline: Fail to register with invalid name
     When I submit my information with an invalid name <firstname> <lastname>  

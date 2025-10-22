@@ -2,6 +2,7 @@ export default interface RegisterHelperCommand {
   firstname: string;
   lastname: string;
   email: string;
+  password: string;
   phoneNumber: string;
   birthdate: Date;
   placeOfBirth: {

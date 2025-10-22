@@ -20,6 +20,7 @@ const feature = await loadFeatureFromText(featureContent);
 
 const errorMessageMappedToErrorCode = {
   "Email is required": "InvalidEmailError",
+  "Password is required": "PasswordEmptyError",
   "Invalid email format": "InvalidEmailError",
   "First name too short": "FirstnameTooShortError",
   "Last name too short": "LastnameTooShortError",
@@ -54,6 +55,7 @@ class RegisterHelperCommandFixture {
   ): RegisterHelperCommand {
     return {
       email: overrides?.email ?? EmailFixtures.aRandomEmail(),
+      password: overrides?.password ?? "12345AZERTpoiu!!!",
       firstname: overrides?.firstname ?? "John",
       lastname: overrides?.lastname ?? "Doe",
       phoneNumber: overrides?.phoneNumber ?? "+33612345678",
@@ -119,6 +121,28 @@ describeFeature(
           expect(harness.didHelperRegisterSuccessfully()).toBe(false);
         });
         And("notified I have to change my email", () => {
+          harness.expectRegistrationFailedWithError(error);
+        });
+      }
+    );
+
+    ScenarioOutline(
+      "Helper fail to register with invalid password",
+      ({ When, Then, And }, { password, error }) => {
+        const command = RegisterHelperCommandFixture.aValidCommand({
+          password,
+        });
+
+        When(
+          "I submit my information with an invalid password <password>",
+          () => {
+            harness.registerHelper(command);
+          }
+        );
+        Then("I am notified it went wrong because of <error>", () => {
+          expect(harness.didHelperRegisterSuccessfully()).toBe(false);
+        });
+        And("notified I have to change my password", () => {
           harness.expectRegistrationFailedWithError(error);
         });
       }

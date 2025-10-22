@@ -8,9 +8,7 @@ export default class Password {
   private constructor(value: string) {
     this.value = value;
   }
-  static async create(
-    plainPassword: string
-  ): Promise<Result<Password, PasswordError>> {
+  static create(plainPassword: string) {
     if (!plainPassword || plainPassword.trim().length === 0) {
       return Result.fail(new PasswordEmptyError(plainPassword));
     }
@@ -36,16 +34,6 @@ export default class Password {
     }
 
     return Result.ok(new Password(plainPassword));
-  }
-  static async generateTemporary(): Promise<Password> {
-    const password = randomBytes(12).toString("base64") + "Aa1!";
-    const result = await Password.create(password);
-
-    if (Result.isFailure(result)) {
-      throw new Error("Failed to generate temporary password");
-    }
-
-    return result.value;
   }
 }
 

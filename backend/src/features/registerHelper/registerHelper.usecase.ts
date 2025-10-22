@@ -12,6 +12,7 @@ import Diploma from "@shared/domain/value-objects/Diploma";
 import CriminalRecordCertificate from "@shared/domain/value-objects/CriminalRecordCertificate";
 import AuthUserRepository from "@shared/domain/repositories/AuthUserRepository";
 import { Clock } from "@shared/domain/services/Clock";
+import Password from "@shared/domain/value-objects/Password";
 
 export default class RegisterHelper {
   constructor(
@@ -24,6 +25,7 @@ export default class RegisterHelper {
   ): Promise<Result<undefined, Error>> {
     const guard = Result.combineObject({
       email: HelperEmail.create(command.email),
+      password: Password.create(command.password),
       firstname: Firstname.create(command.firstname),
       lastname: Lastname.create(command.lastname),
       phoneNumber: PhoneNumber.create(command.phoneNumber),
