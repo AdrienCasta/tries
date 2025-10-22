@@ -1,7 +1,13 @@
-import HelperEmail from "../value-objects/HelperEmail.js";
-import PhoneNumber from "../value-objects/PhoneNumber.js";
-
-export type AuthUser = {
-  email: HelperEmail;
-  phoneNumber?: PhoneNumber | null;
-};
+export interface AuthUserRead {
+  firstname: string;
+  lastname: string;
+  email: string;
+  phoneNumber: string;
+  emailConfirmed: boolean;
+}
+export interface AuthUserWrite {
+  firstname: string;
+  lastname: string;
+  email: string;
+  phoneNumber: string;
+}
