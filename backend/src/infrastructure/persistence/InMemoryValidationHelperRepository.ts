@@ -5,6 +5,7 @@ type HelperForValidation = {
   credentialsSubmitted: boolean;
   backgroundCheckSubmitted: boolean;
   profileValidated: boolean;
+  rejected?: boolean;
 };
 
 export class InMemoryValidationHelperRepository {
@@ -38,5 +39,10 @@ export class InMemoryValidationHelperRepository {
   isProfileValidated(firstname: string, lastname: string): boolean {
     const helper = this.findByName(firstname, lastname);
     return helper?.profileValidated ?? false;
+  }
+
+  isHelperRejected(firstname: string, lastname: string): boolean {
+    const helper = this.findByName(firstname, lastname);
+    return helper?.rejected ?? false;
   }
 }
