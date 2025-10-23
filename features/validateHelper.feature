@@ -52,3 +52,11 @@ Feature: Validate helper credentials
     And "Alice Brown" has submitted their background screening
     When I validate "Alice Brown"'s profile
     Then "Alice Brown" should receive a validation notification
+
+  Scenario: Cannot validate helper with unconfirmed email
+    Given helper "Charlie Davis" has not confirmed their email
+    And "Charlie Davis" has submitted their professional credentials
+    And "Charlie Davis" has submitted their background screening
+    When I attempt to validate "Charlie Davis"
+    Then validation should fail with error "Cannot validate helper with unconfirmed email"
+    And "Charlie Davis" cannot apply to events

@@ -168,6 +168,39 @@ describeFeature(
         expect(harness.wasValidationNotificationSent("Alice", "Brown")).toBe(true);
       });
     });
+
+    Scenario("Cannot validate helper with unconfirmed email", ({ Given, When, Then, And }) => {
+      Given('helper "Charlie Davis" has not confirmed their email', () => {
+        harness.seedHelper({
+          firstname: "Charlie",
+          lastname: "Davis",
+          emailConfirmed: false,
+          credentialsSubmitted: false,
+          backgroundCheckSubmitted: false,
+          profileValidated: false,
+        });
+      });
+
+      And('"Charlie Davis" has submitted their professional credentials', () => {
+        harness.updateHelper("Charlie", "Davis", { credentialsSubmitted: true });
+      });
+
+      And('"Charlie Davis" has submitted their background screening', () => {
+        harness.updateHelper("Charlie", "Davis", { backgroundCheckSubmitted: true });
+      });
+
+      When('I attempt to validate "Charlie Davis"', async () => {
+        await harness.attemptValidateHelper("Charlie", "Davis");
+      });
+
+      Then('validation should fail with error "Cannot validate helper with unconfirmed email"', () => {
+        expect(harness.getLastValidationError()).toBe("Cannot validate helper with unconfirmed email");
+      });
+
+      And('"Charlie Davis" cannot apply to events', () => {
+        expect(harness.canApplyToEvents("Charlie", "Davis")).toBe(false);
+      });
+    });
   }
 );
 

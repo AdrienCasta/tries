@@ -23,6 +23,10 @@ export default class ValidateHelper {
       return Result.fail(new HelperNotFoundError());
     }
 
+    if (!helper.emailConfirmed) {
+      return Result.fail(new EmailNotConfirmedError());
+    }
+
     if (helper.profileValidated) {
       return Result.fail(new HelperAlreadyValidatedError());
     }
@@ -77,5 +81,12 @@ class HelperRejectedError extends Error {
   readonly name = "HelperRejectedError";
   constructor() {
     super("Cannot validate rejected helper");
+  }
+}
+
+class EmailNotConfirmedError extends Error {
+  readonly name = "EmailNotConfirmedError";
+  constructor() {
+    super("Cannot validate helper with unconfirmed email");
   }
 }
