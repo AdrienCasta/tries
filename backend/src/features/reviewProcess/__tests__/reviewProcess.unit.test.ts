@@ -2,7 +2,7 @@ import {
   describeFeature,
   loadFeatureFromText,
 } from "@amiceli/vitest-cucumber";
-import featureContent from "../../../../../features/lockHelperDocuments.feature?raw";
+import featureContent from "../../../../../features/reviewProcess.feature?raw";
 import { Result } from "@shared/infrastructure/Result";
 
 import StartReview from "../StartReview.usecase";
@@ -27,7 +27,7 @@ describeFeature(
       Given("I am authenticated as an admin", () => {});
     });
 
-    Scenario("Admin starts reviewing helper to lock documents", ({ Given, When, Then, And }) => {
+    Scenario("Admin starts reviewing helper", ({ Given, When, Then, And }) => {
       Given('helper "Frank Martin" has confirmed their email', () => {
         harness.seedHelper({
           firstname: "Frank",
@@ -55,11 +55,7 @@ describeFeature(
         await harness.startReview("Frank", "Martin");
       });
 
-      Then('"Frank Martin" documents should be locked', () => {
-        expect(harness.areDocumentsLocked("Frank", "Martin")).toBe(true);
-      });
-
-      And('"Frank Martin" should be under review', () => {
+      Then('"Frank Martin" should be under review', () => {
         expect(harness.isUnderReview("Frank", "Martin")).toBe(true);
       });
     });
@@ -85,8 +81,8 @@ describeFeature(
         expect(harness.getLastResubmissionError()).toBe("Cannot resubmit documents while under admin review");
       });
 
-      And('"Grace Wilson" documents should remain locked', () => {
-        expect(harness.areDocumentsLocked("Grace", "Wilson")).toBe(true);
+      And('"Grace Wilson" should remain under review', () => {
+        expect(harness.isUnderReview("Grace", "Wilson")).toBe(true);
       });
     });
 
@@ -111,12 +107,12 @@ describeFeature(
         expect(harness.getLastResubmissionError()).toBe("Cannot resubmit documents while under admin review");
       });
 
-      And('"Henry Lee" documents should remain locked', () => {
-        expect(harness.areDocumentsLocked("Henry", "Lee")).toBe(true);
+      And('"Henry Lee" should remain under review', () => {
+        expect(harness.isUnderReview("Henry", "Lee")).toBe(true);
       });
     });
 
-    Scenario("Validating helper unlocks documents", ({ Given, When, Then, And }) => {
+    Scenario("Validating helper completes review", ({ Given, When, Then, And }) => {
       Given('helper "Iris Brown" is under review', () => {
         harness.seedHelper({
           firstname: "Iris",
@@ -133,8 +129,8 @@ describeFeature(
         await harness.validateHelper("Iris", "Brown");
       });
 
-      Then('"Iris Brown" documents should be unlocked', () => {
-        expect(harness.areDocumentsLocked("Iris", "Brown")).toBe(false);
+      Then('"Iris Brown" should not be under review', () => {
+        expect(harness.isUnderReview("Iris", "Brown")).toBe(false);
       });
 
       And('"Iris Brown" can apply to events', () => {
@@ -142,7 +138,7 @@ describeFeature(
       });
     });
 
-    Scenario("Rejecting helper unlocks documents", ({ Given, When, Then, And }) => {
+    Scenario("Rejecting helper completes review", ({ Given, When, Then, And }) => {
       Given('helper "Jack Smith" is under review', () => {
         harness.seedHelper({
           firstname: "Jack",
@@ -159,8 +155,8 @@ describeFeature(
         await harness.rejectHelper("Jack", "Smith", "Invalid credentials");
       });
 
-      Then('"Jack Smith" documents should be unlocked', () => {
-        expect(harness.areDocumentsLocked("Jack", "Smith")).toBe(false);
+      Then('"Jack Smith" should not be under review', () => {
+        expect(harness.isUnderReview("Jack", "Smith")).toBe(false);
       });
 
       And('"Jack Smith" cannot apply to events', () => {
@@ -172,7 +168,7 @@ describeFeature(
       });
     });
 
-    Scenario("Helper can resubmit after rejection unlocks documents", ({ Given, When, Then, And }) => {
+    Scenario("Helper can resubmit after rejection", ({ Given, When, Then, And }) => {
       Given('helper "Karen Davis" was rejected', () => {
         harness.seedHelper({
           firstname: "Karen",
@@ -186,8 +182,8 @@ describeFeature(
         });
       });
 
-      And('"Karen Davis" documents are unlocked', () => {
-        expect(harness.areDocumentsLocked("Karen", "Davis")).toBe(false);
+      And('"Karen Davis" is not under review', () => {
+        expect(harness.isUnderReview("Karen", "Davis")).toBe(false);
       });
 
       When('"Karen Davis" resubmits their professional credentials', async () => {
@@ -293,11 +289,6 @@ class LockHelperDocumentsTestHarness {
 
   getLastResubmissionError(): string | null {
     return this.lastResubmissionError;
-  }
-
-  areDocumentsLocked(firstname: string, lastname: string): boolean {
-    const helper = this.helperRepository.findByName(firstname, lastname);
-    return helper?.underReview ?? false;
   }
 
   isUnderReview(firstname: string, lastname: string): boolean {

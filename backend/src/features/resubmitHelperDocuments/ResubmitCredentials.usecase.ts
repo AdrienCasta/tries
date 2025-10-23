@@ -12,7 +12,7 @@ export default class ResubmitCredentials {
     const helper = this.helperRepository.findByName(firstname, lastname);
 
     if (helper?.underReview) {
-      return Result.fail(new DocumentsLockedError());
+      return Result.fail(new HelperUnderReviewError());
     }
 
     const updates: any = {};
@@ -34,8 +34,8 @@ export default class ResubmitCredentials {
   }
 }
 
-class DocumentsLockedError extends Error {
-  readonly name = "DocumentsLockedError";
+class HelperUnderReviewError extends Error {
+  readonly name = "HelperUnderReviewError";
   constructor() {
     super("Cannot resubmit documents while under admin review");
   }
