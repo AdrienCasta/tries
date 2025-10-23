@@ -33,3 +33,9 @@ Feature: Validate helper credentials
     Examples: Missing both
       | credentialsSubmitted | backgroundCheckSubmitted | error                                   |
       | false                | false                    | Cannot validate without credentials     |
+
+  Scenario: Cannot validate already validated helper
+    Given helper "John Doe" is already validated
+    When I attempt to validate "John Doe"
+    Then validation should fail with error "Helper is already validated"
+    And "John Doe" can still apply to events

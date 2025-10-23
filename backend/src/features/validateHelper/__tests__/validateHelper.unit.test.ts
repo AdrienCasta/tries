@@ -4,6 +4,7 @@ import {
 } from "@amiceli/vitest-cucumber";
 // @ts-ignore
 import featureContent from "../../../../../features/validateHelper.feature?raw";
+import { Result } from "@shared/infrastructure/Result";
 
 import ValidateHelper from "../validateHelper.usecase";
 import { InMemoryValidationHelperRepository } from "@infrastructure/persistence/InMemoryValidationHelperRepository";
@@ -87,6 +88,31 @@ describeFeature(
         });
       }
     );
+
+    Scenario("Cannot validate already validated helper", ({ Given, When, Then, And }) => {
+      Given('helper "John Doe" is already validated', () => {
+        harness.seedHelper({
+          firstname: "John",
+          lastname: "Doe",
+          emailConfirmed: true,
+          credentialsSubmitted: true,
+          backgroundCheckSubmitted: true,
+          profileValidated: true,
+        });
+      });
+
+      When('I attempt to validate "John Doe"', async () => {
+        await harness.attemptValidateHelper("John", "Doe");
+      });
+
+      Then('validation should fail with error "Helper is already validated"', () => {
+        expect(harness.getLastValidationError()).toBe("Helper is already validated");
+      });
+
+      And('"John Doe" can still apply to events', () => {
+        expect(harness.canApplyToEvents("John", "Doe")).toBe(true);
+      });
+    });
   }
 );
 
@@ -113,15 +139,18 @@ class ValidateHelperTestHarness {
   }
 
   async validateHelper(firstname: string, lastname: string) {
-    await this.validateHelperUsecase.execute(firstname, lastname);
+    const result = await this.validateHelperUsecase.execute(firstname, lastname);
+    if (Result.isFailure(result)) {
+      throw result.error;
+    }
   }
 
   async attemptValidateHelper(firstname: string, lastname: string) {
-    try {
-      await this.validateHelperUsecase.execute(firstname, lastname);
+    const result = await this.validateHelperUsecase.execute(firstname, lastname);
+    if (Result.isFailure(result)) {
+      this.lastValidationError = result.error.message;
+    } else {
       this.lastValidationError = null;
-    } catch (error: any) {
-      this.lastValidationError = error.message;
     }
   }
 
