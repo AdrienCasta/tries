@@ -45,3 +45,10 @@ Feature: Validate helper credentials
     When I attempt to validate "Sarah Connor"
     Then validation should fail with error "Cannot validate rejected helper"
     And "Sarah Connor" cannot apply to events
+
+  Scenario: Notify helper when validated
+    Given helper "Alice Brown" has confirmed their email
+    And "Alice Brown" has submitted their professional credentials
+    And "Alice Brown" has submitted their background screening
+    When I validate "Alice Brown"'s profile
+    Then "Alice Brown" should receive a validation notification

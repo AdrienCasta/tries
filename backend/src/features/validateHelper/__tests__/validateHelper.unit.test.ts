@@ -139,21 +139,64 @@ describeFeature(
         expect(harness.canApplyToEvents("Sarah", "Connor")).toBe(false);
       });
     });
+
+    Scenario("Notify helper when validated", ({ Given, When, Then, And }) => {
+      Given('helper "Alice Brown" has confirmed their email', () => {
+        harness.seedHelper({
+          firstname: "Alice",
+          lastname: "Brown",
+          emailConfirmed: true,
+          credentialsSubmitted: false,
+          backgroundCheckSubmitted: false,
+          profileValidated: false,
+        });
+      });
+
+      And('"Alice Brown" has submitted their professional credentials', () => {
+        harness.updateHelper("Alice", "Brown", { credentialsSubmitted: true });
+      });
+
+      And('"Alice Brown" has submitted their background screening', () => {
+        harness.updateHelper("Alice", "Brown", { backgroundCheckSubmitted: true });
+      });
+
+      When('I validate "Alice Brown"\'s profile', async () => {
+        await harness.validateHelper("Alice", "Brown");
+      });
+
+      Then('"Alice Brown" should receive a validation notification', () => {
+        expect(harness.wasValidationNotificationSent("Alice", "Brown")).toBe(true);
+      });
+    });
   }
 );
+
+class InMemoryHelperNotificationService {
+  private validationNotifications: Set<string> = new Set();
+
+  notifyValidated(firstname: string, lastname: string): void {
+    this.validationNotifications.add(`${firstname}:${lastname}`);
+  }
+
+  wasNotified(firstname: string, lastname: string): boolean {
+    return this.validationNotifications.has(`${firstname}:${lastname}`);
+  }
+}
 
 class ValidateHelperTestHarness {
   private lastValidationError: string | null = null;
 
   private constructor(
     private readonly helperRepository: InMemoryValidationHelperRepository,
+    private readonly notificationService: InMemoryHelperNotificationService,
     private readonly validateHelperUsecase: ValidateHelper
   ) {}
 
   static setup() {
     const helperRepository = new InMemoryValidationHelperRepository();
-    const validateHelper = new ValidateHelper(helperRepository);
-    return new this(helperRepository, validateHelper);
+    const notificationService = new InMemoryHelperNotificationService();
+    const validateHelper = new ValidateHelper(helperRepository, notificationService);
+    return new this(helperRepository, notificationService, validateHelper);
   }
 
   seedHelper(helper: any) {
@@ -197,5 +240,9 @@ class ValidateHelperTestHarness {
       helper.backgroundCheckSubmitted &&
       !helper.profileValidated
     );
+  }
+
+  wasValidationNotificationSent(firstname: string, lastname: string): boolean {
+    return this.notificationService.wasNotified(firstname, lastname);
   }
 }

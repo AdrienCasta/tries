@@ -6,8 +6,15 @@ interface ValidationHelperRepository {
   isHelperRejected(firstname: string, lastname: string): boolean;
 }
 
+interface HelperNotificationService {
+  notifyValidated(firstname: string, lastname: string): void;
+}
+
 export default class ValidateHelper {
-  constructor(private readonly helperRepository: ValidationHelperRepository) {}
+  constructor(
+    private readonly helperRepository: ValidationHelperRepository,
+    private readonly notificationService: HelperNotificationService
+  ) {}
 
   async execute(firstname: string, lastname: string): Promise<Result<undefined, Error>> {
     const helper = this.helperRepository.findByName(firstname, lastname);
@@ -33,6 +40,7 @@ export default class ValidateHelper {
     }
 
     this.helperRepository.update(firstname, lastname, { profileValidated: true });
+    this.notificationService.notifyValidated(firstname, lastname);
     return Result.ok(undefined);
   }
 }
