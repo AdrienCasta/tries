@@ -1,12 +1,12 @@
 import { Result } from "@shared/infrastructure/Result";
 
 interface ValidationHelperRepository {
-  findByName(firstname: string, lastname: string): any;
-  update(firstname: string, lastname: string, updates: any): void;
+  findByEmail(email: string): any;
+  update(email: string, updates: any): void;
 }
 
 interface HelperNotificationService {
-  notifyRejected(firstname: string, lastname: string, reason?: string): void;
+  notifyRejected(email: string, reason?: string): void;
 }
 
 export default class RejectHelper {
@@ -15,8 +15,8 @@ export default class RejectHelper {
     private readonly notificationService: HelperNotificationService
   ) {}
 
-  async execute(firstname: string, lastname: string, reason?: string): Promise<Result<undefined, Error>> {
-    const helper = this.helperRepository.findByName(firstname, lastname);
+  async execute(email: string, reason?: string): Promise<Result<undefined, Error>> {
+    const helper = this.helperRepository.findByEmail(email);
 
     if (!helper?.emailConfirmed) {
       return Result.fail(new EmailNotConfirmedError());
@@ -38,8 +38,8 @@ export default class RejectHelper {
       updates.rejectionReason = reason;
     }
 
-    this.helperRepository.update(firstname, lastname, updates);
-    this.notificationService.notifyRejected(firstname, lastname, reason);
+    this.helperRepository.update(email, updates);
+    this.notificationService.notifyRejected(email, reason);
     return Result.ok(undefined);
   }
 }

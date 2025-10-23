@@ -1,13 +1,13 @@
 import { Result } from "@shared/infrastructure/Result";
 
 interface ValidationHelperRepository {
-  findByName(firstname: string, lastname: string): any;
-  update(firstname: string, lastname: string, updates: any): void;
-  isHelperRejected(firstname: string, lastname: string): boolean;
+  findByEmail(email: string): any;
+  update(email: string, updates: any): void;
+  isHelperRejected(email: string): boolean;
 }
 
 interface HelperNotificationService {
-  notifyValidated(firstname: string, lastname: string): void;
+  notifyValidated(email: string): void;
 }
 
 export default class ValidateHelper {
@@ -16,8 +16,8 @@ export default class ValidateHelper {
     private readonly notificationService: HelperNotificationService
   ) {}
 
-  async execute(firstname: string, lastname: string): Promise<Result<undefined, Error>> {
-    const helper = this.helperRepository.findByName(firstname, lastname);
+  async execute(email: string): Promise<Result<undefined, Error>> {
+    const helper = this.helperRepository.findByEmail(email);
 
     if (!helper) {
       return Result.fail(new HelperNotFoundError());
@@ -31,7 +31,7 @@ export default class ValidateHelper {
       return Result.fail(new HelperAlreadyValidatedError());
     }
 
-    if (this.helperRepository.isHelperRejected(firstname, lastname)) {
+    if (this.helperRepository.isHelperRejected(email)) {
       return Result.fail(new HelperRejectedError());
     }
 
@@ -43,11 +43,11 @@ export default class ValidateHelper {
       return Result.fail(new MissingBackgroundCheckError());
     }
 
-    this.helperRepository.update(firstname, lastname, {
+    this.helperRepository.update(email, {
       profileValidated: true,
       underReview: false
     });
-    this.notificationService.notifyValidated(firstname, lastname);
+    this.notificationService.notifyValidated(email);
     return Result.ok(undefined);
   }
 }

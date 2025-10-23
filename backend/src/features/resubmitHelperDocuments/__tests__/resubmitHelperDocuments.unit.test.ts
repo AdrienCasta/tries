@@ -20,10 +20,9 @@ describeFeature(
     });
 
     Scenario("Validated helper resubmits credentials", ({ Given, When, Then, And }) => {
-      Given('helper "Robert Green" is validated', () => {
+      Given('helper "robert.green@example.com" is validated', () => {
         harness.seedHelper({
-          firstname: "Robert",
-          lastname: "Green",
+          email: "robert.green@example.com",
           emailConfirmed: true,
           credentialsSubmitted: true,
           backgroundCheckSubmitted: true,
@@ -31,32 +30,31 @@ describeFeature(
         });
       });
 
-      And('"Robert Green" can apply to events', () => {
-        expect(harness.canApplyToEvents("Robert", "Green")).toBe(true);
+      And('"robert.green@example.com" can apply to events', () => {
+        expect(harness.canApplyToEvents("robert.green@example.com")).toBe(true);
       });
 
-      When('"Robert Green" resubmits their professional credentials', async () => {
-        await harness.resubmitCredentials("Robert", "Green");
+      When('"robert.green@example.com" resubmits their professional credentials', async () => {
+        await harness.resubmitCredentials("robert.green@example.com");
       });
 
-      Then('"Robert Green" validation status becomes invalid', () => {
-        expect(harness.isProfileValidated("Robert", "Green")).toBe(false);
+      Then('"robert.green@example.com" validation status becomes invalid', () => {
+        expect(harness.isProfileValidated("robert.green@example.com")).toBe(false);
       });
 
-      And('"Robert Green" cannot apply to events', () => {
-        expect(harness.canApplyToEvents("Robert", "Green")).toBe(false);
+      And('"robert.green@example.com" cannot apply to events', () => {
+        expect(harness.canApplyToEvents("robert.green@example.com")).toBe(false);
       });
 
-      And('"Robert Green" should require admin attention', () => {
-        expect(harness.doesHelperRequireAttention("Robert", "Green")).toBe(true);
+      And('"robert.green@example.com" should require admin attention', () => {
+        expect(harness.doesHelperRequireAttention("robert.green@example.com")).toBe(true);
       });
     });
 
     Scenario("Validated helper resubmits background check", ({ Given, When, Then, And }) => {
-      Given('helper "Linda Blue" is validated', () => {
+      Given('helper "linda.blue@example.com" is validated', () => {
         harness.seedHelper({
-          firstname: "Linda",
-          lastname: "Blue",
+          email: "linda.blue@example.com",
           emailConfirmed: true,
           credentialsSubmitted: true,
           backgroundCheckSubmitted: true,
@@ -64,24 +62,24 @@ describeFeature(
         });
       });
 
-      And('"Linda Blue" can apply to events', () => {
-        expect(harness.canApplyToEvents("Linda", "Blue")).toBe(true);
+      And('"linda.blue@example.com" can apply to events', () => {
+        expect(harness.canApplyToEvents("linda.blue@example.com")).toBe(true);
       });
 
-      When('"Linda Blue" resubmits their background screening', async () => {
-        await harness.resubmitBackgroundCheck("Linda", "Blue");
+      When('"linda.blue@example.com" resubmits their background screening', async () => {
+        await harness.resubmitBackgroundCheck("linda.blue@example.com");
       });
 
-      Then('"Linda Blue" validation status becomes invalid', () => {
-        expect(harness.isProfileValidated("Linda", "Blue")).toBe(false);
+      Then('"linda.blue@example.com" validation status becomes invalid', () => {
+        expect(harness.isProfileValidated("linda.blue@example.com")).toBe(false);
       });
 
-      And('"Linda Blue" cannot apply to events', () => {
-        expect(harness.canApplyToEvents("Linda", "Blue")).toBe(false);
+      And('"linda.blue@example.com" cannot apply to events', () => {
+        expect(harness.canApplyToEvents("linda.blue@example.com")).toBe(false);
       });
 
-      And('"Linda Blue" should require admin attention', () => {
-        expect(harness.doesHelperRequireAttention("Linda", "Blue")).toBe(true);
+      And('"linda.blue@example.com" should require admin attention', () => {
+        expect(harness.doesHelperRequireAttention("linda.blue@example.com")).toBe(true);
       });
     });
   }
@@ -105,24 +103,24 @@ class ResubmitHelperDocumentsTestHarness {
     this.helperRepository.add(helper);
   }
 
-  async resubmitCredentials(firstname: string, lastname: string) {
-    await this.resubmitCredentialsUsecase.execute(firstname, lastname);
+  async resubmitCredentials(email: string) {
+    await this.resubmitCredentialsUsecase.execute(email);
   }
 
-  async resubmitBackgroundCheck(firstname: string, lastname: string) {
-    await this.resubmitBackgroundCheckUsecase.execute(firstname, lastname);
+  async resubmitBackgroundCheck(email: string) {
+    await this.resubmitBackgroundCheckUsecase.execute(email);
   }
 
-  isProfileValidated(firstname: string, lastname: string): boolean {
-    return this.helperRepository.isProfileValidated(firstname, lastname);
+  isProfileValidated(email: string): boolean {
+    return this.helperRepository.isProfileValidated(email);
   }
 
-  canApplyToEvents(firstname: string, lastname: string): boolean {
-    return this.helperRepository.isProfileValidated(firstname, lastname);
+  canApplyToEvents(email: string): boolean {
+    return this.helperRepository.isProfileValidated(email);
   }
 
-  doesHelperRequireAttention(firstname: string, lastname: string): boolean {
-    const helper = this.helperRepository.findByName(firstname, lastname);
+  doesHelperRequireAttention(email: string): boolean {
+    const helper = this.helperRepository.findByEmail(email);
     if (!helper) return false;
     return (
       helper.emailConfirmed &&

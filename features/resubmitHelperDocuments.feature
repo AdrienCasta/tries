@@ -4,17 +4,17 @@ Feature: Resubmit helper documents with auto-invalidation
   So that admins can re-validate my updated credentials
 
   Scenario: Validated helper resubmits credentials
-    Given helper "Robert Green" is validated
-    And "Robert Green" can apply to events
-    When "Robert Green" resubmits their professional credentials
-    Then "Robert Green" validation status becomes invalid
-    And "Robert Green" cannot apply to events
-    And "Robert Green" should require admin attention
+    Given helper "robert.green@example.com" is validated
+    And "robert.green@example.com" can apply to events
+    When "robert.green@example.com" resubmits their professional credentials
+    Then "robert.green@example.com" validation status becomes invalid
+    And "robert.green@example.com" cannot apply to events
+    And "robert.green@example.com" should require admin attention
 
   Scenario: Validated helper resubmits background check
-    Given helper "Linda Blue" is validated
-    And "Linda Blue" can apply to events
-    When "Linda Blue" resubmits their background screening
-    Then "Linda Blue" validation status becomes invalid
-    And "Linda Blue" cannot apply to events
-    And "Linda Blue" should require admin attention
+    Given helper "linda.blue@example.com" is validated
+    And "linda.blue@example.com" can apply to events
+    When "linda.blue@example.com" resubmits their background screening
+    Then "linda.blue@example.com" validation status becomes invalid
+    And "linda.blue@example.com" cannot apply to events
+    And "linda.blue@example.com" should require admin attention

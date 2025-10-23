@@ -7,20 +7,20 @@ Feature: Validate helper credentials
     Given I am authenticated as an admin
 
   Scenario: Validate helper to enable event applications
-    Given helper "John Doe" has confirmed their email
-    And "John Doe" has submitted their professional credentials
-    And "John Doe" has submitted their background screening
-    When I validate "John Doe"'s profile
-    Then "John Doe" can apply to events
-    And "John Doe" should no longer require my attention
+    Given helper "john.doe@example.com" has confirmed their email
+    And "john.doe@example.com" has submitted their professional credentials
+    And "john.doe@example.com" has submitted their background screening
+    When I validate "john.doe@example.com"
+    Then "john.doe@example.com" can apply to events
+    And "john.doe@example.com" should no longer require my attention
 
   Scenario Outline: Cannot validate helper with incomplete requirements
-    Given helper "Bob Martin" has confirmed their email
-    And "Bob Martin" credentials submission status is <credentialsSubmitted>
-    And "Bob Martin" background check submission status is <backgroundCheckSubmitted>
-    When I attempt to validate "Bob Martin"
+    Given helper "bob.martin@example.com" has confirmed their email
+    And "bob.martin@example.com" credentials submission status is <credentialsSubmitted>
+    And "bob.martin@example.com" background check submission status is <backgroundCheckSubmitted>
+    When I attempt to validate "bob.martin@example.com"
     Then validation should fail with error "<error>"
-    And "Bob Martin" cannot apply to events
+    And "bob.martin@example.com" cannot apply to events
 
     Examples: Missing credentials
       | credentialsSubmitted | backgroundCheckSubmitted | error                                   |
@@ -35,28 +35,39 @@ Feature: Validate helper credentials
       | false                | false                    | Cannot validate without credentials     |
 
   Scenario: Cannot validate already validated helper
-    Given helper "John Doe" is already validated
-    When I attempt to validate "John Doe"
+    Given helper "john.doe@example.com" is already validated
+    When I attempt to validate "john.doe@example.com"
     Then validation should fail with error "Helper is already validated"
-    And "John Doe" can still apply to events
+    And "john.doe@example.com" can still apply to events
 
   Scenario: Cannot validate rejected helper
-    Given helper "Sarah Connor" has been rejected
-    When I attempt to validate "Sarah Connor"
+    Given helper "sarah.connor@example.com" has been rejected
+    When I attempt to validate "sarah.connor@example.com"
     Then validation should fail with error "Cannot validate rejected helper"
-    And "Sarah Connor" cannot apply to events
+    And "sarah.connor@example.com" cannot apply to events
 
   Scenario: Notify helper when validated
-    Given helper "Alice Brown" has confirmed their email
-    And "Alice Brown" has submitted their professional credentials
-    And "Alice Brown" has submitted their background screening
-    When I validate "Alice Brown"'s profile
-    Then "Alice Brown" should receive a validation notification
+    Given helper "alice.brown@example.com" has confirmed their email
+    And "alice.brown@example.com" has submitted their professional credentials
+    And "alice.brown@example.com" has submitted their background screening
+    When I validate "alice.brown@example.com"
+    Then "alice.brown@example.com" should receive a validation notification
 
   Scenario: Cannot validate helper with unconfirmed email
-    Given helper "Charlie Davis" has not confirmed their email
-    And "Charlie Davis" has submitted their professional credentials
-    And "Charlie Davis" has submitted their background screening
-    When I attempt to validate "Charlie Davis"
+    Given helper "charlie.davis@example.com" has not confirmed their email
+    And "charlie.davis@example.com" has submitted their professional credentials
+    And "charlie.davis@example.com" has submitted their background screening
+    When I attempt to validate "charlie.davis@example.com"
     Then validation should fail with error "Cannot validate helper with unconfirmed email"
-    And "Charlie Davis" cannot apply to events
+    And "charlie.davis@example.com" cannot apply to events
+
+  Scenario: Multiple helpers with same name can be validated independently
+    Given helper "john.smith.1@example.com" named "John Smith" has confirmed their email
+    And "john.smith.1@example.com" has submitted their professional credentials
+    And "john.smith.1@example.com" has submitted their background screening
+    And helper "john.smith.2@example.com" named "John Smith" has confirmed their email
+    And "john.smith.2@example.com" has submitted their professional credentials
+    And "john.smith.2@example.com" has submitted their background screening
+    When I validate "john.smith.1@example.com"
+    Then "john.smith.1@example.com" can apply to events
+    And "john.smith.2@example.com" cannot apply to events

@@ -25,10 +25,9 @@ describeFeature(
     });
 
     Scenario("Validate helper to enable event applications", ({ Given, When, Then, And }) => {
-      Given('helper "John Doe" has confirmed their email', () => {
+      Given('helper "john.doe@example.com" has confirmed their email', () => {
         harness.seedHelper({
-          firstname: "John",
-          lastname: "Doe",
+          email: "john.doe@example.com",
           emailConfirmed: true,
           credentialsSubmitted: false,
           backgroundCheckSubmitted: false,
@@ -36,34 +35,33 @@ describeFeature(
         });
       });
 
-      And('"John Doe" has submitted their professional credentials', () => {
-        harness.updateHelper("John", "Doe", { credentialsSubmitted: true });
+      And('"john.doe@example.com" has submitted their professional credentials', () => {
+        harness.updateHelper("john.doe@example.com", { credentialsSubmitted: true });
       });
 
-      And('"John Doe" has submitted their background screening', () => {
-        harness.updateHelper("John", "Doe", { backgroundCheckSubmitted: true });
+      And('"john.doe@example.com" has submitted their background screening', () => {
+        harness.updateHelper("john.doe@example.com", { backgroundCheckSubmitted: true });
       });
 
-      When('I validate "John Doe"\'s profile', async () => {
-        await harness.validateHelper("John", "Doe");
+      When('I validate "john.doe@example.com"', async () => {
+        await harness.validateHelper("john.doe@example.com");
       });
 
-      Then('"John Doe" can apply to events', () => {
-        expect(harness.canApplyToEvents("John", "Doe")).toBe(true);
+      Then('"john.doe@example.com" can apply to events', () => {
+        expect(harness.canApplyToEvents("john.doe@example.com")).toBe(true);
       });
 
-      And('"John Doe" should no longer require my attention', () => {
-        expect(harness.doesHelperRequireAttention("John", "Doe")).toBe(false);
+      And('"john.doe@example.com" should no longer require my attention', () => {
+        expect(harness.doesHelperRequireAttention("john.doe@example.com")).toBe(false);
       });
     });
 
     ScenarioOutline(
       "Cannot validate helper with incomplete requirements",
       ({ Given, When, Then, And }, { credentialsSubmitted, backgroundCheckSubmitted, error }) => {
-        Given('helper "Bob Martin" has confirmed their email', () => {
+        Given('helper "bob.martin@example.com" has confirmed their email', () => {
           harness.seedHelper({
-            firstname: "Bob",
-            lastname: "Martin",
+            email: "bob.martin@example.com",
             emailConfirmed: true,
             credentialsSubmitted: credentialsSubmitted === "true",
             backgroundCheckSubmitted: backgroundCheckSubmitted === "true",
@@ -71,29 +69,28 @@ describeFeature(
           });
         });
 
-        And('"Bob Martin" credentials submission status is <credentialsSubmitted>', () => {});
+        And('"bob.martin@example.com" credentials submission status is <credentialsSubmitted>', () => {});
 
-        And('"Bob Martin" background check submission status is <backgroundCheckSubmitted>', () => {});
+        And('"bob.martin@example.com" background check submission status is <backgroundCheckSubmitted>', () => {});
 
-        When('I attempt to validate "Bob Martin"', async () => {
-          await harness.attemptValidateHelper("Bob", "Martin");
+        When('I attempt to validate "bob.martin@example.com"', async () => {
+          await harness.attemptValidateHelper("bob.martin@example.com");
         });
 
         Then('validation should fail with error "<error>"', () => {
           expect(harness.getLastValidationError()).toBe(error);
         });
 
-        And('"Bob Martin" cannot apply to events', () => {
-          expect(harness.canApplyToEvents("Bob", "Martin")).toBe(false);
+        And('"bob.martin@example.com" cannot apply to events', () => {
+          expect(harness.canApplyToEvents("bob.martin@example.com")).toBe(false);
         });
       }
     );
 
     Scenario("Cannot validate already validated helper", ({ Given, When, Then, And }) => {
-      Given('helper "John Doe" is already validated', () => {
+      Given('helper "john.doe@example.com" is already validated', () => {
         harness.seedHelper({
-          firstname: "John",
-          lastname: "Doe",
+          email: "john.doe@example.com",
           emailConfirmed: true,
           credentialsSubmitted: true,
           backgroundCheckSubmitted: true,
@@ -101,24 +98,23 @@ describeFeature(
         });
       });
 
-      When('I attempt to validate "John Doe"', async () => {
-        await harness.attemptValidateHelper("John", "Doe");
+      When('I attempt to validate "john.doe@example.com"', async () => {
+        await harness.attemptValidateHelper("john.doe@example.com");
       });
 
       Then('validation should fail with error "Helper is already validated"', () => {
         expect(harness.getLastValidationError()).toBe("Helper is already validated");
       });
 
-      And('"John Doe" can still apply to events', () => {
-        expect(harness.canApplyToEvents("John", "Doe")).toBe(true);
+      And('"john.doe@example.com" can still apply to events', () => {
+        expect(harness.canApplyToEvents("john.doe@example.com")).toBe(true);
       });
     });
 
     Scenario("Cannot validate rejected helper", ({ Given, When, Then, And }) => {
-      Given('helper "Sarah Connor" has been rejected', () => {
+      Given('helper "sarah.connor@example.com" has been rejected', () => {
         harness.seedHelper({
-          firstname: "Sarah",
-          lastname: "Connor",
+          email: "sarah.connor@example.com",
           emailConfirmed: true,
           credentialsSubmitted: true,
           backgroundCheckSubmitted: true,
@@ -127,24 +123,23 @@ describeFeature(
         });
       });
 
-      When('I attempt to validate "Sarah Connor"', async () => {
-        await harness.attemptValidateHelper("Sarah", "Connor");
+      When('I attempt to validate "sarah.connor@example.com"', async () => {
+        await harness.attemptValidateHelper("sarah.connor@example.com");
       });
 
       Then('validation should fail with error "Cannot validate rejected helper"', () => {
         expect(harness.getLastValidationError()).toBe("Cannot validate rejected helper");
       });
 
-      And('"Sarah Connor" cannot apply to events', () => {
-        expect(harness.canApplyToEvents("Sarah", "Connor")).toBe(false);
+      And('"sarah.connor@example.com" cannot apply to events', () => {
+        expect(harness.canApplyToEvents("sarah.connor@example.com")).toBe(false);
       });
     });
 
     Scenario("Notify helper when validated", ({ Given, When, Then, And }) => {
-      Given('helper "Alice Brown" has confirmed their email', () => {
+      Given('helper "alice.brown@example.com" has confirmed their email', () => {
         harness.seedHelper({
-          firstname: "Alice",
-          lastname: "Brown",
+          email: "alice.brown@example.com",
           emailConfirmed: true,
           credentialsSubmitted: false,
           backgroundCheckSubmitted: false,
@@ -152,28 +147,27 @@ describeFeature(
         });
       });
 
-      And('"Alice Brown" has submitted their professional credentials', () => {
-        harness.updateHelper("Alice", "Brown", { credentialsSubmitted: true });
+      And('"alice.brown@example.com" has submitted their professional credentials', () => {
+        harness.updateHelper("alice.brown@example.com", { credentialsSubmitted: true });
       });
 
-      And('"Alice Brown" has submitted their background screening', () => {
-        harness.updateHelper("Alice", "Brown", { backgroundCheckSubmitted: true });
+      And('"alice.brown@example.com" has submitted their background screening', () => {
+        harness.updateHelper("alice.brown@example.com", { backgroundCheckSubmitted: true });
       });
 
-      When('I validate "Alice Brown"\'s profile', async () => {
-        await harness.validateHelper("Alice", "Brown");
+      When('I validate "alice.brown@example.com"', async () => {
+        await harness.validateHelper("alice.brown@example.com");
       });
 
-      Then('"Alice Brown" should receive a validation notification', () => {
-        expect(harness.wasValidationNotificationSent("Alice", "Brown")).toBe(true);
+      Then('"alice.brown@example.com" should receive a validation notification', () => {
+        expect(harness.wasValidationNotificationSent("alice.brown@example.com")).toBe(true);
       });
     });
 
     Scenario("Cannot validate helper with unconfirmed email", ({ Given, When, Then, And }) => {
-      Given('helper "Charlie Davis" has not confirmed their email', () => {
+      Given('helper "charlie.davis@example.com" has not confirmed their email', () => {
         harness.seedHelper({
-          firstname: "Charlie",
-          lastname: "Davis",
+          email: "charlie.davis@example.com",
           emailConfirmed: false,
           credentialsSubmitted: false,
           backgroundCheckSubmitted: false,
@@ -181,24 +175,78 @@ describeFeature(
         });
       });
 
-      And('"Charlie Davis" has submitted their professional credentials', () => {
-        harness.updateHelper("Charlie", "Davis", { credentialsSubmitted: true });
+      And('"charlie.davis@example.com" has submitted their professional credentials', () => {
+        harness.updateHelper("charlie.davis@example.com", { credentialsSubmitted: true });
       });
 
-      And('"Charlie Davis" has submitted their background screening', () => {
-        harness.updateHelper("Charlie", "Davis", { backgroundCheckSubmitted: true });
+      And('"charlie.davis@example.com" has submitted their background screening', () => {
+        harness.updateHelper("charlie.davis@example.com", { backgroundCheckSubmitted: true });
       });
 
-      When('I attempt to validate "Charlie Davis"', async () => {
-        await harness.attemptValidateHelper("Charlie", "Davis");
+      When('I attempt to validate "charlie.davis@example.com"', async () => {
+        await harness.attemptValidateHelper("charlie.davis@example.com");
       });
 
       Then('validation should fail with error "Cannot validate helper with unconfirmed email"', () => {
         expect(harness.getLastValidationError()).toBe("Cannot validate helper with unconfirmed email");
       });
 
-      And('"Charlie Davis" cannot apply to events', () => {
-        expect(harness.canApplyToEvents("Charlie", "Davis")).toBe(false);
+      And('"charlie.davis@example.com" cannot apply to events', () => {
+        expect(harness.canApplyToEvents("charlie.davis@example.com")).toBe(false);
+      });
+    });
+
+    Scenario("Multiple helpers with same name can be validated independently", ({ Given, When, Then, And }) => {
+      Given('helper "john.smith.1@example.com" named "John Smith" has confirmed their email', () => {
+        harness.seedHelper({
+          email: "john.smith.1@example.com",
+          firstname: "John",
+          lastname: "Smith",
+          emailConfirmed: true,
+          credentialsSubmitted: false,
+          backgroundCheckSubmitted: false,
+          profileValidated: false,
+        });
+      });
+
+      And('"john.smith.1@example.com" has submitted their professional credentials', () => {
+        harness.updateHelper("john.smith.1@example.com", { credentialsSubmitted: true });
+      });
+
+      And('"john.smith.1@example.com" has submitted their background screening', () => {
+        harness.updateHelper("john.smith.1@example.com", { backgroundCheckSubmitted: true });
+      });
+
+      And('helper "john.smith.2@example.com" named "John Smith" has confirmed their email', () => {
+        harness.seedHelper({
+          email: "john.smith.2@example.com",
+          firstname: "John",
+          lastname: "Smith",
+          emailConfirmed: true,
+          credentialsSubmitted: false,
+          backgroundCheckSubmitted: false,
+          profileValidated: false,
+        });
+      });
+
+      And('"john.smith.2@example.com" has submitted their professional credentials', () => {
+        harness.updateHelper("john.smith.2@example.com", { credentialsSubmitted: true });
+      });
+
+      And('"john.smith.2@example.com" has submitted their background screening', () => {
+        harness.updateHelper("john.smith.2@example.com", { backgroundCheckSubmitted: true });
+      });
+
+      When('I validate "john.smith.1@example.com"', async () => {
+        await harness.validateHelper("john.smith.1@example.com");
+      });
+
+      Then('"john.smith.1@example.com" can apply to events', () => {
+        expect(harness.canApplyToEvents("john.smith.1@example.com")).toBe(true);
+      });
+
+      And('"john.smith.2@example.com" cannot apply to events', () => {
+        expect(harness.canApplyToEvents("john.smith.2@example.com")).toBe(false);
       });
     });
   }
@@ -207,12 +255,12 @@ describeFeature(
 class InMemoryHelperNotificationService {
   private validationNotifications: Set<string> = new Set();
 
-  notifyValidated(firstname: string, lastname: string): void {
-    this.validationNotifications.add(`${firstname}:${lastname}`);
+  notifyValidated(email: string): void {
+    this.validationNotifications.add(email);
   }
 
-  wasNotified(firstname: string, lastname: string): boolean {
-    return this.validationNotifications.has(`${firstname}:${lastname}`);
+  wasNotified(email: string): boolean {
+    return this.validationNotifications.has(email);
   }
 }
 
@@ -236,19 +284,19 @@ class ValidateHelperTestHarness {
     this.helperRepository.add(helper);
   }
 
-  updateHelper(firstname: string, lastname: string, updates: any) {
-    this.helperRepository.update(firstname, lastname, updates);
+  updateHelper(email: string, updates: any) {
+    this.helperRepository.update(email, updates);
   }
 
-  async validateHelper(firstname: string, lastname: string) {
-    const result = await this.validateHelperUsecase.execute(firstname, lastname);
+  async validateHelper(email: string) {
+    const result = await this.validateHelperUsecase.execute(email);
     if (Result.isFailure(result)) {
       throw result.error;
     }
   }
 
-  async attemptValidateHelper(firstname: string, lastname: string) {
-    const result = await this.validateHelperUsecase.execute(firstname, lastname);
+  async attemptValidateHelper(email: string) {
+    const result = await this.validateHelperUsecase.execute(email);
     if (Result.isFailure(result)) {
       this.lastValidationError = result.error.message;
     } else {
@@ -260,12 +308,12 @@ class ValidateHelperTestHarness {
     return this.lastValidationError;
   }
 
-  canApplyToEvents(firstname: string, lastname: string): boolean {
-    return this.helperRepository.isProfileValidated(firstname, lastname);
+  canApplyToEvents(email: string): boolean {
+    return this.helperRepository.isProfileValidated(email);
   }
 
-  doesHelperRequireAttention(firstname: string, lastname: string): boolean {
-    const helper = this.helperRepository.findByName(firstname, lastname);
+  doesHelperRequireAttention(email: string): boolean {
+    const helper = this.helperRepository.findByEmail(email);
     if (!helper) return false;
     return (
       helper.emailConfirmed &&
@@ -275,7 +323,7 @@ class ValidateHelperTestHarness {
     );
   }
 
-  wasValidationNotificationSent(firstname: string, lastname: string): boolean {
-    return this.notificationService.wasNotified(firstname, lastname);
+  wasValidationNotificationSent(email: string): boolean {
+    return this.notificationService.wasNotified(email);
   }
 }

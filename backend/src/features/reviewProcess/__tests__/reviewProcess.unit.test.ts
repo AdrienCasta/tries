@@ -28,10 +28,9 @@ describeFeature(
     });
 
     Scenario("Admin starts reviewing helper", ({ Given, When, Then, And }) => {
-      Given('helper "Frank Martin" has confirmed their email', () => {
+      Given('helper "frank.martin@example.com" has confirmed their email', () => {
         harness.seedHelper({
-          firstname: "Frank",
-          lastname: "Martin",
+          email: "frank.martin@example.com",
           emailConfirmed: true,
           credentialsSubmitted: false,
           backgroundCheckSubmitted: false,
@@ -39,32 +38,31 @@ describeFeature(
         });
       });
 
-      And('"Frank Martin" has submitted their professional credentials', () => {
-        harness.updateHelper("Frank", "Martin", { credentialsSubmitted: true });
+      And('"frank.martin@example.com" has submitted their professional credentials', () => {
+        harness.updateHelper("frank.martin@example.com", { credentialsSubmitted: true });
       });
 
-      And('"Frank Martin" has submitted their background screening', () => {
-        harness.updateHelper("Frank", "Martin", { backgroundCheckSubmitted: true });
+      And('"frank.martin@example.com" has submitted their background screening', () => {
+        harness.updateHelper("frank.martin@example.com", { backgroundCheckSubmitted: true });
       });
 
-      And('"Frank Martin" requires admin attention', () => {
-        expect(harness.doesHelperRequireAttention("Frank", "Martin")).toBe(true);
+      And('"frank.martin@example.com" requires admin attention', () => {
+        expect(harness.doesHelperRequireAttention("frank.martin@example.com")).toBe(true);
       });
 
-      When('I start reviewing "Frank Martin"', async () => {
-        await harness.startReview("Frank", "Martin");
+      When('I start reviewing "frank.martin@example.com"', async () => {
+        await harness.startReview("frank.martin@example.com");
       });
 
-      Then('"Frank Martin" should be under review', () => {
-        expect(harness.isUnderReview("Frank", "Martin")).toBe(true);
+      Then('"frank.martin@example.com" should be under review', () => {
+        expect(harness.isUnderReview("frank.martin@example.com")).toBe(true);
       });
     });
 
     Scenario("Cannot resubmit credentials while under review", ({ Given, When, Then, And }) => {
-      Given('helper "Grace Wilson" is under review', () => {
+      Given('helper "grace.wilson@example.com" is under review', () => {
         harness.seedHelper({
-          firstname: "Grace",
-          lastname: "Wilson",
+          email: "grace.wilson@example.com",
           emailConfirmed: true,
           credentialsSubmitted: true,
           backgroundCheckSubmitted: true,
@@ -73,24 +71,23 @@ describeFeature(
         });
       });
 
-      When('"Grace Wilson" attempts to resubmit their professional credentials', async () => {
-        await harness.attemptResubmitCredentials("Grace", "Wilson");
+      When('"grace.wilson@example.com" attempts to resubmit their professional credentials', async () => {
+        await harness.attemptResubmitCredentials("grace.wilson@example.com");
       });
 
       Then('resubmission should fail with error "Cannot resubmit documents while under admin review"', () => {
         expect(harness.getLastResubmissionError()).toBe("Cannot resubmit documents while under admin review");
       });
 
-      And('"Grace Wilson" should remain under review', () => {
-        expect(harness.isUnderReview("Grace", "Wilson")).toBe(true);
+      And('"grace.wilson@example.com" should remain under review', () => {
+        expect(harness.isUnderReview("grace.wilson@example.com")).toBe(true);
       });
     });
 
     Scenario("Cannot resubmit background check while under review", ({ Given, When, Then, And }) => {
-      Given('helper "Henry Lee" is under review', () => {
+      Given('helper "henry.lee@example.com" is under review', () => {
         harness.seedHelper({
-          firstname: "Henry",
-          lastname: "Lee",
+          email: "henry.lee@example.com",
           emailConfirmed: true,
           credentialsSubmitted: true,
           backgroundCheckSubmitted: true,
@@ -99,24 +96,23 @@ describeFeature(
         });
       });
 
-      When('"Henry Lee" attempts to resubmit their background screening', async () => {
-        await harness.attemptResubmitBackgroundCheck("Henry", "Lee");
+      When('"henry.lee@example.com" attempts to resubmit their background screening', async () => {
+        await harness.attemptResubmitBackgroundCheck("henry.lee@example.com");
       });
 
       Then('resubmission should fail with error "Cannot resubmit documents while under admin review"', () => {
         expect(harness.getLastResubmissionError()).toBe("Cannot resubmit documents while under admin review");
       });
 
-      And('"Henry Lee" should remain under review', () => {
-        expect(harness.isUnderReview("Henry", "Lee")).toBe(true);
+      And('"henry.lee@example.com" should remain under review', () => {
+        expect(harness.isUnderReview("henry.lee@example.com")).toBe(true);
       });
     });
 
     Scenario("Validating helper completes review", ({ Given, When, Then, And }) => {
-      Given('helper "Iris Brown" is under review', () => {
+      Given('helper "iris.brown@example.com" is under review', () => {
         harness.seedHelper({
-          firstname: "Iris",
-          lastname: "Brown",
+          email: "iris.brown@example.com",
           emailConfirmed: true,
           credentialsSubmitted: true,
           backgroundCheckSubmitted: true,
@@ -125,24 +121,23 @@ describeFeature(
         });
       });
 
-      When('I validate "Iris Brown"\'s profile', async () => {
-        await harness.validateHelper("Iris", "Brown");
+      When('I validate "iris.brown@example.com"', async () => {
+        await harness.validateHelper("iris.brown@example.com");
       });
 
-      Then('"Iris Brown" should not be under review', () => {
-        expect(harness.isUnderReview("Iris", "Brown")).toBe(false);
+      Then('"iris.brown@example.com" should not be under review', () => {
+        expect(harness.isUnderReview("iris.brown@example.com")).toBe(false);
       });
 
-      And('"Iris Brown" can apply to events', () => {
-        expect(harness.canApplyToEvents("Iris", "Brown")).toBe(true);
+      And('"iris.brown@example.com" can apply to events', () => {
+        expect(harness.canApplyToEvents("iris.brown@example.com")).toBe(true);
       });
     });
 
     Scenario("Rejecting helper completes review", ({ Given, When, Then, And }) => {
-      Given('helper "Jack Smith" is under review', () => {
+      Given('helper "jack.smith@example.com" is under review', () => {
         harness.seedHelper({
-          firstname: "Jack",
-          lastname: "Smith",
+          email: "jack.smith@example.com",
           emailConfirmed: true,
           credentialsSubmitted: true,
           backgroundCheckSubmitted: true,
@@ -151,28 +146,27 @@ describeFeature(
         });
       });
 
-      When('I reject "Jack Smith" with reason "Invalid credentials"', async () => {
-        await harness.rejectHelper("Jack", "Smith", "Invalid credentials");
+      When('I reject "jack.smith@example.com" with reason "Invalid credentials"', async () => {
+        await harness.rejectHelper("jack.smith@example.com", "Invalid credentials");
       });
 
-      Then('"Jack Smith" should not be under review', () => {
-        expect(harness.isUnderReview("Jack", "Smith")).toBe(false);
+      Then('"jack.smith@example.com" should not be under review', () => {
+        expect(harness.isUnderReview("jack.smith@example.com")).toBe(false);
       });
 
-      And('"Jack Smith" cannot apply to events', () => {
-        expect(harness.canApplyToEvents("Jack", "Smith")).toBe(false);
+      And('"jack.smith@example.com" cannot apply to events', () => {
+        expect(harness.canApplyToEvents("jack.smith@example.com")).toBe(false);
       });
 
-      And('"Jack Smith" should not require admin attention', () => {
-        expect(harness.doesHelperRequireAttention("Jack", "Smith")).toBe(false);
+      And('"jack.smith@example.com" should not require admin attention', () => {
+        expect(harness.doesHelperRequireAttention("jack.smith@example.com")).toBe(false);
       });
     });
 
     Scenario("Helper can resubmit after rejection", ({ Given, When, Then, And }) => {
-      Given('helper "Karen Davis" was rejected', () => {
+      Given('helper "karen.davis@example.com" was rejected', () => {
         harness.seedHelper({
-          firstname: "Karen",
-          lastname: "Davis",
+          email: "karen.davis@example.com",
           emailConfirmed: true,
           credentialsSubmitted: true,
           backgroundCheckSubmitted: true,
@@ -182,28 +176,28 @@ describeFeature(
         });
       });
 
-      And('"Karen Davis" is not under review', () => {
-        expect(harness.isUnderReview("Karen", "Davis")).toBe(false);
+      And('"karen.davis@example.com" is not under review', () => {
+        expect(harness.isUnderReview("karen.davis@example.com")).toBe(false);
       });
 
-      When('"Karen Davis" resubmits their professional credentials', async () => {
-        await harness.resubmitCredentials("Karen", "Davis");
+      When('"karen.davis@example.com" resubmits their professional credentials', async () => {
+        await harness.resubmitCredentials("karen.davis@example.com");
       });
 
-      Then('"Karen Davis" rejection should be cleared', () => {
-        expect(harness.isRejected("Karen", "Davis")).toBe(false);
+      Then('"karen.davis@example.com" rejection should be cleared', () => {
+        expect(harness.isRejected("karen.davis@example.com")).toBe(false);
       });
 
-      And('"Karen Davis" should require admin attention', () => {
-        expect(harness.doesHelperRequireAttention("Karen", "Davis")).toBe(true);
+      And('"karen.davis@example.com" should require admin attention', () => {
+        expect(harness.doesHelperRequireAttention("karen.davis@example.com")).toBe(true);
       });
     });
   }
 );
 
 class InMemoryHelperNotificationService {
-  notifyValidated(firstname: string, lastname: string): void {}
-  notifyRejected(firstname: string, lastname: string, reason?: string): void {}
+  notifyValidated(email: string): void {}
+  notifyRejected(email: string, reason?: string): void {}
 }
 
 class LockHelperDocumentsTestHarness {
@@ -240,23 +234,23 @@ class LockHelperDocumentsTestHarness {
     this.helperRepository.add(helper);
   }
 
-  updateHelper(firstname: string, lastname: string, updates: any) {
-    this.helperRepository.update(firstname, lastname, updates);
+  updateHelper(email: string, updates: any) {
+    this.helperRepository.update(email, updates);
   }
 
-  async startReview(firstname: string, lastname: string) {
-    await this.startReviewUsecase.execute(firstname, lastname);
+  async startReview(email: string) {
+    await this.startReviewUsecase.execute(email);
   }
 
-  async resubmitCredentials(firstname: string, lastname: string) {
-    const result = await this.resubmitCredentialsUsecase.execute(firstname, lastname);
+  async resubmitCredentials(email: string) {
+    const result = await this.resubmitCredentialsUsecase.execute(email);
     if (Result.isFailure(result)) {
       throw result.error;
     }
   }
 
-  async attemptResubmitCredentials(firstname: string, lastname: string) {
-    const result = await this.resubmitCredentialsUsecase.execute(firstname, lastname);
+  async attemptResubmitCredentials(email: string) {
+    const result = await this.resubmitCredentialsUsecase.execute(email);
     if (Result.isFailure(result)) {
       this.lastResubmissionError = result.error.message;
     } else {
@@ -264,8 +258,8 @@ class LockHelperDocumentsTestHarness {
     }
   }
 
-  async attemptResubmitBackgroundCheck(firstname: string, lastname: string) {
-    const result = await this.resubmitBackgroundCheckUsecase.execute(firstname, lastname);
+  async attemptResubmitBackgroundCheck(email: string) {
+    const result = await this.resubmitBackgroundCheckUsecase.execute(email);
     if (Result.isFailure(result)) {
       this.lastResubmissionError = result.error.message;
     } else {
@@ -273,15 +267,15 @@ class LockHelperDocumentsTestHarness {
     }
   }
 
-  async validateHelper(firstname: string, lastname: string) {
-    const result = await this.validateHelperUsecase.execute(firstname, lastname);
+  async validateHelper(email: string) {
+    const result = await this.validateHelperUsecase.execute(email);
     if (Result.isFailure(result)) {
       throw result.error;
     }
   }
 
-  async rejectHelper(firstname: string, lastname: string, reason: string) {
-    const result = await this.rejectHelperUsecase.execute(firstname, lastname, reason);
+  async rejectHelper(email: string, reason: string) {
+    const result = await this.rejectHelperUsecase.execute(email, reason);
     if (Result.isFailure(result)) {
       throw result.error;
     }
@@ -291,19 +285,19 @@ class LockHelperDocumentsTestHarness {
     return this.lastResubmissionError;
   }
 
-  isUnderReview(firstname: string, lastname: string): boolean {
-    const helper = this.helperRepository.findByName(firstname, lastname);
+  isUnderReview(email: string): boolean {
+    const helper = this.helperRepository.findByEmail(email);
     return helper?.underReview ?? false;
   }
 
-  canApplyToEvents(firstname: string, lastname: string): boolean {
-    return this.helperRepository.isProfileValidated(firstname, lastname);
+  canApplyToEvents(email: string): boolean {
+    return this.helperRepository.isProfileValidated(email);
   }
 
-  doesHelperRequireAttention(firstname: string, lastname: string): boolean {
-    const helper = this.helperRepository.findByName(firstname, lastname);
+  doesHelperRequireAttention(email: string): boolean {
+    const helper = this.helperRepository.findByEmail(email);
     if (!helper) return false;
-    const rejected = this.helperRepository.isHelperRejected(firstname, lastname);
+    const rejected = this.helperRepository.isHelperRejected(email);
     return (
       helper.emailConfirmed &&
       helper.credentialsSubmitted &&
@@ -314,7 +308,7 @@ class LockHelperDocumentsTestHarness {
     );
   }
 
-  isRejected(firstname: string, lastname: string): boolean {
-    return this.helperRepository.isHelperRejected(firstname, lastname);
+  isRejected(email: string): boolean {
+    return this.helperRepository.isHelperRejected(email);
   }
 }

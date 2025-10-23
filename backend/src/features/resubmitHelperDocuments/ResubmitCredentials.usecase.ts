@@ -1,15 +1,15 @@
 import { Result } from "@shared/infrastructure/Result";
 
 interface HelperRepository {
-  findByName(firstname: string, lastname: string): any;
-  update(firstname: string, lastname: string, updates: any): void;
+  findByEmail(email: string): any;
+  update(email: string, updates: any): void;
 }
 
 export default class ResubmitCredentials {
   constructor(private readonly helperRepository: HelperRepository) {}
 
-  async execute(firstname: string, lastname: string): Promise<Result<undefined, Error>> {
-    const helper = this.helperRepository.findByName(firstname, lastname);
+  async execute(email: string): Promise<Result<undefined, Error>> {
+    const helper = this.helperRepository.findByEmail(email);
 
     if (helper?.underReview) {
       return Result.fail(new HelperUnderReviewError());
@@ -27,7 +27,7 @@ export default class ResubmitCredentials {
     }
 
     if (Object.keys(updates).length > 0) {
-      this.helperRepository.update(firstname, lastname, updates);
+      this.helperRepository.update(email, updates);
     }
 
     return Result.ok(undefined);

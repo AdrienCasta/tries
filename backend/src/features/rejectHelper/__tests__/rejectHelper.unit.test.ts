@@ -25,10 +25,9 @@ describeFeature(
     });
 
     Scenario("Reject helper to prevent event applications", ({ Given, When, Then, And }) => {
-      Given('helper "Jane Smith" has confirmed their email', () => {
+      Given('helper "jane.smith@example.com" has confirmed their email', () => {
         harness.seedHelper({
-          firstname: "Jane",
-          lastname: "Smith",
+          email: "jane.smith@example.com",
           emailConfirmed: true,
           credentialsSubmitted: false,
           backgroundCheckSubmitted: false,
@@ -36,32 +35,31 @@ describeFeature(
         });
       });
 
-      And('"Jane Smith" has submitted their professional credentials', () => {
-        harness.updateHelper("Jane", "Smith", { credentialsSubmitted: true });
+      And('"jane.smith@example.com" has submitted their professional credentials', () => {
+        harness.updateHelper("jane.smith@example.com", { credentialsSubmitted: true });
       });
 
-      And('"Jane Smith" has submitted their background screening', () => {
-        harness.updateHelper("Jane", "Smith", { backgroundCheckSubmitted: true });
+      And('"jane.smith@example.com" has submitted their background screening', () => {
+        harness.updateHelper("jane.smith@example.com", { backgroundCheckSubmitted: true });
       });
 
-      When('I reject "Jane Smith"', async () => {
-        await harness.rejectHelper("Jane", "Smith");
+      When('I reject "jane.smith@example.com"', async () => {
+        await harness.rejectHelper("jane.smith@example.com");
       });
 
-      Then('"Jane Smith" cannot apply to events', () => {
-        expect(harness.canApplyToEvents("Jane", "Smith")).toBe(false);
+      Then('"jane.smith@example.com" cannot apply to events', () => {
+        expect(harness.canApplyToEvents("jane.smith@example.com")).toBe(false);
       });
 
-      And('"Jane Smith" should no longer require my attention', () => {
-        expect(harness.doesHelperRequireAttention("Jane", "Smith")).toBe(false);
+      And('"jane.smith@example.com" should no longer require my attention', () => {
+        expect(harness.doesHelperRequireAttention("jane.smith@example.com")).toBe(false);
       });
     });
 
     Scenario("Cannot reject already rejected helper", ({ Given, When, Then, And }) => {
-      Given('helper "Mike Ross" is already rejected', () => {
+      Given('helper "mike.ross@example.com" is already rejected', () => {
         harness.seedHelper({
-          firstname: "Mike",
-          lastname: "Ross",
+          email: "mike.ross@example.com",
           emailConfirmed: true,
           credentialsSubmitted: true,
           backgroundCheckSubmitted: true,
@@ -70,24 +68,23 @@ describeFeature(
         });
       });
 
-      When('I attempt to reject "Mike Ross"', async () => {
-        await harness.attemptRejectHelper("Mike", "Ross");
+      When('I attempt to reject "mike.ross@example.com"', async () => {
+        await harness.attemptRejectHelper("mike.ross@example.com");
       });
 
       Then('rejection should fail with error "Helper is already rejected"', () => {
         expect(harness.getLastRejectionError()).toBe("Helper is already rejected");
       });
 
-      And('"Mike Ross" cannot apply to events', () => {
-        expect(harness.canApplyToEvents("Mike", "Ross")).toBe(false);
+      And('"mike.ross@example.com" cannot apply to events', () => {
+        expect(harness.canApplyToEvents("mike.ross@example.com")).toBe(false);
       });
     });
 
     Scenario("Notify helper when rejected", ({ Given, When, Then, And }) => {
-      Given('helper "Tom Wilson" has confirmed their email', () => {
+      Given('helper "tom.wilson@example.com" has confirmed their email', () => {
         harness.seedHelper({
-          firstname: "Tom",
-          lastname: "Wilson",
+          email: "tom.wilson@example.com",
           emailConfirmed: true,
           credentialsSubmitted: false,
           backgroundCheckSubmitted: false,
@@ -95,28 +92,27 @@ describeFeature(
         });
       });
 
-      And('"Tom Wilson" has submitted their professional credentials', () => {
-        harness.updateHelper("Tom", "Wilson", { credentialsSubmitted: true });
+      And('"tom.wilson@example.com" has submitted their professional credentials', () => {
+        harness.updateHelper("tom.wilson@example.com", { credentialsSubmitted: true });
       });
 
-      And('"Tom Wilson" has submitted their background screening', () => {
-        harness.updateHelper("Tom", "Wilson", { backgroundCheckSubmitted: true });
+      And('"tom.wilson@example.com" has submitted their background screening', () => {
+        harness.updateHelper("tom.wilson@example.com", { backgroundCheckSubmitted: true });
       });
 
-      When('I reject "Tom Wilson"', async () => {
-        await harness.rejectHelper("Tom", "Wilson");
+      When('I reject "tom.wilson@example.com"', async () => {
+        await harness.rejectHelper("tom.wilson@example.com");
       });
 
-      Then('"Tom Wilson" should receive a rejection notification', () => {
-        expect(harness.wasRejectionNotificationSent("Tom", "Wilson")).toBe(true);
+      Then('"tom.wilson@example.com" should receive a rejection notification', () => {
+        expect(harness.wasRejectionNotificationSent("tom.wilson@example.com")).toBe(true);
       });
     });
 
     Scenario("Cannot reject helper with unconfirmed email", ({ Given, When, Then, And }) => {
-      Given('helper "Emma White" has not confirmed their email', () => {
+      Given('helper "emma.white@example.com" has not confirmed their email', () => {
         harness.seedHelper({
-          firstname: "Emma",
-          lastname: "White",
+          email: "emma.white@example.com",
           emailConfirmed: false,
           credentialsSubmitted: false,
           backgroundCheckSubmitted: false,
@@ -124,32 +120,31 @@ describeFeature(
         });
       });
 
-      And('"Emma White" has submitted their professional credentials', () => {
-        harness.updateHelper("Emma", "White", { credentialsSubmitted: true });
+      And('"emma.white@example.com" has submitted their professional credentials', () => {
+        harness.updateHelper("emma.white@example.com", { credentialsSubmitted: true });
       });
 
-      And('"Emma White" has submitted their background screening', () => {
-        harness.updateHelper("Emma", "White", { backgroundCheckSubmitted: true });
+      And('"emma.white@example.com" has submitted their background screening', () => {
+        harness.updateHelper("emma.white@example.com", { backgroundCheckSubmitted: true });
       });
 
-      When('I attempt to reject "Emma White"', async () => {
-        await harness.attemptRejectHelper("Emma", "White");
+      When('I attempt to reject "emma.white@example.com"', async () => {
+        await harness.attemptRejectHelper("emma.white@example.com");
       });
 
       Then('rejection should fail with error "Cannot reject helper with unconfirmed email"', () => {
         expect(harness.getLastRejectionError()).toBe("Cannot reject helper with unconfirmed email");
       });
 
-      And('"Emma White" cannot apply to events', () => {
-        expect(harness.canApplyToEvents("Emma", "White")).toBe(false);
+      And('"emma.white@example.com" cannot apply to events', () => {
+        expect(harness.canApplyToEvents("emma.white@example.com")).toBe(false);
       });
     });
 
     Scenario("Reject helper with invalid credentials reason", ({ Given, When, Then, And }) => {
-      Given('helper "David Clark" has confirmed their email', () => {
+      Given('helper "david.clark@example.com" has confirmed their email', () => {
         harness.seedHelper({
-          firstname: "David",
-          lastname: "Clark",
+          email: "david.clark@example.com",
           emailConfirmed: true,
           credentialsSubmitted: false,
           backgroundCheckSubmitted: false,
@@ -157,36 +152,35 @@ describeFeature(
         });
       });
 
-      And('"David Clark" has submitted their professional credentials', () => {
-        harness.updateHelper("David", "Clark", { credentialsSubmitted: true });
+      And('"david.clark@example.com" has submitted their professional credentials', () => {
+        harness.updateHelper("david.clark@example.com", { credentialsSubmitted: true });
       });
 
-      And('"David Clark" has submitted their background screening', () => {
-        harness.updateHelper("David", "Clark", { backgroundCheckSubmitted: true });
+      And('"david.clark@example.com" has submitted their background screening', () => {
+        harness.updateHelper("david.clark@example.com", { backgroundCheckSubmitted: true });
       });
 
-      When('I reject "David Clark" with reason "Invalid professional credentials"', async () => {
-        await harness.rejectHelperWithReason("David", "Clark", "Invalid professional credentials");
+      When('I reject "david.clark@example.com" with reason "Invalid professional credentials"', async () => {
+        await harness.rejectHelperWithReason("david.clark@example.com", "Invalid professional credentials");
       });
 
-      Then('"David Clark" cannot apply to events', () => {
-        expect(harness.canApplyToEvents("David", "Clark")).toBe(false);
+      Then('"david.clark@example.com" cannot apply to events', () => {
+        expect(harness.canApplyToEvents("david.clark@example.com")).toBe(false);
       });
 
-      And('"David Clark" rejection reason should be "Invalid professional credentials"', () => {
-        expect(harness.getRejectionReason("David", "Clark")).toBe("Invalid professional credentials");
+      And('"david.clark@example.com" rejection reason should be "Invalid professional credentials"', () => {
+        expect(harness.getRejectionReason("david.clark@example.com")).toBe("Invalid professional credentials");
       });
 
-      And('"David Clark" should receive a rejection notification with reason', () => {
-        expect(harness.wasRejectionNotificationSentWithReason("David", "Clark")).toBe(true);
+      And('"david.clark@example.com" should receive a rejection notification with reason', () => {
+        expect(harness.wasRejectionNotificationSentWithReason("david.clark@example.com")).toBe(true);
       });
     });
 
     Scenario("Reject helper with failed background check reason", ({ Given, When, Then, And }) => {
-      Given('helper "Nancy Lee" has confirmed their email', () => {
+      Given('helper "nancy.lee@example.com" has confirmed their email', () => {
         harness.seedHelper({
-          firstname: "Nancy",
-          lastname: "Lee",
+          email: "nancy.lee@example.com",
           emailConfirmed: true,
           credentialsSubmitted: false,
           backgroundCheckSubmitted: false,
@@ -194,36 +188,35 @@ describeFeature(
         });
       });
 
-      And('"Nancy Lee" has submitted their professional credentials', () => {
-        harness.updateHelper("Nancy", "Lee", { credentialsSubmitted: true });
+      And('"nancy.lee@example.com" has submitted their professional credentials', () => {
+        harness.updateHelper("nancy.lee@example.com", { credentialsSubmitted: true });
       });
 
-      And('"Nancy Lee" has submitted their background screening', () => {
-        harness.updateHelper("Nancy", "Lee", { backgroundCheckSubmitted: true });
+      And('"nancy.lee@example.com" has submitted their background screening', () => {
+        harness.updateHelper("nancy.lee@example.com", { backgroundCheckSubmitted: true });
       });
 
-      When('I reject "Nancy Lee" with reason "Failed background screening"', async () => {
-        await harness.rejectHelperWithReason("Nancy", "Lee", "Failed background screening");
+      When('I reject "nancy.lee@example.com" with reason "Failed background screening"', async () => {
+        await harness.rejectHelperWithReason("nancy.lee@example.com", "Failed background screening");
       });
 
-      Then('"Nancy Lee" cannot apply to events', () => {
-        expect(harness.canApplyToEvents("Nancy", "Lee")).toBe(false);
+      Then('"nancy.lee@example.com" cannot apply to events', () => {
+        expect(harness.canApplyToEvents("nancy.lee@example.com")).toBe(false);
       });
 
-      And('"Nancy Lee" rejection reason should be "Failed background screening"', () => {
-        expect(harness.getRejectionReason("Nancy", "Lee")).toBe("Failed background screening");
+      And('"nancy.lee@example.com" rejection reason should be "Failed background screening"', () => {
+        expect(harness.getRejectionReason("nancy.lee@example.com")).toBe("Failed background screening");
       });
 
-      And('"Nancy Lee" should receive a rejection notification with reason', () => {
-        expect(harness.wasRejectionNotificationSentWithReason("Nancy", "Lee")).toBe(true);
+      And('"nancy.lee@example.com" should receive a rejection notification with reason', () => {
+        expect(harness.wasRejectionNotificationSentWithReason("nancy.lee@example.com")).toBe(true);
       });
     });
 
     Scenario("Cannot reject without providing a reason", ({ Given, When, Then, And }) => {
-      Given('helper "Paul Gray" has confirmed their email', () => {
+      Given('helper "paul.gray@example.com" has confirmed their email', () => {
         harness.seedHelper({
-          firstname: "Paul",
-          lastname: "Gray",
+          email: "paul.gray@example.com",
           emailConfirmed: true,
           credentialsSubmitted: false,
           backgroundCheckSubmitted: false,
@@ -231,24 +224,24 @@ describeFeature(
         });
       });
 
-      And('"Paul Gray" has submitted their professional credentials', () => {
-        harness.updateHelper("Paul", "Gray", { credentialsSubmitted: true });
+      And('"paul.gray@example.com" has submitted their professional credentials', () => {
+        harness.updateHelper("paul.gray@example.com", { credentialsSubmitted: true });
       });
 
-      And('"Paul Gray" has submitted their background screening', () => {
-        harness.updateHelper("Paul", "Gray", { backgroundCheckSubmitted: true });
+      And('"paul.gray@example.com" has submitted their background screening', () => {
+        harness.updateHelper("paul.gray@example.com", { backgroundCheckSubmitted: true });
       });
 
-      When('I attempt to reject "Paul Gray" without a reason', async () => {
-        await harness.attemptRejectHelperWithReason("Paul", "Gray", "");
+      When('I attempt to reject "paul.gray@example.com" without a reason', async () => {
+        await harness.attemptRejectHelperWithReason("paul.gray@example.com", "");
       });
 
       Then('rejection should fail with error "Rejection reason is required"', () => {
         expect(harness.getLastRejectionError()).toBe("Rejection reason is required");
       });
 
-      And('"Paul Gray" should not be rejected', () => {
-        expect(harness.isHelperRejected("Paul", "Gray")).toBe(false);
+      And('"paul.gray@example.com" should not be rejected', () => {
+        expect(harness.isHelperRejected("paul.gray@example.com")).toBe(false);
       });
     });
   }
@@ -258,20 +251,19 @@ class InMemoryHelperNotificationService {
   private rejectionNotifications: Set<string> = new Set();
   private rejectionNotificationsWithReason: Map<string, string> = new Map();
 
-  notifyRejected(firstname: string, lastname: string, reason?: string): void {
-    const key = `${firstname}:${lastname}`;
-    this.rejectionNotifications.add(key);
+  notifyRejected(email: string, reason?: string): void {
+    this.rejectionNotifications.add(email);
     if (reason) {
-      this.rejectionNotificationsWithReason.set(key, reason);
+      this.rejectionNotificationsWithReason.set(email, reason);
     }
   }
 
-  wasNotified(firstname: string, lastname: string): boolean {
-    return this.rejectionNotifications.has(`${firstname}:${lastname}`);
+  wasNotified(email: string): boolean {
+    return this.rejectionNotifications.has(email);
   }
 
-  wasNotifiedWithReason(firstname: string, lastname: string): boolean {
-    return this.rejectionNotificationsWithReason.has(`${firstname}:${lastname}`);
+  wasNotifiedWithReason(email: string): boolean {
+    return this.rejectionNotificationsWithReason.has(email);
   }
 }
 
@@ -295,19 +287,19 @@ class RejectHelperTestHarness {
     this.helperRepository.add(helper);
   }
 
-  updateHelper(firstname: string, lastname: string, updates: any) {
-    this.helperRepository.update(firstname, lastname, updates);
+  updateHelper(email: string, updates: any) {
+    this.helperRepository.update(email, updates);
   }
 
-  async rejectHelper(firstname: string, lastname: string) {
-    const result = await this.rejectHelperUsecase.execute(firstname, lastname);
+  async rejectHelper(email: string) {
+    const result = await this.rejectHelperUsecase.execute(email);
     if (Result.isFailure(result)) {
       throw result.error;
     }
   }
 
-  async attemptRejectHelper(firstname: string, lastname: string) {
-    const result = await this.rejectHelperUsecase.execute(firstname, lastname);
+  async attemptRejectHelper(email: string) {
+    const result = await this.rejectHelperUsecase.execute(email);
     if (Result.isFailure(result)) {
       this.lastRejectionError = result.error.message;
     } else {
@@ -319,16 +311,16 @@ class RejectHelperTestHarness {
     return this.lastRejectionError;
   }
 
-  canApplyToEvents(firstname: string, lastname: string): boolean {
-    const rejected = this.helperRepository.isHelperRejected(firstname, lastname);
-    const validated = this.helperRepository.isProfileValidated(firstname, lastname);
+  canApplyToEvents(email: string): boolean {
+    const rejected = this.helperRepository.isHelperRejected(email);
+    const validated = this.helperRepository.isProfileValidated(email);
     return validated && !rejected;
   }
 
-  doesHelperRequireAttention(firstname: string, lastname: string): boolean {
-    const helper = this.helperRepository.findByName(firstname, lastname);
+  doesHelperRequireAttention(email: string): boolean {
+    const helper = this.helperRepository.findByEmail(email);
     if (!helper) return false;
-    const rejected = this.helperRepository.isHelperRejected(firstname, lastname);
+    const rejected = this.helperRepository.isHelperRejected(email);
     return (
       helper.emailConfirmed &&
       helper.credentialsSubmitted &&
@@ -338,19 +330,19 @@ class RejectHelperTestHarness {
     );
   }
 
-  wasRejectionNotificationSent(firstname: string, lastname: string): boolean {
-    return this.notificationService.wasNotified(firstname, lastname);
+  wasRejectionNotificationSent(email: string): boolean {
+    return this.notificationService.wasNotified(email);
   }
 
-  async rejectHelperWithReason(firstname: string, lastname: string, reason: string) {
-    const result = await this.rejectHelperUsecase.execute(firstname, lastname, reason);
+  async rejectHelperWithReason(email: string, reason: string) {
+    const result = await this.rejectHelperUsecase.execute(email, reason);
     if (Result.isFailure(result)) {
       throw result.error;
     }
   }
 
-  async attemptRejectHelperWithReason(firstname: string, lastname: string, reason: string) {
-    const result = await this.rejectHelperUsecase.execute(firstname, lastname, reason);
+  async attemptRejectHelperWithReason(email: string, reason: string) {
+    const result = await this.rejectHelperUsecase.execute(email, reason);
     if (Result.isFailure(result)) {
       this.lastRejectionError = result.error.message;
     } else {
@@ -358,16 +350,16 @@ class RejectHelperTestHarness {
     }
   }
 
-  getRejectionReason(firstname: string, lastname: string): string | undefined {
-    const helper = this.helperRepository.findByName(firstname, lastname);
+  getRejectionReason(email: string): string | undefined {
+    const helper = this.helperRepository.findByEmail(email);
     return helper?.rejectionReason;
   }
 
-  wasRejectionNotificationSentWithReason(firstname: string, lastname: string): boolean {
-    return this.notificationService.wasNotifiedWithReason(firstname, lastname);
+  wasRejectionNotificationSentWithReason(email: string): boolean {
+    return this.notificationService.wasNotifiedWithReason(email);
   }
 
-  isHelperRejected(firstname: string, lastname: string): boolean {
-    return this.helperRepository.isHelperRejected(firstname, lastname);
+  isHelperRejected(email: string): boolean {
+    return this.helperRepository.isHelperRejected(email);
   }
 }
