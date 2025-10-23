@@ -4,6 +4,7 @@ import {
 } from "@amiceli/vitest-cucumber";
 // @ts-ignore
 import featureContent from "../../../../../features/rejectHelper.feature?raw";
+import { Result } from "@shared/infrastructure/Result";
 
 import RejectHelper from "../rejectHelper.usecase";
 import { InMemoryValidationHelperRepository } from "@infrastructure/persistence/InMemoryValidationHelperRepository";
@@ -55,10 +56,38 @@ describeFeature(
         expect(harness.doesHelperRequireAttention("Jane", "Smith")).toBe(false);
       });
     });
+
+    Scenario("Cannot reject already rejected helper", ({ Given, When, Then, And }) => {
+      Given('helper "Mike Ross" is already rejected', () => {
+        harness.seedHelper({
+          firstname: "Mike",
+          lastname: "Ross",
+          emailConfirmed: true,
+          credentialsSubmitted: true,
+          backgroundCheckSubmitted: true,
+          profileValidated: false,
+          rejected: true,
+        });
+      });
+
+      When('I attempt to reject "Mike Ross"', async () => {
+        await harness.attemptRejectHelper("Mike", "Ross");
+      });
+
+      Then('rejection should fail with error "Helper is already rejected"', () => {
+        expect(harness.getLastRejectionError()).toBe("Helper is already rejected");
+      });
+
+      And('"Mike Ross" cannot apply to events', () => {
+        expect(harness.canApplyToEvents("Mike", "Ross")).toBe(false);
+      });
+    });
   }
 );
 
 class RejectHelperTestHarness {
+  private lastRejectionError: string | null = null;
+
   private constructor(
     private readonly helperRepository: InMemoryValidationHelperRepository,
     private readonly rejectHelperUsecase: RejectHelper
@@ -79,7 +108,23 @@ class RejectHelperTestHarness {
   }
 
   async rejectHelper(firstname: string, lastname: string) {
-    await this.rejectHelperUsecase.execute(firstname, lastname);
+    const result = await this.rejectHelperUsecase.execute(firstname, lastname);
+    if (Result.isFailure(result)) {
+      throw result.error;
+    }
+  }
+
+  async attemptRejectHelper(firstname: string, lastname: string) {
+    const result = await this.rejectHelperUsecase.execute(firstname, lastname);
+    if (Result.isFailure(result)) {
+      this.lastRejectionError = result.error.message;
+    } else {
+      this.lastRejectionError = null;
+    }
+  }
+
+  getLastRejectionError(): string | null {
+    return this.lastRejectionError;
   }
 
   canApplyToEvents(firstname: string, lastname: string): boolean {

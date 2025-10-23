@@ -13,3 +13,9 @@ Feature: Reject helper credentials
     When I reject "Jane Smith"
     Then "Jane Smith" cannot apply to events
     And "Jane Smith" should no longer require my attention
+
+  Scenario: Cannot reject already rejected helper
+    Given helper "Mike Ross" is already rejected
+    When I attempt to reject "Mike Ross"
+    Then rejection should fail with error "Helper is already rejected"
+    And "Mike Ross" cannot apply to events
