@@ -18,7 +18,11 @@ export default class RejectHelper {
   async execute(firstname: string, lastname: string): Promise<Result<undefined, Error>> {
     const helper = this.helperRepository.findByName(firstname, lastname);
 
-    if (helper?.rejected) {
+    if (!helper?.emailConfirmed) {
+      return Result.fail(new EmailNotConfirmedError());
+    }
+
+    if (helper.rejected) {
       return Result.fail(new HelperAlreadyRejectedError());
     }
 
@@ -32,5 +36,12 @@ class HelperAlreadyRejectedError extends Error {
   readonly name = "HelperAlreadyRejectedError";
   constructor() {
     super("Helper is already rejected");
+  }
+}
+
+class EmailNotConfirmedError extends Error {
+  readonly name = "EmailNotConfirmedError";
+  constructor() {
+    super("Cannot reject helper with unconfirmed email");
   }
 }

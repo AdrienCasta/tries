@@ -26,3 +26,11 @@ Feature: Reject helper credentials
     And "Tom Wilson" has submitted their background screening
     When I reject "Tom Wilson"
     Then "Tom Wilson" should receive a rejection notification
+
+  Scenario: Cannot reject helper with unconfirmed email
+    Given helper "Emma White" has not confirmed their email
+    And "Emma White" has submitted their professional credentials
+    And "Emma White" has submitted their background screening
+    When I attempt to reject "Emma White"
+    Then rejection should fail with error "Cannot reject helper with unconfirmed email"
+    And "Emma White" cannot apply to events

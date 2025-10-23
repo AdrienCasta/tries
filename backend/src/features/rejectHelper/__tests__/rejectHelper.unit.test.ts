@@ -111,6 +111,39 @@ describeFeature(
         expect(harness.wasRejectionNotificationSent("Tom", "Wilson")).toBe(true);
       });
     });
+
+    Scenario("Cannot reject helper with unconfirmed email", ({ Given, When, Then, And }) => {
+      Given('helper "Emma White" has not confirmed their email', () => {
+        harness.seedHelper({
+          firstname: "Emma",
+          lastname: "White",
+          emailConfirmed: false,
+          credentialsSubmitted: false,
+          backgroundCheckSubmitted: false,
+          profileValidated: false,
+        });
+      });
+
+      And('"Emma White" has submitted their professional credentials', () => {
+        harness.updateHelper("Emma", "White", { credentialsSubmitted: true });
+      });
+
+      And('"Emma White" has submitted their background screening', () => {
+        harness.updateHelper("Emma", "White", { backgroundCheckSubmitted: true });
+      });
+
+      When('I attempt to reject "Emma White"', async () => {
+        await harness.attemptRejectHelper("Emma", "White");
+      });
+
+      Then('rejection should fail with error "Cannot reject helper with unconfirmed email"', () => {
+        expect(harness.getLastRejectionError()).toBe("Cannot reject helper with unconfirmed email");
+      });
+
+      And('"Emma White" cannot apply to events', () => {
+        expect(harness.canApplyToEvents("Emma", "White")).toBe(false);
+      });
+    });
   }
 );
 
