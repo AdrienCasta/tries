@@ -30,4 +30,13 @@ export class InMemoryHelperRepository implements HelperRepository {
       ) || null
     );
   }
+
+  async findAll(): Promise<Helper[]> {
+    return Array.from(this.helpers.values());
+  }
+
+  add(helperData: any): void {
+    const helperId = helperData.helperId || `${helperData.firstname}-${helperData.lastname}`;
+    this.helpers.set(helperId, helperData);
+  }
 }
