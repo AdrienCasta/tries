@@ -30,7 +30,10 @@ export default class RejectHelper {
       return Result.fail(new EmptyRejectionReasonError());
     }
 
-    const updates: any = { rejected: true };
+    const updates: any = {
+      rejected: true,
+      underReview: false
+    };
     if (reason) {
       updates.rejectionReason = reason;
     }

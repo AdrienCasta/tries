@@ -7,6 +7,7 @@ type HelperForValidation = {
   profileValidated: boolean;
   rejected?: boolean;
   rejectionReason?: string;
+  underReview?: boolean;
 };
 
 export class InMemoryValidationHelperRepository {

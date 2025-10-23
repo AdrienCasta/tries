@@ -43,7 +43,10 @@ export default class ValidateHelper {
       return Result.fail(new MissingBackgroundCheckError());
     }
 
-    this.helperRepository.update(firstname, lastname, { profileValidated: true });
+    this.helperRepository.update(firstname, lastname, {
+      profileValidated: true,
+      underReview: false
+    });
     this.notificationService.notifyValidated(firstname, lastname);
     return Result.ok(undefined);
   }
