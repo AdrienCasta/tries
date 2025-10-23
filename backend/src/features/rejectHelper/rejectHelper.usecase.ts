@@ -5,8 +5,15 @@ interface ValidationHelperRepository {
   update(firstname: string, lastname: string, updates: any): void;
 }
 
+interface HelperNotificationService {
+  notifyRejected(firstname: string, lastname: string): void;
+}
+
 export default class RejectHelper {
-  constructor(private readonly helperRepository: ValidationHelperRepository) {}
+  constructor(
+    private readonly helperRepository: ValidationHelperRepository,
+    private readonly notificationService: HelperNotificationService
+  ) {}
 
   async execute(firstname: string, lastname: string): Promise<Result<undefined, Error>> {
     const helper = this.helperRepository.findByName(firstname, lastname);
@@ -16,6 +23,7 @@ export default class RejectHelper {
     }
 
     this.helperRepository.update(firstname, lastname, { rejected: true });
+    this.notificationService.notifyRejected(firstname, lastname);
     return Result.ok(undefined);
   }
 }

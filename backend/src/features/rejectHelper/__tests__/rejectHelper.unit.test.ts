@@ -82,21 +82,64 @@ describeFeature(
         expect(harness.canApplyToEvents("Mike", "Ross")).toBe(false);
       });
     });
+
+    Scenario("Notify helper when rejected", ({ Given, When, Then, And }) => {
+      Given('helper "Tom Wilson" has confirmed their email', () => {
+        harness.seedHelper({
+          firstname: "Tom",
+          lastname: "Wilson",
+          emailConfirmed: true,
+          credentialsSubmitted: false,
+          backgroundCheckSubmitted: false,
+          profileValidated: false,
+        });
+      });
+
+      And('"Tom Wilson" has submitted their professional credentials', () => {
+        harness.updateHelper("Tom", "Wilson", { credentialsSubmitted: true });
+      });
+
+      And('"Tom Wilson" has submitted their background screening', () => {
+        harness.updateHelper("Tom", "Wilson", { backgroundCheckSubmitted: true });
+      });
+
+      When('I reject "Tom Wilson"', async () => {
+        await harness.rejectHelper("Tom", "Wilson");
+      });
+
+      Then('"Tom Wilson" should receive a rejection notification', () => {
+        expect(harness.wasRejectionNotificationSent("Tom", "Wilson")).toBe(true);
+      });
+    });
   }
 );
+
+class InMemoryHelperNotificationService {
+  private rejectionNotifications: Set<string> = new Set();
+
+  notifyRejected(firstname: string, lastname: string): void {
+    this.rejectionNotifications.add(`${firstname}:${lastname}`);
+  }
+
+  wasNotified(firstname: string, lastname: string): boolean {
+    return this.rejectionNotifications.has(`${firstname}:${lastname}`);
+  }
+}
 
 class RejectHelperTestHarness {
   private lastRejectionError: string | null = null;
 
   private constructor(
     private readonly helperRepository: InMemoryValidationHelperRepository,
+    private readonly notificationService: InMemoryHelperNotificationService,
     private readonly rejectHelperUsecase: RejectHelper
   ) {}
 
   static setup() {
     const helperRepository = new InMemoryValidationHelperRepository();
-    const rejectHelper = new RejectHelper(helperRepository);
-    return new this(helperRepository, rejectHelper);
+    const notificationService = new InMemoryHelperNotificationService();
+    const rejectHelper = new RejectHelper(helperRepository, notificationService);
+    return new this(helperRepository, notificationService, rejectHelper);
   }
 
   seedHelper(helper: any) {
@@ -144,5 +187,9 @@ class RejectHelperTestHarness {
       !helper.profileValidated &&
       !rejected
     );
+  }
+
+  wasRejectionNotificationSent(firstname: string, lastname: string): boolean {
+    return this.notificationService.wasNotified(firstname, lastname);
   }
 }

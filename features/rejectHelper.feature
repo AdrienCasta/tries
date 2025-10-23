@@ -19,3 +19,10 @@ Feature: Reject helper credentials
     When I attempt to reject "Mike Ross"
     Then rejection should fail with error "Helper is already rejected"
     And "Mike Ross" cannot apply to events
+
+  Scenario: Notify helper when rejected
+    Given helper "Tom Wilson" has confirmed their email
+    And "Tom Wilson" has submitted their professional credentials
+    And "Tom Wilson" has submitted their background screening
+    When I reject "Tom Wilson"
+    Then "Tom Wilson" should receive a rejection notification
