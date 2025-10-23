@@ -6,6 +6,7 @@ type HelperForValidation = {
   backgroundCheckSubmitted: boolean;
   profileValidated: boolean;
   rejected?: boolean;
+  rejectionReason?: string;
 };
 
 export class InMemoryValidationHelperRepository {
