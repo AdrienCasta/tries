@@ -3,6 +3,7 @@ import { Result } from "@shared/infrastructure/Result";
 interface ValidationHelperRepository {
   findByName(firstname: string, lastname: string): any;
   update(firstname: string, lastname: string, updates: any): void;
+  isHelperRejected(firstname: string, lastname: string): boolean;
 }
 
 export default class ValidateHelper {
@@ -17,6 +18,10 @@ export default class ValidateHelper {
 
     if (helper.profileValidated) {
       return Result.fail(new HelperAlreadyValidatedError());
+    }
+
+    if (this.helperRepository.isHelperRejected(firstname, lastname)) {
+      return Result.fail(new HelperRejectedError());
     }
 
     if (!helper.credentialsSubmitted) {
@@ -57,5 +62,12 @@ class MissingBackgroundCheckError extends Error {
   readonly name = "MissingBackgroundCheckError";
   constructor() {
     super("Cannot validate without background screening");
+  }
+}
+
+class HelperRejectedError extends Error {
+  readonly name = "HelperRejectedError";
+  constructor() {
+    super("Cannot validate rejected helper");
   }
 }

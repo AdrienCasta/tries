@@ -39,3 +39,9 @@ Feature: Validate helper credentials
     When I attempt to validate "John Doe"
     Then validation should fail with error "Helper is already validated"
     And "John Doe" can still apply to events
+
+  Scenario: Cannot validate rejected helper
+    Given helper "Sarah Connor" has been rejected
+    When I attempt to validate "Sarah Connor"
+    Then validation should fail with error "Cannot validate rejected helper"
+    And "Sarah Connor" cannot apply to events

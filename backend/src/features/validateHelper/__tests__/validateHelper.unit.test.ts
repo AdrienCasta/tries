@@ -113,6 +113,32 @@ describeFeature(
         expect(harness.canApplyToEvents("John", "Doe")).toBe(true);
       });
     });
+
+    Scenario("Cannot validate rejected helper", ({ Given, When, Then, And }) => {
+      Given('helper "Sarah Connor" has been rejected', () => {
+        harness.seedHelper({
+          firstname: "Sarah",
+          lastname: "Connor",
+          emailConfirmed: true,
+          credentialsSubmitted: true,
+          backgroundCheckSubmitted: true,
+          profileValidated: false,
+          rejected: true,
+        });
+      });
+
+      When('I attempt to validate "Sarah Connor"', async () => {
+        await harness.attemptValidateHelper("Sarah", "Connor");
+      });
+
+      Then('validation should fail with error "Cannot validate rejected helper"', () => {
+        expect(harness.getLastValidationError()).toBe("Cannot validate rejected helper");
+      });
+
+      And('"Sarah Connor" cannot apply to events', () => {
+        expect(harness.canApplyToEvents("Sarah", "Connor")).toBe(false);
+      });
+    });
   }
 );
 
