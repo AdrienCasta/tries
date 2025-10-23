@@ -1,11 +1,26 @@
 interface ValidationHelperRepository {
-  updateProfileValidation(firstname: string, lastname: string, validated: boolean): Promise<void>;
+  findByName(firstname: string, lastname: string): any;
+  update(firstname: string, lastname: string, updates: any): void;
 }
 
 export default class ValidateHelper {
   constructor(private readonly helperRepository: ValidationHelperRepository) {}
 
   async execute(firstname: string, lastname: string): Promise<void> {
-    await this.helperRepository.updateProfileValidation(firstname, lastname, true);
+    const helper = this.helperRepository.findByName(firstname, lastname);
+
+    if (!helper) {
+      throw new Error("Helper not found");
+    }
+
+    if (!helper.credentialsSubmitted) {
+      throw new Error("Cannot validate without credentials");
+    }
+
+    if (!helper.backgroundCheckSubmitted) {
+      throw new Error("Cannot validate without background screening");
+    }
+
+    this.helperRepository.update(firstname, lastname, { profileValidated: true });
   }
 }

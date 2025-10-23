@@ -12,7 +12,7 @@ const feature = await loadFeatureFromText(featureContent);
 
 describeFeature(
   feature,
-  ({ BeforeEachScenario, Scenario, Background }) => {
+  ({ BeforeEachScenario, Scenario, ScenarioOutline, Background }) => {
     let harness: ValidateHelperTestHarness;
 
     BeforeEachScenario(() => {
@@ -23,7 +23,7 @@ describeFeature(
       Given("I am authenticated as an admin", () => {});
     });
 
-    Scenario("Validate helper to grant platform access", ({ Given, When, Then, And }) => {
+    Scenario("Validate helper to enable event applications", ({ Given, When, Then, And }) => {
       Given('helper "John Doe" has confirmed their email', () => {
         harness.seedHelper({
           firstname: "John",
@@ -47,18 +47,52 @@ describeFeature(
         await harness.validateHelper("John", "Doe");
       });
 
-      Then('"John Doe" should be able to access the platform', () => {
-        expect(harness.isHelperValidated("John", "Doe")).toBe(true);
+      Then('"John Doe" can apply to events', () => {
+        expect(harness.canApplyToEvents("John", "Doe")).toBe(true);
       });
 
       And('"John Doe" should no longer require my attention', () => {
         expect(harness.doesHelperRequireAttention("John", "Doe")).toBe(false);
       });
     });
+
+    ScenarioOutline(
+      "Cannot validate helper with incomplete requirements",
+      ({ Given, When, Then, And }, { credentialsSubmitted, backgroundCheckSubmitted, error }) => {
+        Given('helper "Bob Martin" has confirmed their email', () => {
+          harness.seedHelper({
+            firstname: "Bob",
+            lastname: "Martin",
+            emailConfirmed: true,
+            credentialsSubmitted: credentialsSubmitted === "true",
+            backgroundCheckSubmitted: backgroundCheckSubmitted === "true",
+            profileValidated: false,
+          });
+        });
+
+        And('"Bob Martin" credentials submission status is <credentialsSubmitted>', () => {});
+
+        And('"Bob Martin" background check submission status is <backgroundCheckSubmitted>', () => {});
+
+        When('I attempt to validate "Bob Martin"', async () => {
+          await harness.attemptValidateHelper("Bob", "Martin");
+        });
+
+        Then('validation should fail with error "<error>"', () => {
+          expect(harness.getLastValidationError()).toBe(error);
+        });
+
+        And('"Bob Martin" cannot apply to events', () => {
+          expect(harness.canApplyToEvents("Bob", "Martin")).toBe(false);
+        });
+      }
+    );
   }
 );
 
 class ValidateHelperTestHarness {
+  private lastValidationError: string | null = null;
+
   private constructor(
     private readonly helperRepository: InMemoryValidationHelperRepository,
     private readonly validateHelperUsecase: ValidateHelper
@@ -82,7 +116,20 @@ class ValidateHelperTestHarness {
     await this.validateHelperUsecase.execute(firstname, lastname);
   }
 
-  isHelperValidated(firstname: string, lastname: string): boolean {
+  async attemptValidateHelper(firstname: string, lastname: string) {
+    try {
+      await this.validateHelperUsecase.execute(firstname, lastname);
+      this.lastValidationError = null;
+    } catch (error: any) {
+      this.lastValidationError = error.message;
+    }
+  }
+
+  getLastValidationError(): string | null {
+    return this.lastValidationError;
+  }
+
+  canApplyToEvents(firstname: string, lastname: string): boolean {
     return this.helperRepository.isProfileValidated(firstname, lastname);
   }
 

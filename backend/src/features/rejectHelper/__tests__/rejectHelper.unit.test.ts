@@ -23,7 +23,7 @@ describeFeature(
       Given("I am authenticated as an admin", () => {});
     });
 
-    Scenario("Reject helper to prevent platform access", ({ Given, When, Then, And }) => {
+    Scenario("Reject helper to prevent event applications", ({ Given, When, Then, And }) => {
       Given('helper "Jane Smith" has confirmed their email', () => {
         harness.seedHelper({
           firstname: "Jane",
@@ -47,8 +47,8 @@ describeFeature(
         await harness.rejectHelper("Jane", "Smith");
       });
 
-      Then('"Jane Smith" should be marked as rejected', () => {
-        expect(harness.isHelperRejected("Jane", "Smith")).toBe(true);
+      Then('"Jane Smith" cannot apply to events', () => {
+        expect(harness.canApplyToEvents("Jane", "Smith")).toBe(false);
       });
 
       And('"Jane Smith" should no longer require my attention', () => {
@@ -82,19 +82,22 @@ class RejectHelperTestHarness {
     await this.rejectHelperUsecase.execute(firstname, lastname);
   }
 
-  isHelperRejected(firstname: string, lastname: string): boolean {
-    return this.helperRepository.isHelperRejected(firstname, lastname);
+  canApplyToEvents(firstname: string, lastname: string): boolean {
+    const rejected = this.helperRepository.isHelperRejected(firstname, lastname);
+    const validated = this.helperRepository.isProfileValidated(firstname, lastname);
+    return validated && !rejected;
   }
 
   doesHelperRequireAttention(firstname: string, lastname: string): boolean {
     const helper = this.helperRepository.findByName(firstname, lastname);
     if (!helper) return false;
+    const rejected = this.helperRepository.isHelperRejected(firstname, lastname);
     return (
       helper.emailConfirmed &&
       helper.credentialsSubmitted &&
       helper.backgroundCheckSubmitted &&
       !helper.profileValidated &&
-      !this.isHelperRejected(firstname, lastname)
+      !rejected
     );
   }
 }

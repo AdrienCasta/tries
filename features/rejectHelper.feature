@@ -6,10 +6,10 @@ Feature: Reject helper credentials
   Background:
     Given I am authenticated as an admin
 
-  Scenario: Reject helper to prevent platform access
+  Scenario: Reject helper to prevent event applications
     Given helper "Jane Smith" has confirmed their email
     And "Jane Smith" has submitted their professional credentials
     And "Jane Smith" has submitted their background screening
     When I reject "Jane Smith"
-    Then "Jane Smith" should be marked as rejected
+    Then "Jane Smith" cannot apply to events
     And "Jane Smith" should no longer require my attention

@@ -32,10 +32,6 @@ export class InMemoryValidationHelperRepository {
     }
   }
 
-  async updateProfileValidation(firstname: string, lastname: string, validated: boolean): Promise<void> {
-    this.update(firstname, lastname, { profileValidated: validated });
-  }
-
   isProfileValidated(firstname: string, lastname: string): boolean {
     const helper = this.findByName(firstname, lastname);
     return helper?.profileValidated ?? false;
