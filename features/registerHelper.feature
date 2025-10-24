@@ -6,6 +6,7 @@ Feature: Register helper
 Background:
     Given I am healthcare professional wishing to become an helper
 
+  @integration
   Scenario: Helper register successfully
     When I submit my information
     Then I am notified it went well
