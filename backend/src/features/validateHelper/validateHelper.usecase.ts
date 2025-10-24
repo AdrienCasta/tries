@@ -1,9 +1,10 @@
 import { Result } from "@shared/infrastructure/Result";
+import type { HelperForValidation } from "@infrastructure/persistence/InMemoryValidationHelperRepository";
+import { HelperNotFoundError } from "@shared/domain/errors/HelperValidation.errors";
 
 interface ValidationHelperRepository {
-  findByEmail(email: string): any;
-  update(email: string, updates: any): void;
-  isHelperRejected(email: string): boolean;
+  findByEmail(email: string): HelperForValidation | undefined;
+  update(email: string, updates: Partial<HelperForValidation>): void;
 }
 
 interface HelperNotificationService {
@@ -16,8 +17,16 @@ export default class ValidateHelper {
     private readonly notificationService: HelperNotificationService
   ) {}
 
-  async execute(email: string): Promise<Result<undefined, Error>> {
+  async execute(email: string): Promise<Result<void, Error>> {
     const helper = this.helperRepository.findByEmail(email);
+
+    // Validation order is designed to return the most specific error first:
+    // 1. Helper existence - must exist to validate
+    // 2. Email confirmed - business rule: can't validate unconfirmed
+    // 3. Already validated - prevent duplicate validation
+    // 4. Rejected status - rejected helpers must resubmit first
+    // 5. Required documents - must have all documents
+    // 6. Under review - workflow enforcement (admin must start review first)
 
     if (!helper) {
       return Result.fail(new HelperNotFoundError());
@@ -31,7 +40,7 @@ export default class ValidateHelper {
       return Result.fail(new HelperAlreadyValidatedError());
     }
 
-    if (this.helperRepository.isHelperRejected(email)) {
+    if (helper.rejected) {
       return Result.fail(new HelperRejectedError());
     }
 
@@ -47,59 +56,54 @@ export default class ValidateHelper {
       return Result.fail(new HelperNotUnderReviewError());
     }
 
-    this.helperRepository.update(email, {
+    const updates: Partial<HelperForValidation> = {
       profileValidated: true,
-      underReview: false
-    });
-    this.notificationService.notifyValidated(email);
-    return Result.ok(undefined);
-  }
-}
+      underReview: false,
+    };
 
-class HelperNotFoundError extends Error {
-  readonly name = "HelperNotFoundError";
-  constructor() {
-    super("Helper not found");
+    this.helperRepository.update(email, updates);
+    this.notificationService.notifyValidated(email);
+    return Result.ok();
   }
 }
 
 class HelperAlreadyValidatedError extends Error {
-  readonly name = "HelperAlreadyValidatedError";
+  readonly code = "HELPER_ALREADY_VALIDATED";
   constructor() {
     super("Helper is already validated");
   }
 }
 
 class MissingCredentialsError extends Error {
-  readonly name = "MissingCredentialsError";
+  readonly code = "MISSING_CREDENTIALS";
   constructor() {
     super("Cannot validate without credentials");
   }
 }
 
 class MissingBackgroundCheckError extends Error {
-  readonly name = "MissingBackgroundCheckError";
+  readonly code = "MISSING_BACKGROUND_CHECK";
   constructor() {
     super("Cannot validate without background screening");
   }
 }
 
 class HelperRejectedError extends Error {
-  readonly name = "HelperRejectedError";
+  readonly code = "HELPER_REJECTED";
   constructor() {
     super("Cannot validate rejected helper");
   }
 }
 
 class EmailNotConfirmedError extends Error {
-  readonly name = "EmailNotConfirmedError";
+  readonly code = "EMAIL_NOT_CONFIRMED";
   constructor() {
     super("Cannot validate helper with unconfirmed email");
   }
 }
 
 class HelperNotUnderReviewError extends Error {
-  readonly name = "HelperNotUnderReviewError";
+  readonly code = "HELPER_NOT_UNDER_REVIEW";
   constructor() {
     super("Helper must be under review before validation");
   }

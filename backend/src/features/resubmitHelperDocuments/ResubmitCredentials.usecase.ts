@@ -8,7 +8,7 @@ interface HelperRepository {
 export default class ResubmitCredentials {
   constructor(private readonly helperRepository: HelperRepository) {}
 
-  async execute(email: string): Promise<Result<undefined, Error>> {
+  async execute(email: string): Promise<Result<void, Error>> {
     const helper = this.helperRepository.findByEmail(email);
 
     if (helper?.underReview) {
@@ -30,7 +30,7 @@ export default class ResubmitCredentials {
       this.helperRepository.update(email, updates);
     }
 
-    return Result.ok(undefined);
+    return Result.ok();
   }
 }
 
