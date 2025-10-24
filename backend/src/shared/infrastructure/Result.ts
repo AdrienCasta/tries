@@ -4,14 +4,19 @@ export type Failure<E = Error> = { success: false; error: E };
 
 export type Result<T, E = Error> = Success<T> | Failure<E>;
 
-export const Result = {
-  ok<T, E = Error>(value: T): Result<T, E> {
-    return { success: true, value };
-  },
+function ok<E = Error>(): Result<void, E>;
+function ok<T, E = Error>(value: T): Result<T, E>;
+function ok<T, E = Error>(value?: T): Result<T, E> {
+  return { success: true, value: value as T };
+}
 
-  fail<T, E = Error>(error: E): Result<T, E> {
-    return { success: false, error };
-  },
+function fail<T, E = Error>(error: E): Result<T, E> {
+  return { success: false, error };
+}
+
+export const Result = {
+  ok,
+  fail,
 
   isSuccess<T, E>(result: Result<T, E>): result is Success<T> {
     return result.success === true;
