@@ -66,6 +66,12 @@ Feature: Admin review process
     Then review should fail with error "Helper has been rejected"
     And "rejected@example.com" should not be under review
 
+  Scenario: Cannot start review on helper already under review
+    Given helper "already-reviewing@example.com" is under review
+    When I attempt to start reviewing "already-reviewing@example.com"
+    Then review should fail with error "Helper is already under review"
+    And "already-reviewing@example.com" should remain under review
+
   Scenario: Admin can review helper again after resubmission
     Given helper "resubmitted@example.com" was rejected
     And "resubmitted@example.com" has resubmitted their professional credentials

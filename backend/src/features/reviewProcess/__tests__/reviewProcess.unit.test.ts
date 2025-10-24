@@ -272,6 +272,31 @@ describeFeature(
       });
     });
 
+    Scenario("Cannot start review on helper already under review", ({ Given, When, Then, And }) => {
+      Given('helper "already-reviewing@example.com" is under review', () => {
+        harness.seedHelper({
+          email: "already-reviewing@example.com",
+          emailConfirmed: true,
+          credentialsSubmitted: true,
+          backgroundCheckSubmitted: true,
+          profileValidated: false,
+          underReview: true,
+        });
+      });
+
+      When('I attempt to start reviewing "already-reviewing@example.com"', async () => {
+        await harness.attemptStartReview("already-reviewing@example.com");
+      });
+
+      Then('review should fail with error "Helper is already under review"', () => {
+        expect(harness.getLastReviewError()).toBe("Helper is already under review");
+      });
+
+      And('"already-reviewing@example.com" should remain under review', () => {
+        expect(harness.isUnderReview("already-reviewing@example.com")).toBe(true);
+      });
+    });
+
     Scenario("Admin can review helper again after resubmission", ({ Given, When, Then, And }) => {
       Given('helper "resubmitted@example.com" was rejected', () => {
         harness.seedHelper({

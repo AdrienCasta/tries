@@ -24,6 +24,10 @@ export default class StartReview {
       return Result.fail(new HelperRejectedError());
     }
 
+    if (helper.underReview) {
+      return Result.fail(new HelperAlreadyUnderReviewError());
+    }
+
     const isPendingReview = (
       helper.emailConfirmed &&
       helper.credentialsSubmitted &&
@@ -66,5 +70,12 @@ class HelperNotPendingReviewError extends Error {
   readonly name = "HelperNotPendingReviewError";
   constructor() {
     super("Helper is not pending review");
+  }
+}
+
+class HelperAlreadyUnderReviewError extends Error {
+  readonly name = "HelperAlreadyUnderReviewError";
+  constructor() {
+    super("Helper is already under review");
   }
 }
