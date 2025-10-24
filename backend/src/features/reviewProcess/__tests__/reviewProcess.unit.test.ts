@@ -59,6 +59,42 @@ describeFeature(
       });
     });
 
+    Scenario("Helper under review is not pending review", ({ Given, When, Then, And }) => {
+      Given('helper "reviewing@example.com" has confirmed their email', () => {
+        harness.seedHelper({
+          email: "reviewing@example.com",
+          emailConfirmed: true,
+          credentialsSubmitted: false,
+          backgroundCheckSubmitted: false,
+          profileValidated: false,
+        });
+      });
+
+      And('"reviewing@example.com" has submitted their professional credentials', () => {
+        harness.updateHelper("reviewing@example.com", { credentialsSubmitted: true });
+      });
+
+      And('"reviewing@example.com" has submitted their background screening', () => {
+        harness.updateHelper("reviewing@example.com", { backgroundCheckSubmitted: true });
+      });
+
+      And('"reviewing@example.com" is pending review', () => {
+        expect(harness.isHelperPendingReview("reviewing@example.com")).toBe(true);
+      });
+
+      When('I start reviewing "reviewing@example.com"', async () => {
+        await harness.startReview("reviewing@example.com");
+      });
+
+      Then('"reviewing@example.com" should be under review', () => {
+        expect(harness.isUnderReview("reviewing@example.com")).toBe(true);
+      });
+
+      And('"reviewing@example.com" should not be pending review', () => {
+        expect(harness.isHelperPendingReview("reviewing@example.com")).toBe(false);
+      });
+    });
+
     Scenario("Cannot resubmit credentials while under review", ({ Given, When, Then, And }) => {
       Given('helper "grace.wilson@example.com" is under review', () => {
         harness.seedHelper({
@@ -190,6 +226,36 @@ describeFeature(
 
       And('"karen.davis@example.com" should be pending review', () => {
         expect(harness.isHelperPendingReview("karen.davis@example.com")).toBe(true);
+      });
+    });
+
+    Scenario("Rejected helper can resubmit background check", ({ Given, When, Then, And }) => {
+      Given('helper "laura.martinez@example.com" was rejected', () => {
+        harness.seedHelper({
+          email: "laura.martinez@example.com",
+          emailConfirmed: true,
+          credentialsSubmitted: true,
+          backgroundCheckSubmitted: true,
+          profileValidated: false,
+          rejected: true,
+          underReview: false,
+        });
+      });
+
+      And('"laura.martinez@example.com" is not under review', () => {
+        expect(harness.isUnderReview("laura.martinez@example.com")).toBe(false);
+      });
+
+      When('"laura.martinez@example.com" resubmits their background screening', async () => {
+        await harness.resubmitBackgroundCheck("laura.martinez@example.com");
+      });
+
+      Then('"laura.martinez@example.com" rejection should be cleared', () => {
+        expect(harness.isRejected("laura.martinez@example.com")).toBe(false);
+      });
+
+      And('"laura.martinez@example.com" should be pending review', () => {
+        expect(harness.isHelperPendingReview("laura.martinez@example.com")).toBe(true);
       });
     });
 
@@ -394,6 +460,13 @@ class LockHelperDocumentsTestHarness {
 
   async resubmitCredentials(email: string) {
     const result = await this.resubmitCredentialsUsecase.execute(email);
+    if (Result.isFailure(result)) {
+      throw result.error;
+    }
+  }
+
+  async resubmitBackgroundCheck(email: string) {
+    const result = await this.resubmitBackgroundCheckUsecase.execute(email);
     if (Result.isFailure(result)) {
       throw result.error;
     }

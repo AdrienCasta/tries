@@ -26,6 +26,10 @@ export default class RejectHelper {
       return Result.fail(new HelperAlreadyRejectedError());
     }
 
+    if (!helper.underReview) {
+      return Result.fail(new HelperNotUnderReviewError());
+    }
+
     if (reason !== undefined && reason.trim() === "") {
       return Result.fail(new EmptyRejectionReasonError());
     }
@@ -62,5 +66,12 @@ class EmptyRejectionReasonError extends Error {
   readonly name = "EmptyRejectionReasonError";
   constructor() {
     super("Rejection reason is required");
+  }
+}
+
+class HelperNotUnderReviewError extends Error {
+  readonly name = "HelperNotUnderReviewError";
+  constructor() {
+    super("Helper must be under review before rejection");
   }
 }

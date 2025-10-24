@@ -40,7 +40,7 @@ describeFeature(
       });
 
       And('"john.doe@example.com" has submitted their background screening', () => {
-        harness.updateHelper("john.doe@example.com", { backgroundCheckSubmitted: true });
+        harness.updateHelper("john.doe@example.com", { backgroundCheckSubmitted: true, underReview: true });
       });
 
       When('I validate "john.doe@example.com"', async () => {
@@ -152,7 +152,7 @@ describeFeature(
       });
 
       And('"alice.brown@example.com" has submitted their background screening', () => {
-        harness.updateHelper("alice.brown@example.com", { backgroundCheckSubmitted: true });
+        harness.updateHelper("alice.brown@example.com", { backgroundCheckSubmitted: true, underReview: true });
       });
 
       When('I validate "alice.brown@example.com"', async () => {
@@ -196,6 +196,46 @@ describeFeature(
       });
     });
 
+    Scenario("Cannot validate helper not under review", ({ Given, When, Then, And }) => {
+      Given('helper "pending.helper@example.com" has confirmed their email', () => {
+        harness.seedHelper({
+          email: "pending.helper@example.com",
+          emailConfirmed: true,
+          credentialsSubmitted: false,
+          backgroundCheckSubmitted: false,
+          profileValidated: false,
+        });
+      });
+
+      And('"pending.helper@example.com" has submitted their professional credentials', () => {
+        harness.updateHelper("pending.helper@example.com", { credentialsSubmitted: true });
+      });
+
+      And('"pending.helper@example.com" has submitted their background screening', () => {
+        harness.updateHelper("pending.helper@example.com", { backgroundCheckSubmitted: true });
+      });
+
+      And('"pending.helper@example.com" is pending review', () => {
+        expect(harness.isHelperPendingReview("pending.helper@example.com")).toBe(true);
+      });
+
+      And('"pending.helper@example.com" is not under review', () => {
+        expect(harness.isUnderReview("pending.helper@example.com")).toBe(false);
+      });
+
+      When('I attempt to validate "pending.helper@example.com"', async () => {
+        await harness.attemptValidateHelper("pending.helper@example.com");
+      });
+
+      Then('validation should fail with error "Helper must be under review before validation"', () => {
+        expect(harness.getLastValidationError()).toBe("Helper must be under review before validation");
+      });
+
+      And('"pending.helper@example.com" cannot apply to events', () => {
+        expect(harness.canApplyToEvents("pending.helper@example.com")).toBe(false);
+      });
+    });
+
     Scenario("Multiple helpers with same name can be validated independently", ({ Given, When, Then, And }) => {
       Given('helper "john.smith.1@example.com" named "John Smith" has confirmed their email', () => {
         harness.seedHelper({
@@ -214,7 +254,7 @@ describeFeature(
       });
 
       And('"john.smith.1@example.com" has submitted their background screening', () => {
-        harness.updateHelper("john.smith.1@example.com", { backgroundCheckSubmitted: true });
+        harness.updateHelper("john.smith.1@example.com", { backgroundCheckSubmitted: true, underReview: true });
       });
 
       And('helper "john.smith.2@example.com" named "John Smith" has confirmed their email', () => {
@@ -321,6 +361,11 @@ class ValidateHelperTestHarness {
       helper.backgroundCheckSubmitted &&
       !helper.profileValidated
     );
+  }
+
+  isUnderReview(email: string): boolean {
+    const helper = this.helperRepository.findByEmail(email);
+    return helper?.underReview ?? false;
   }
 
   wasValidationNotificationSent(email: string): boolean {

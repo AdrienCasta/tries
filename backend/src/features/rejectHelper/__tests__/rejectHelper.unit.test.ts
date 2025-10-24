@@ -40,7 +40,7 @@ describeFeature(
       });
 
       And('"jane.smith@example.com" has submitted their background screening', () => {
-        harness.updateHelper("jane.smith@example.com", { backgroundCheckSubmitted: true });
+        harness.updateHelper("jane.smith@example.com", { backgroundCheckSubmitted: true, underReview: true });
       });
 
       When('I reject "jane.smith@example.com"', async () => {
@@ -97,7 +97,7 @@ describeFeature(
       });
 
       And('"tom.wilson@example.com" has submitted their background screening', () => {
-        harness.updateHelper("tom.wilson@example.com", { backgroundCheckSubmitted: true });
+        harness.updateHelper("tom.wilson@example.com", { backgroundCheckSubmitted: true, underReview: true });
       });
 
       When('I reject "tom.wilson@example.com"', async () => {
@@ -141,6 +141,46 @@ describeFeature(
       });
     });
 
+    Scenario("Cannot reject helper not under review", ({ Given, When, Then, And }) => {
+      Given('helper "pending.reject@example.com" has confirmed their email', () => {
+        harness.seedHelper({
+          email: "pending.reject@example.com",
+          emailConfirmed: true,
+          credentialsSubmitted: false,
+          backgroundCheckSubmitted: false,
+          profileValidated: false,
+        });
+      });
+
+      And('"pending.reject@example.com" has submitted their professional credentials', () => {
+        harness.updateHelper("pending.reject@example.com", { credentialsSubmitted: true });
+      });
+
+      And('"pending.reject@example.com" has submitted their background screening', () => {
+        harness.updateHelper("pending.reject@example.com", { backgroundCheckSubmitted: true });
+      });
+
+      And('"pending.reject@example.com" is pending review', () => {
+        expect(harness.isHelperPendingReview("pending.reject@example.com")).toBe(true);
+      });
+
+      And('"pending.reject@example.com" is not under review', () => {
+        expect(harness.isUnderReview("pending.reject@example.com")).toBe(false);
+      });
+
+      When('I attempt to reject "pending.reject@example.com"', async () => {
+        await harness.attemptRejectHelper("pending.reject@example.com");
+      });
+
+      Then('rejection should fail with error "Helper must be under review before rejection"', () => {
+        expect(harness.getLastRejectionError()).toBe("Helper must be under review before rejection");
+      });
+
+      And('"pending.reject@example.com" cannot apply to events', () => {
+        expect(harness.canApplyToEvents("pending.reject@example.com")).toBe(false);
+      });
+    });
+
     Scenario("Reject helper with invalid credentials reason", ({ Given, When, Then, And }) => {
       Given('helper "david.clark@example.com" has confirmed their email', () => {
         harness.seedHelper({
@@ -157,7 +197,7 @@ describeFeature(
       });
 
       And('"david.clark@example.com" has submitted their background screening', () => {
-        harness.updateHelper("david.clark@example.com", { backgroundCheckSubmitted: true });
+        harness.updateHelper("david.clark@example.com", { backgroundCheckSubmitted: true, underReview: true });
       });
 
       When('I reject "david.clark@example.com" with reason "Invalid professional credentials"', async () => {
@@ -193,7 +233,7 @@ describeFeature(
       });
 
       And('"nancy.lee@example.com" has submitted their background screening', () => {
-        harness.updateHelper("nancy.lee@example.com", { backgroundCheckSubmitted: true });
+        harness.updateHelper("nancy.lee@example.com", { backgroundCheckSubmitted: true, underReview: true });
       });
 
       When('I reject "nancy.lee@example.com" with reason "Failed background screening"', async () => {
@@ -229,7 +269,7 @@ describeFeature(
       });
 
       And('"paul.gray@example.com" has submitted their background screening', () => {
-        harness.updateHelper("paul.gray@example.com", { backgroundCheckSubmitted: true });
+        harness.updateHelper("paul.gray@example.com", { backgroundCheckSubmitted: true, underReview: true });
       });
 
       When('I attempt to reject "paul.gray@example.com" without a reason', async () => {
@@ -328,6 +368,11 @@ class RejectHelperTestHarness {
       !helper.profileValidated &&
       !rejected
     );
+  }
+
+  isUnderReview(email: string): boolean {
+    const helper = this.helperRepository.findByEmail(email);
+    return helper?.underReview ?? false;
   }
 
   wasRejectionNotificationSent(email: string): boolean {

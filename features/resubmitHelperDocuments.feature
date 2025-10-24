@@ -18,3 +18,21 @@ Feature: Resubmit helper documents with auto-invalidation
     Then "linda.blue@example.com" validation status becomes invalid
     And "linda.blue@example.com" cannot apply to events
     And "linda.blue@example.com" should be pending review
+
+  Scenario: Pending review helper can resubmit credentials
+    Given helper "charlie.brown@example.com" has confirmed their email
+    And "charlie.brown@example.com" has submitted their professional credentials
+    And "charlie.brown@example.com" has submitted their background screening
+    And "charlie.brown@example.com" is pending review
+    When "charlie.brown@example.com" resubmits their professional credentials
+    Then resubmission should succeed
+    And "charlie.brown@example.com" should remain pending review
+
+  Scenario: Pending review helper can resubmit background check
+    Given helper "diana.prince@example.com" has confirmed their email
+    And "diana.prince@example.com" has submitted their professional credentials
+    And "diana.prince@example.com" has submitted their background screening
+    And "diana.prince@example.com" is pending review
+    When "diana.prince@example.com" resubmits their background screening
+    Then resubmission should succeed
+    And "diana.prince@example.com" should remain pending review

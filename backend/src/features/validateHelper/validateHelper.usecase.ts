@@ -43,6 +43,10 @@ export default class ValidateHelper {
       return Result.fail(new MissingBackgroundCheckError());
     }
 
+    if (!helper.underReview) {
+      return Result.fail(new HelperNotUnderReviewError());
+    }
+
     this.helperRepository.update(email, {
       profileValidated: true,
       underReview: false
@@ -91,5 +95,12 @@ class EmailNotConfirmedError extends Error {
   readonly name = "EmailNotConfirmedError";
   constructor() {
     super("Cannot validate helper with unconfirmed email");
+  }
+}
+
+class HelperNotUnderReviewError extends Error {
+  readonly name = "HelperNotUnderReviewError";
+  constructor() {
+    super("Helper must be under review before validation");
   }
 }

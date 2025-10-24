@@ -35,6 +35,16 @@ Feature: Reject helper credentials
     Then rejection should fail with error "Cannot reject helper with unconfirmed email"
     And "emma.white@example.com" cannot apply to events
 
+  Scenario: Cannot reject helper not under review
+    Given helper "pending.reject@example.com" has confirmed their email
+    And "pending.reject@example.com" has submitted their professional credentials
+    And "pending.reject@example.com" has submitted their background screening
+    And "pending.reject@example.com" is pending review
+    And "pending.reject@example.com" is not under review
+    When I attempt to reject "pending.reject@example.com"
+    Then rejection should fail with error "Helper must be under review before rejection"
+    And "pending.reject@example.com" cannot apply to events
+
   Scenario: Reject helper with invalid credentials reason
     Given helper "david.clark@example.com" has confirmed their email
     And "david.clark@example.com" has submitted their professional credentials

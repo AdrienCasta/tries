@@ -61,6 +61,16 @@ Feature: Validate helper credentials
     Then validation should fail with error "Cannot validate helper with unconfirmed email"
     And "charlie.davis@example.com" cannot apply to events
 
+  Scenario: Cannot validate helper not under review
+    Given helper "pending.helper@example.com" has confirmed their email
+    And "pending.helper@example.com" has submitted their professional credentials
+    And "pending.helper@example.com" has submitted their background screening
+    And "pending.helper@example.com" is pending review
+    And "pending.helper@example.com" is not under review
+    When I attempt to validate "pending.helper@example.com"
+    Then validation should fail with error "Helper must be under review before validation"
+    And "pending.helper@example.com" cannot apply to events
+
   Scenario: Multiple helpers with same name can be validated independently
     Given helper "john.smith.1@example.com" named "John Smith" has confirmed their email
     And "john.smith.1@example.com" has submitted their professional credentials

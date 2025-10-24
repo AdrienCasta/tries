@@ -82,6 +82,80 @@ describeFeature(
         expect(harness.isHelperPendingReview("linda.blue@example.com")).toBe(true);
       });
     });
+
+    Scenario("Pending review helper can resubmit credentials", ({ Given, When, Then, And }) => {
+      Given('helper "charlie.brown@example.com" has confirmed their email', () => {
+        harness.seedHelper({
+          email: "charlie.brown@example.com",
+          emailConfirmed: true,
+          credentialsSubmitted: false,
+          backgroundCheckSubmitted: false,
+          profileValidated: false,
+        });
+      });
+
+      And('"charlie.brown@example.com" has submitted their professional credentials', () => {
+        harness.updateHelper("charlie.brown@example.com", { credentialsSubmitted: true });
+      });
+
+      And('"charlie.brown@example.com" has submitted their background screening', () => {
+        harness.updateHelper("charlie.brown@example.com", { backgroundCheckSubmitted: true });
+      });
+
+      And('"charlie.brown@example.com" is pending review', () => {
+        expect(harness.isHelperPendingReview("charlie.brown@example.com")).toBe(true);
+      });
+
+      When('"charlie.brown@example.com" resubmits their professional credentials', async () => {
+        await harness.resubmitCredentials("charlie.brown@example.com");
+      });
+
+      Then("resubmission should succeed", () => {
+        // If we reached here without throwing, resubmission succeeded
+        expect(true).toBe(true);
+      });
+
+      And('"charlie.brown@example.com" should remain pending review', () => {
+        expect(harness.isHelperPendingReview("charlie.brown@example.com")).toBe(true);
+      });
+    });
+
+    Scenario("Pending review helper can resubmit background check", ({ Given, When, Then, And }) => {
+      Given('helper "diana.prince@example.com" has confirmed their email', () => {
+        harness.seedHelper({
+          email: "diana.prince@example.com",
+          emailConfirmed: true,
+          credentialsSubmitted: false,
+          backgroundCheckSubmitted: false,
+          profileValidated: false,
+        });
+      });
+
+      And('"diana.prince@example.com" has submitted their professional credentials', () => {
+        harness.updateHelper("diana.prince@example.com", { credentialsSubmitted: true });
+      });
+
+      And('"diana.prince@example.com" has submitted their background screening', () => {
+        harness.updateHelper("diana.prince@example.com", { backgroundCheckSubmitted: true });
+      });
+
+      And('"diana.prince@example.com" is pending review', () => {
+        expect(harness.isHelperPendingReview("diana.prince@example.com")).toBe(true);
+      });
+
+      When('"diana.prince@example.com" resubmits their background screening', async () => {
+        await harness.resubmitBackgroundCheck("diana.prince@example.com");
+      });
+
+      Then("resubmission should succeed", () => {
+        // If we reached here without throwing, resubmission succeeded
+        expect(true).toBe(true);
+      });
+
+      And('"diana.prince@example.com" should remain pending review', () => {
+        expect(harness.isHelperPendingReview("diana.prince@example.com")).toBe(true);
+      });
+    });
   }
 );
 
@@ -101,6 +175,10 @@ class ResubmitHelperDocumentsTestHarness {
 
   seedHelper(helper: any) {
     this.helperRepository.add(helper);
+  }
+
+  updateHelper(email: string, updates: any) {
+    this.helperRepository.update(email, updates);
   }
 
   async resubmitCredentials(email: string) {

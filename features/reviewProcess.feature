@@ -14,6 +14,15 @@ Feature: Admin review process
     When I start reviewing "frank.martin@example.com"
     Then "frank.martin@example.com" should be under review
 
+  Scenario: Helper under review is not pending review
+    Given helper "reviewing@example.com" has confirmed their email
+    And "reviewing@example.com" has submitted their professional credentials
+    And "reviewing@example.com" has submitted their background screening
+    And "reviewing@example.com" is pending review
+    When I start reviewing "reviewing@example.com"
+    Then "reviewing@example.com" should be under review
+    And "reviewing@example.com" should not be pending review
+
   Scenario: Cannot resubmit credentials while under review
     Given helper "grace.wilson@example.com" is under review
     When "grace.wilson@example.com" attempts to resubmit their professional credentials
@@ -45,6 +54,13 @@ Feature: Admin review process
     When "karen.davis@example.com" resubmits their professional credentials
     Then "karen.davis@example.com" rejection should be cleared
     And "karen.davis@example.com" should be pending review
+
+  Scenario: Rejected helper can resubmit background check
+    Given helper "laura.martinez@example.com" was rejected
+    And "laura.martinez@example.com" is not under review
+    When "laura.martinez@example.com" resubmits their background screening
+    Then "laura.martinez@example.com" rejection should be cleared
+    And "laura.martinez@example.com" should be pending review
 
   Scenario: Cannot start review on helper without complete documents
     Given helper "incomplete@example.com" has confirmed their email
