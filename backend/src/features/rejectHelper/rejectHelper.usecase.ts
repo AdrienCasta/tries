@@ -1,11 +1,7 @@
 import { Result } from "@shared/infrastructure/Result";
-import type { HelperForValidation } from "@infrastructure/persistence/InMemoryValidationHelperRepository";
+import { HelperForValidation } from "@features/validation/domain/HelperForValidation";
+import { ValidationHelperRepository } from "@features/validation/domain/ValidationHelperRepository";
 import { HelperNotFoundError } from "@shared/domain/errors/HelperValidation.errors";
-
-interface ValidationHelperRepository {
-  findByEmail(email: string): HelperForValidation | undefined;
-  update(email: string, updates: Partial<HelperForValidation>): void;
-}
 
 interface HelperNotificationService {
   notifyRejected(email: string, reason?: string): void;
