@@ -46,8 +46,8 @@ describeFeature(
         harness.updateHelper("frank.martin@example.com", { backgroundCheckSubmitted: true });
       });
 
-      And('"frank.martin@example.com" requires admin attention', () => {
-        expect(harness.doesHelperRequireAttention("frank.martin@example.com")).toBe(true);
+      And('"frank.martin@example.com" is pending review', () => {
+        expect(harness.isHelperPendingReview("frank.martin@example.com")).toBe(true);
       });
 
       When('I start reviewing "frank.martin@example.com"', async () => {
@@ -158,8 +158,8 @@ describeFeature(
         expect(harness.canApplyToEvents("jack.smith@example.com")).toBe(false);
       });
 
-      And('"jack.smith@example.com" should not require admin attention', () => {
-        expect(harness.doesHelperRequireAttention("jack.smith@example.com")).toBe(false);
+      And('"jack.smith@example.com" should not be pending review', () => {
+        expect(harness.isHelperPendingReview("jack.smith@example.com")).toBe(false);
       });
     });
 
@@ -188,8 +188,116 @@ describeFeature(
         expect(harness.isRejected("karen.davis@example.com")).toBe(false);
       });
 
-      And('"karen.davis@example.com" should require admin attention', () => {
-        expect(harness.doesHelperRequireAttention("karen.davis@example.com")).toBe(true);
+      And('"karen.davis@example.com" should be pending review', () => {
+        expect(harness.isHelperPendingReview("karen.davis@example.com")).toBe(true);
+      });
+    });
+
+    Scenario("Cannot start review on helper without complete documents", ({ Given, When, Then, And }) => {
+      Given('helper "incomplete@example.com" has confirmed their email', () => {
+        harness.seedHelper({
+          email: "incomplete@example.com",
+          emailConfirmed: true,
+          credentialsSubmitted: false,
+          backgroundCheckSubmitted: false,
+          profileValidated: false,
+        });
+      });
+
+      And('"incomplete@example.com" has submitted their professional credentials', () => {
+        harness.updateHelper("incomplete@example.com", { credentialsSubmitted: true });
+      });
+
+      And('"incomplete@example.com" has NOT submitted their background screening', () => {});
+
+      When('I attempt to start reviewing "incomplete@example.com"', async () => {
+        await harness.attemptStartReview("incomplete@example.com");
+      });
+
+      Then('review should fail with error "Helper is not pending review"', () => {
+        expect(harness.getLastReviewError()).toBe("Helper is not pending review");
+      });
+
+      And('"incomplete@example.com" should not be under review', () => {
+        expect(harness.isUnderReview("incomplete@example.com")).toBe(false);
+      });
+    });
+
+    Scenario("Cannot start review on validated helper", ({ Given, When, Then, And }) => {
+      Given('helper "validated@example.com" is already validated', () => {
+        harness.seedHelper({
+          email: "validated@example.com",
+          emailConfirmed: true,
+          credentialsSubmitted: true,
+          backgroundCheckSubmitted: true,
+          profileValidated: true,
+        });
+      });
+
+      When('I attempt to start reviewing "validated@example.com"', async () => {
+        await harness.attemptStartReview("validated@example.com");
+      });
+
+      Then('review should fail with error "Helper is already validated"', () => {
+        expect(harness.getLastReviewError()).toBe("Helper is already validated");
+      });
+
+      And('"validated@example.com" should not be under review', () => {
+        expect(harness.isUnderReview("validated@example.com")).toBe(false);
+      });
+    });
+
+    Scenario("Cannot start review on rejected helper", ({ Given, When, Then, And }) => {
+      Given('helper "rejected@example.com" has been rejected', () => {
+        harness.seedHelper({
+          email: "rejected@example.com",
+          emailConfirmed: true,
+          credentialsSubmitted: true,
+          backgroundCheckSubmitted: true,
+          profileValidated: false,
+          rejected: true,
+        });
+      });
+
+      When('I attempt to start reviewing "rejected@example.com"', async () => {
+        await harness.attemptStartReview("rejected@example.com");
+      });
+
+      Then('review should fail with error "Helper has been rejected"', () => {
+        expect(harness.getLastReviewError()).toBe("Helper has been rejected");
+      });
+
+      And('"rejected@example.com" should not be under review', () => {
+        expect(harness.isUnderReview("rejected@example.com")).toBe(false);
+      });
+    });
+
+    Scenario("Admin can review helper again after resubmission", ({ Given, When, Then, And }) => {
+      Given('helper "resubmitted@example.com" was rejected', () => {
+        harness.seedHelper({
+          email: "resubmitted@example.com",
+          emailConfirmed: true,
+          credentialsSubmitted: true,
+          backgroundCheckSubmitted: true,
+          profileValidated: false,
+          rejected: true,
+        });
+      });
+
+      And('"resubmitted@example.com" has resubmitted their professional credentials', async () => {
+        await harness.resubmitCredentials("resubmitted@example.com");
+      });
+
+      And('"resubmitted@example.com" is pending review', () => {
+        expect(harness.isHelperPendingReview("resubmitted@example.com")).toBe(true);
+      });
+
+      When('I start reviewing "resubmitted@example.com"', async () => {
+        await harness.startReview("resubmitted@example.com");
+      });
+
+      Then('"resubmitted@example.com" should be under review', () => {
+        expect(harness.isUnderReview("resubmitted@example.com")).toBe(true);
       });
     });
   }
@@ -202,6 +310,7 @@ class InMemoryHelperNotificationService {
 
 class LockHelperDocumentsTestHarness {
   private lastResubmissionError: string | null = null;
+  private lastReviewError: string | null = null;
 
   private constructor(
     private readonly helperRepository: InMemoryValidationHelperRepository,
@@ -239,7 +348,23 @@ class LockHelperDocumentsTestHarness {
   }
 
   async startReview(email: string) {
-    await this.startReviewUsecase.execute(email);
+    const result = await this.startReviewUsecase.execute(email);
+    if (Result.isFailure(result)) {
+      throw result.error;
+    }
+  }
+
+  async attemptStartReview(email: string) {
+    const result = await this.startReviewUsecase.execute(email);
+    if (Result.isFailure(result)) {
+      this.lastReviewError = result.error.message;
+    } else {
+      this.lastReviewError = null;
+    }
+  }
+
+  getLastReviewError(): string | null {
+    return this.lastReviewError;
   }
 
   async resubmitCredentials(email: string) {
@@ -294,7 +419,7 @@ class LockHelperDocumentsTestHarness {
     return this.helperRepository.isProfileValidated(email);
   }
 
-  doesHelperRequireAttention(email: string): boolean {
+  isHelperPendingReview(email: string): boolean {
     const helper = this.helperRepository.findByEmail(email);
     if (!helper) return false;
     const rejected = this.helperRepository.isHelperRejected(email);

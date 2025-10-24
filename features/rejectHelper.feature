@@ -12,7 +12,7 @@ Feature: Reject helper credentials
     And "jane.smith@example.com" has submitted their background screening
     When I reject "jane.smith@example.com"
     Then "jane.smith@example.com" cannot apply to events
-    And "jane.smith@example.com" should no longer require my attention
+    And "jane.smith@example.com" should no longer be pending review
 
   Scenario: Cannot reject already rejected helper
     Given helper "mike.ross@example.com" is already rejected

@@ -46,8 +46,8 @@ describeFeature(
         expect(harness.canApplyToEvents("robert.green@example.com")).toBe(false);
       });
 
-      And('"robert.green@example.com" should require admin attention', () => {
-        expect(harness.doesHelperRequireAttention("robert.green@example.com")).toBe(true);
+      And('"robert.green@example.com" should be pending review', () => {
+        expect(harness.isHelperPendingReview("robert.green@example.com")).toBe(true);
       });
     });
 
@@ -78,8 +78,8 @@ describeFeature(
         expect(harness.canApplyToEvents("linda.blue@example.com")).toBe(false);
       });
 
-      And('"linda.blue@example.com" should require admin attention', () => {
-        expect(harness.doesHelperRequireAttention("linda.blue@example.com")).toBe(true);
+      And('"linda.blue@example.com" should be pending review', () => {
+        expect(harness.isHelperPendingReview("linda.blue@example.com")).toBe(true);
       });
     });
   }
@@ -119,7 +119,7 @@ class ResubmitHelperDocumentsTestHarness {
     return this.helperRepository.isProfileValidated(email);
   }
 
-  doesHelperRequireAttention(email: string): boolean {
+  isHelperPendingReview(email: string): boolean {
     const helper = this.helperRepository.findByEmail(email);
     if (!helper) return false;
     return (

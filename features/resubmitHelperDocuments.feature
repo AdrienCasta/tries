@@ -9,7 +9,7 @@ Feature: Resubmit helper documents with auto-invalidation
     When "robert.green@example.com" resubmits their professional credentials
     Then "robert.green@example.com" validation status becomes invalid
     And "robert.green@example.com" cannot apply to events
-    And "robert.green@example.com" should require admin attention
+    And "robert.green@example.com" should be pending review
 
   Scenario: Validated helper resubmits background check
     Given helper "linda.blue@example.com" is validated
@@ -17,4 +17,4 @@ Feature: Resubmit helper documents with auto-invalidation
     When "linda.blue@example.com" resubmits their background screening
     Then "linda.blue@example.com" validation status becomes invalid
     And "linda.blue@example.com" cannot apply to events
-    And "linda.blue@example.com" should require admin attention
+    And "linda.blue@example.com" should be pending review

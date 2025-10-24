@@ -10,7 +10,7 @@ Feature: Admin review process
     Given helper "frank.martin@example.com" has confirmed their email
     And "frank.martin@example.com" has submitted their professional credentials
     And "frank.martin@example.com" has submitted their background screening
-    And "frank.martin@example.com" requires admin attention
+    And "frank.martin@example.com" is pending review
     When I start reviewing "frank.martin@example.com"
     Then "frank.martin@example.com" should be under review
 
@@ -37,11 +37,38 @@ Feature: Admin review process
     When I reject "jack.smith@example.com" with reason "Invalid credentials"
     Then "jack.smith@example.com" should not be under review
     And "jack.smith@example.com" cannot apply to events
-    And "jack.smith@example.com" should not require admin attention
+    And "jack.smith@example.com" should not be pending review
 
   Scenario: Helper can resubmit after rejection
     Given helper "karen.davis@example.com" was rejected
     And "karen.davis@example.com" is not under review
     When "karen.davis@example.com" resubmits their professional credentials
     Then "karen.davis@example.com" rejection should be cleared
-    And "karen.davis@example.com" should require admin attention
+    And "karen.davis@example.com" should be pending review
+
+  Scenario: Cannot start review on helper without complete documents
+    Given helper "incomplete@example.com" has confirmed their email
+    And "incomplete@example.com" has submitted their professional credentials
+    And "incomplete@example.com" has NOT submitted their background screening
+    When I attempt to start reviewing "incomplete@example.com"
+    Then review should fail with error "Helper is not pending review"
+    And "incomplete@example.com" should not be under review
+
+  Scenario: Cannot start review on validated helper
+    Given helper "validated@example.com" is already validated
+    When I attempt to start reviewing "validated@example.com"
+    Then review should fail with error "Helper is already validated"
+    And "validated@example.com" should not be under review
+
+  Scenario: Cannot start review on rejected helper
+    Given helper "rejected@example.com" has been rejected
+    When I attempt to start reviewing "rejected@example.com"
+    Then review should fail with error "Helper has been rejected"
+    And "rejected@example.com" should not be under review
+
+  Scenario: Admin can review helper again after resubmission
+    Given helper "resubmitted@example.com" was rejected
+    And "resubmitted@example.com" has resubmitted their professional credentials
+    And "resubmitted@example.com" is pending review
+    When I start reviewing "resubmitted@example.com"
+    Then "resubmitted@example.com" should be under review

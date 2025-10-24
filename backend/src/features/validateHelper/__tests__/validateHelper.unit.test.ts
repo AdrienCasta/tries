@@ -51,8 +51,8 @@ describeFeature(
         expect(harness.canApplyToEvents("john.doe@example.com")).toBe(true);
       });
 
-      And('"john.doe@example.com" should no longer require my attention', () => {
-        expect(harness.doesHelperRequireAttention("john.doe@example.com")).toBe(false);
+      And('"john.doe@example.com" should no longer be pending review', () => {
+        expect(harness.isHelperPendingReview("john.doe@example.com")).toBe(false);
       });
     });
 
@@ -312,7 +312,7 @@ class ValidateHelperTestHarness {
     return this.helperRepository.isProfileValidated(email);
   }
 
-  doesHelperRequireAttention(email: string): boolean {
+  isHelperPendingReview(email: string): boolean {
     const helper = this.helperRepository.findByEmail(email);
     if (!helper) return false;
     return (

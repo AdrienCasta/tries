@@ -12,7 +12,7 @@ Feature: Validate helper credentials
     And "john.doe@example.com" has submitted their background screening
     When I validate "john.doe@example.com"
     Then "john.doe@example.com" can apply to events
-    And "john.doe@example.com" should no longer require my attention
+    And "john.doe@example.com" should no longer be pending review
 
   Scenario Outline: Cannot validate helper with incomplete requirements
     Given helper "bob.martin@example.com" has confirmed their email

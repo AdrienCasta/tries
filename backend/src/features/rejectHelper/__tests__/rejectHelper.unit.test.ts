@@ -51,8 +51,8 @@ describeFeature(
         expect(harness.canApplyToEvents("jane.smith@example.com")).toBe(false);
       });
 
-      And('"jane.smith@example.com" should no longer require my attention', () => {
-        expect(harness.doesHelperRequireAttention("jane.smith@example.com")).toBe(false);
+      And('"jane.smith@example.com" should no longer be pending review', () => {
+        expect(harness.isHelperPendingReview("jane.smith@example.com")).toBe(false);
       });
     });
 
@@ -317,7 +317,7 @@ class RejectHelperTestHarness {
     return validated && !rejected;
   }
 
-  doesHelperRequireAttention(email: string): boolean {
+  isHelperPendingReview(email: string): boolean {
     const helper = this.helperRepository.findByEmail(email);
     if (!helper) return false;
     const rejected = this.helperRepository.isHelperRejected(email);
