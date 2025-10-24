@@ -349,7 +349,8 @@ class ValidateHelperTestHarness {
   }
 
   canApplyToEvents(email: string): boolean {
-    return this.helperRepository.isProfileValidated(email);
+    const helper = this.helperRepository.findByEmail(email);
+    return helper?.profileValidated ?? false;
   }
 
   isHelperPendingReview(email: string): boolean {

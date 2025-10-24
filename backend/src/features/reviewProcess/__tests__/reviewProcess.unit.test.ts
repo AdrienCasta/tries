@@ -6,11 +6,13 @@ import featureContent from "../../../../../features/reviewProcess.feature?raw";
 import { Result } from "@shared/infrastructure/Result";
 
 import StartReview from "../StartReview.usecase";
-import ResubmitCredentials from "../../resubmitHelperDocuments/ResubmitCredentials.usecase";
-import ResubmitBackgroundCheck from "../../resubmitHelperDocuments/ResubmitBackgroundCheck.usecase";
+import UpdateHelperProfile from "../../updateHelperProfile/UpdateHelperProfile.usecase";
+import InvalidateHelperValidation from "../../invalidateHelperValidation/InvalidateHelperValidation.usecase";
 import ValidateHelper from "../../validateHelper/validateHelper.usecase";
 import RejectHelper from "../../rejectHelper/rejectHelper.usecase";
 import { InMemoryValidationHelperRepository } from "@infrastructure/persistence/InMemoryValidationHelperRepository";
+import InMemoryEventBus from "@infrastructure/events/InMemoryEventBus";
+import { SystemClock } from "@infrastructure/time/SystemClock";
 
 const feature = await loadFeatureFromText(featureContent);
 
@@ -406,27 +408,37 @@ class LockHelperDocumentsTestHarness {
   private constructor(
     private readonly helperRepository: InMemoryValidationHelperRepository,
     private readonly startReviewUsecase: StartReview,
-    private readonly resubmitCredentialsUsecase: ResubmitCredentials,
-    private readonly resubmitBackgroundCheckUsecase: ResubmitBackgroundCheck,
+    private readonly updateHelperProfileUsecase: UpdateHelperProfile,
     private readonly validateHelperUsecase: ValidateHelper,
-    private readonly rejectHelperUsecase: RejectHelper
+    private readonly rejectHelperUsecase: RejectHelper,
+    private readonly eventBus: InMemoryEventBus
   ) {}
 
   static setup() {
     const helperRepository = new InMemoryValidationHelperRepository();
     const notificationService = new InMemoryHelperNotificationService();
+    const eventBus = new InMemoryEventBus();
+    const clock = new SystemClock();
+
+    const invalidateHelperValidation = new InvalidateHelperValidation(helperRepository);
+
     const startReview = new StartReview(helperRepository);
-    const resubmitCredentials = new ResubmitCredentials(helperRepository);
-    const resubmitBackgroundCheck = new ResubmitBackgroundCheck(helperRepository);
+    const updateHelperProfile = new UpdateHelperProfile(
+      helperRepository,
+      eventBus,
+      clock,
+      invalidateHelperValidation
+    );
     const validateHelper = new ValidateHelper(helperRepository, notificationService);
     const rejectHelper = new RejectHelper(helperRepository, notificationService);
+
     return new this(
       helperRepository,
       startReview,
-      resubmitCredentials,
-      resubmitBackgroundCheck,
+      updateHelperProfile,
       validateHelper,
-      rejectHelper
+      rejectHelper,
+      eventBus
     );
   }
 
@@ -459,21 +471,21 @@ class LockHelperDocumentsTestHarness {
   }
 
   async resubmitCredentials(email: string) {
-    const result = await this.resubmitCredentialsUsecase.execute(email);
+    const result = await this.updateHelperProfileUsecase.execute(email, { credentialsSubmitted: true });
     if (Result.isFailure(result)) {
       throw result.error;
     }
   }
 
   async resubmitBackgroundCheck(email: string) {
-    const result = await this.resubmitBackgroundCheckUsecase.execute(email);
+    const result = await this.updateHelperProfileUsecase.execute(email, { backgroundCheckSubmitted: true });
     if (Result.isFailure(result)) {
       throw result.error;
     }
   }
 
   async attemptResubmitCredentials(email: string) {
-    const result = await this.resubmitCredentialsUsecase.execute(email);
+    const result = await this.updateHelperProfileUsecase.execute(email, { credentialsSubmitted: true });
     if (Result.isFailure(result)) {
       this.lastResubmissionError = result.error.message;
     } else {
@@ -482,7 +494,7 @@ class LockHelperDocumentsTestHarness {
   }
 
   async attemptResubmitBackgroundCheck(email: string) {
-    const result = await this.resubmitBackgroundCheckUsecase.execute(email);
+    const result = await this.updateHelperProfileUsecase.execute(email, { backgroundCheckSubmitted: true });
     if (Result.isFailure(result)) {
       this.lastResubmissionError = result.error.message;
     } else {
@@ -514,13 +526,14 @@ class LockHelperDocumentsTestHarness {
   }
 
   canApplyToEvents(email: string): boolean {
-    return this.helperRepository.isProfileValidated(email);
+    const helper = this.helperRepository.findByEmail(email);
+    return helper?.profileValidated ?? false;
   }
 
   isHelperPendingReview(email: string): boolean {
     const helper = this.helperRepository.findByEmail(email);
     if (!helper) return false;
-    const rejected = this.helperRepository.isHelperRejected(email);
+    const rejected = helper.rejected ?? false;
     return (
       helper.emailConfirmed &&
       helper.credentialsSubmitted &&
@@ -532,6 +545,7 @@ class LockHelperDocumentsTestHarness {
   }
 
   isRejected(email: string): boolean {
-    return this.helperRepository.isHelperRejected(email);
+    const helper = this.helperRepository.findByEmail(email);
+    return helper?.rejected ?? false;
   }
 }

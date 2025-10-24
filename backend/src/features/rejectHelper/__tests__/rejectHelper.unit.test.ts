@@ -352,15 +352,16 @@ class RejectHelperTestHarness {
   }
 
   canApplyToEvents(email: string): boolean {
-    const rejected = this.helperRepository.isHelperRejected(email);
-    const validated = this.helperRepository.isProfileValidated(email);
+    const helper = this.helperRepository.findByEmail(email);
+    const rejected = helper?.rejected ?? false;
+    const validated = helper?.profileValidated ?? false;
     return validated && !rejected;
   }
 
   isHelperPendingReview(email: string): boolean {
     const helper = this.helperRepository.findByEmail(email);
     if (!helper) return false;
-    const rejected = this.helperRepository.isHelperRejected(email);
+    const rejected = helper.rejected ?? false;
     return (
       helper.emailConfirmed &&
       helper.credentialsSubmitted &&
@@ -405,6 +406,7 @@ class RejectHelperTestHarness {
   }
 
   isHelperRejected(email: string): boolean {
-    return this.helperRepository.isHelperRejected(email);
+    const helper = this.helperRepository.findByEmail(email);
+    return helper?.rejected ?? false;
   }
 }
