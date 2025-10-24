@@ -13,6 +13,8 @@ export default defineConfig({
       "@shared": path.resolve(__dirname, "./src/shared"),
       "@features": path.resolve(__dirname, "./src/features"),
       "@infrastructure": path.resolve(__dirname, "./src/infrastructure"),
+      "@__tests__": path.resolve(__dirname, "./src/__tests__"),
+      "@app": path.resolve(__dirname, "./src/app"),
     },
   },
 });

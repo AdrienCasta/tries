@@ -13,7 +13,9 @@
     "paths": {
       "@shared/*": ["./src/shared/*"],
       "@features/*": ["./src/features/*"],
-      "@infrastructure/*": ["./src/infrastructure/*"]
+      "@infrastructure/*": ["./src/infrastructure/*"],
+      "@app/*": ["./src/app/*"],
+      "@__tests__/*": ["./src/__tests__/*"]
     }
   },
   "include": ["src/**/*", "features/**/*"]
