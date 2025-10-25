@@ -14,11 +14,6 @@ import RegisterHelperCommandFixture from "@features/registerHelper/__tests__/fix
 import { ConfirmHelperEmail } from "../ConfirmHelperEmail.usecase";
 import { EmailConfirmationService } from "@shared/domain/services/EmailConfirmationService";
 import { Result, Success } from "@shared/infrastructure/Result";
-import {
-  InvalidTokenFormatError,
-  TokenExpiredError,
-  EmailAlreadyConfirmedError,
-} from "../ConfirmHelperEmail.errors";
 import AuthUserRepository from "@shared/domain/repositories/AuthUserRepository";
 import { InMemoryHelperRepository } from "@infrastructure/persistence/InMemoryHelperRepository";
 import { HelperRepository } from "@shared/domain/repositories/HelperRepository";
@@ -35,59 +30,50 @@ import HelperId from "@shared/domain/value-objects/HelperId";
 import PlaceOfBirth from "@shared/domain/value-objects/PlaceOfBirth";
 const feature = await loadFeatureFromText(featureContent);
 
-describeFeature(
-  feature,
-  ({ BeforeEachScenario, ScenarioOutline, Scenario, Background }) => {
-    Scenario(
-      "Successfully confirm email with valid token",
-      ({ Given, When, Then, And }) => {
-        const helperRepository = new InMemoryHelperRepository();
-        const authUserRepository = new InMemoryAuthUserRepository();
-        const command = RegisterHelperCommandFixture.aValidCommand();
-        const clock = new FixedClock();
-        const registerHelper = new RegisterHelper(authUserRepository, clock);
-        Given(
-          "I registered information including criminal record and diploma",
-          async () => {
-            await registerHelper.execute(command);
-          }
-        );
-        And("I have never confirm my email before", () => {
-          expect(
-            authUserRepository.authUsers.get(command.email)?.emailConfirmed
-          ).toBe(false);
-        });
-        When("I confirm my email", async () => {
-          const aToken = "zertyui";
-          const emailConfirmationService = new FakeEmailConfirmationService();
-          const confirmEmail = new ConfirmHelperEmail(
-            emailConfirmationService,
-            authUserRepository,
-            helperRepository
-          );
-          await confirmEmail.execute(command.email, aToken);
-        });
-        Then("I have been granted limited access", async () => {
-          expect(
-            authUserRepository.authUsers.get(command.email)?.emailConfirmed
-          ).toBe(true);
-        });
-        And("I cannot apply to events", () => {});
-        And("I should be pending review", async () => {
-          expect(
-            (
-              (await helperRepository.findByEmail(command.email)) as Helper
-            ).isPendingReview()
-          ).toBe(true);
-        });
-      }
-    );
-  }
-);
+const VALID_CONFIRMATION_TOKEN = "valid-token-12345";
 
 class FakeEmailConfirmationService implements EmailConfirmationService {
   async confirmEmail(token: string) {
     return Result.ok();
+  }
+}
+
+class TestHarness {
+  helperRepository: InMemoryHelperRepository;
+  authUserRepository: InMemoryAuthUserRepository;
+  clock: FixedClock;
+  registerHelper: RegisterHelper;
+  confirmHelperEmail: ConfirmHelperEmail;
+
+  constructor() {
+    this.helperRepository = new InMemoryHelperRepository();
+    this.authUserRepository = new InMemoryAuthUserRepository();
+    this.clock = new FixedClock();
+    this.registerHelper = new RegisterHelper(
+      this.authUserRepository,
+      this.clock
+    );
+    this.confirmHelperEmail = new ConfirmHelperEmail(
+      new FakeEmailConfirmationService(),
+      this.authUserRepository,
+      this.helperRepository
+    );
+  }
+
+  async registerHelperWith(command: any) {
+    await this.registerHelper.execute(command);
+  }
+
+  async confirmEmail(email: string) {
+    await this.confirmHelperEmail.execute(email, VALID_CONFIRMATION_TOKEN);
+  }
+
+  isEmailConfirmed(email: string): boolean {
+    return this.authUserRepository.authUsers.get(email)?.emailConfirmed ?? false;
+  }
+
+  async getHelper(email: string): Promise<Helper | null> {
+    return await this.helperRepository.findByEmail(email);
   }
 }
 
@@ -99,42 +85,138 @@ class ConfirmHelperEmail {
   ) {}
 
   async execute(email: string, token: string) {
-    await this.authUserRepository.confirmEmail(email);
     const authUser = await this.authUserRepository.getUserByEmail(email);
 
-    if (authUser) {
-      await this.helperRepository.save(
-        Helper.inPendingReview({
-          id: HelperId.create(authUser.id),
-          email: (HelperEmail.create(authUser.email) as Success<HelperEmail>)
-            .value,
-          lastname: (Firstname.create(authUser.lastname) as Success<Firstname>)
-            .value,
-          firstname: (Lastname.create(authUser.firstname) as Success<Lastname>)
-            .value,
-          birthdate: (
-            Birthdate.create(new Date(authUser.birthdate)) as Success<Birthdate>
-          ).value,
+    await this.authUserRepository.confirmEmail(email);
 
-          residence: (
-            (authUser.residence.country === "FR"
-              ? Residence.createFrenchResidence(
-                  authUser.residence.frenchAreaCode as string
-                )
-              : Residence.createFrenchResidence(
-                  authUser.residence.country
-                )) as Success<Residence>
-          ).value,
-          placeOfBirth: (
-            PlaceOfBirth.create(authUser.placeOfBirth) as Success<PlaceOfBirth>
-          ).value,
-          professions: (
-            Profession.createMany(
-              authUser.professions.map((p) => p as ProfessionWithHealthId)
-            ) as Success<Profession[]>
-          ).value,
-        })
-      );
+    if (authUser) {
+      const isIncomplete =
+        authUser.professions.some((p) => !p.credentialId) ||
+        !authUser.criminalRecordCertificateId;
+
+      const helperData = this.buildHelperData(authUser);
+      const helper = isIncomplete
+        ? Helper.asIncomplete(helperData)
+        : Helper.inPendingReview(helperData);
+
+      await this.helperRepository.save(helper);
     }
+    return Result.ok();
+  }
+
+  private buildHelperData(authUser: any) {
+    return {
+      id: HelperId.create(authUser.id),
+      email: (HelperEmail.create(authUser.email) as Success<HelperEmail>)
+        .value,
+      lastname: (Lastname.create(authUser.lastname) as Success<Lastname>)
+        .value,
+      firstname: (Firstname.create(authUser.firstname) as Success<Firstname>)
+        .value,
+      birthdate: (
+        Birthdate.create(new Date(authUser.birthdate)) as Success<Birthdate>
+      ).value,
+      residence: (
+        (authUser.residence.country === "FR"
+          ? Residence.createFrenchResidence(
+              authUser.residence.frenchAreaCode as string
+            )
+          : Residence.createForeignResidence(authUser.residence.country)) as Success<Residence>
+      ).value,
+      placeOfBirth: (
+        PlaceOfBirth.create(authUser.placeOfBirth) as Success<PlaceOfBirth>
+      ).value,
+      professions: (
+        Profession.createMany(
+          authUser.professions.map((p) => p as ProfessionWithHealthId)
+        ) as Success<Profession[]>
+      ).value,
+    };
   }
 }
+
+describeFeature(
+  feature,
+  ({ BeforeEachScenario, ScenarioOutline, Scenario, Background }) => {
+    Background(({ Given }) => {
+      Given("I am a helper who registered on the platform", () => {});
+    });
+
+    Scenario(
+      "Successfully confirm email with valid token",
+      ({ Given, When, Then, And }) => {
+        const harness = new TestHarness();
+        const command = RegisterHelperCommandFixture.aValidCommand();
+
+        Given(
+          "I registered information including criminal record and diploma",
+          async () => {
+            await harness.registerHelperWith(command);
+          }
+        );
+        And("I have never confirm my email before", () => {
+          expect(harness.isEmailConfirmed(command.email)).toBe(false);
+        });
+        When("I confirm my email", async () => {
+          await harness.confirmEmail(command.email);
+        });
+        Then("I have been granted limited access", async () => {
+          expect(harness.isEmailConfirmed(command.email)).toBe(true);
+        });
+        And("I cannot apply to events", () => {});
+        And("I should be pending review", async () => {
+          const helper = await harness.getHelper(command.email);
+          expect(helper?.isPendingReview()).toBe(true);
+        });
+      }
+    );
+
+    Scenario(
+      "Successfully confirm email without providing credential",
+      ({ Given, When, Then, And }) => {
+        const harness = new TestHarness();
+        const command = RegisterHelperCommandFixture.aValidCommand({
+          professions: [
+            {
+              code: "physiotherapist",
+              healthId: { rpps: "12345678901" },
+            },
+          ],
+        });
+
+        Given("I registered information", async () => {
+          await harness.registerHelperWith(command);
+        });
+        When("I confirm my email", async () => {
+          await harness.confirmEmail(command.email);
+        });
+        Then("I have been granted limited access", () => {});
+        And("my profile should be incomplete", async () => {
+          const helper = await harness.getHelper(command.email);
+          expect(helper?.isIncomplete()).toBe(true);
+        });
+      }
+    );
+
+    Scenario(
+      "Successfully confirm email without providing criminal record",
+      ({ Given, When, Then, And }) => {
+        const harness = new TestHarness();
+        const command = RegisterHelperCommandFixture.aValidCommand();
+        command.criminalRecordCertificate = undefined;
+
+        Given("I registered information", async () => {
+          await harness.registerHelperWith(command);
+        });
+        When("I confirm my email", async () => {
+          await harness.confirmEmail(command.email);
+        });
+        Then("I have been granted limited access", () => {});
+        And("my profile should be incomplete", async () => {
+          const helper = await harness.getHelper(command.email);
+          expect(helper?.isIncomplete()).toBe(true);
+        });
+      }
+    );
+  }
+);
