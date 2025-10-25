@@ -31,7 +31,10 @@ export default class RegisterHelperCommandFixture {
         country: "FR",
         frenchAreaCode: "75",
       },
-      criminalRecordCertificate: overrides?.criminalRecordCertificate,
+      criminalRecordCertificate: overrides?.criminalRecordCertificate || {
+        fileType: ".pdf",
+        fileSize: 10 * 1024 * 1024,
+      },
     };
   }
 }

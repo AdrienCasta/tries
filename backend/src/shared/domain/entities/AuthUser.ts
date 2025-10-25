@@ -12,7 +12,7 @@ export interface AuthUserRead {
   professions: Array<{
     code: string;
     healthId: { rpps: string } | { adeli: string };
-    credentialFileId?: string;
+    credentialId?: string;
   }>;
   residence: {
     country: string;
