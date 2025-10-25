@@ -1,5 +1,6 @@
 import DomainError from "@shared/domain/DomainError";
 import { Result } from "@shared/infrastructure/Result.js";
+import Credential, { CredentialSizeExceededError, InvalidCredentialFormatError } from "./Credential.js";
 
 export const VALID_PROFESSIONS = [
   "physiotherapist",
@@ -23,6 +24,7 @@ export type ProfessionType = (typeof VALID_PROFESSIONS)[number];
 export type ProfessionWithHealthId = {
   code: ProfessionType;
   healthId: { rpps: string } | { adeli: string };
+  credential?: { fileType: string; fileSize?: number };
 };
 
 export default class Profession {
@@ -52,6 +54,13 @@ export default class Profession {
       );
       if (Result.isFailure(validationResult)) {
         return Result.fail(validationResult.error);
+      }
+
+      if (profession.credential) {
+        const credentialResult = Credential.create(profession.credential);
+        if (Result.isFailure(credentialResult)) {
+          return Result.fail(credentialResult.error);
+        }
       }
     }
 
@@ -144,7 +153,9 @@ export type ProfessionError =
   | InvalidProfessionHeathIdError
   | WrongHealthIdTypeError
   | RppsInvalidError
-  | AdeliInvalidError;
+  | AdeliInvalidError
+  | InvalidCredentialFormatError
+  | CredentialSizeExceededError;
 
 export class UnkwonProfessionError extends DomainError {
   readonly code = "UNKNOWN_PROFESSION";

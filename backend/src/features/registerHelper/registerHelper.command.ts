@@ -12,14 +12,14 @@ export default interface RegisterHelperCommand {
   professions: Array<{
     code: string;
     healthId: { rpps: string } | { adeli: string };
+    credential?: {
+      fileType: string;
+      fileSize?: number;
+    };
   }>;
   residence: {
     country: string;
     frenchAreaCode?: string;
-  };
-  diploma?: {
-    fileType: string;
-    fileSize?: number;
   };
   criminalRecordCertificate?: {
     fileType: string;

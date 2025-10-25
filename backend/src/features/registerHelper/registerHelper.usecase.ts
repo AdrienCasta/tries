@@ -8,7 +8,6 @@ import Birthdate from "@shared/domain/value-objects/Birthdate";
 import PlaceOfBirth from "@shared/domain/value-objects/PlaceOfBirth";
 import Profession from "@shared/domain/value-objects/Profession";
 import Residence from "@shared/domain/value-objects/Residence";
-import Diploma from "@shared/domain/value-objects/Diploma";
 import CriminalRecordCertificate from "@shared/domain/value-objects/CriminalRecordCertificate";
 import AuthUserRepository from "@shared/domain/repositories/AuthUserRepository";
 import { Clock } from "@shared/domain/services/Clock";
@@ -20,9 +19,7 @@ export default class RegisterHelper {
     private readonly clock: Clock
   ) {}
 
-  async execute(
-    command: RegisterHelperCommand
-  ): Promise<Result<undefined, Error>> {
+  async execute(command: RegisterHelperCommand): Promise<Result<void, Error>> {
     const guard = Result.combineObject({
       email: HelperEmail.create(command.email),
       password: Password.create(command.password),
@@ -38,7 +35,6 @@ export default class RegisterHelper {
               command.residence.frenchAreaCode as string
             )
           : Residence.createForeignResidence(command.residence.country),
-      ...(command.diploma ? { diploma: Diploma.create(command.diploma) } : {}),
       ...(command.criminalRecordCertificate
         ? {
             criminalRecordCertificate: CriminalRecordCertificate.create(

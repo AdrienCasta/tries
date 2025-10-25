@@ -16,6 +16,7 @@ import RegisterHelper, {
 } from "../registerHelper.usecase";
 import InMemoryAuthUserRepository from "@infrastructure/persistence/InMemoryAuthUserRepository";
 import RegisterHelperCommand from "../registerHelper.command";
+import RegisterHelperCommandFixture from "./fixtures/RegisterHelperCommandFixture";
 const feature = await loadFeatureFromText(featureContent);
 
 const errorMessageMappedToErrorCode = {
@@ -38,8 +39,8 @@ const errorMessageMappedToErrorCode = {
   "Profession requires different health id type": "WrongHealthIdTypeError",
   "Invalid French area code": "ResidenceError",
   "Invalid residence": "ResidenceError",
-  "Diploma must be in PDF format": "InvalidDiplomaFormatError",
-  "Diploma file size exceeds 10MB limit": "DiplomaSizeExceededError",
+  "Credential must be in PDF format": "InvalidCredentialFormatError",
+  "Credential file size exceeds 10MB limit": "CredentialSizeExceededError",
   "Criminal record certificate must be in PDF format":
     "InvalidCriminalRecordCertificateFormatError",
   "Criminal record certificate file size exceeds 10MB limit":
@@ -51,36 +52,7 @@ setVitestCucumberConfiguration({
   ...getVitestCucumberConfiguration(),
   mappedExamples: errorMessageMappedToErrorCode,
 });
-class RegisterHelperCommandFixture {
-  static aValidCommand(
-    overrides?: Partial<RegisterHelperCommand>
-  ): RegisterHelperCommand {
-    return {
-      email: overrides?.email ?? EmailFixtures.aRandomEmail(),
-      password: overrides?.password ?? "12345AZERTpoiu!!!",
-      firstname: overrides?.firstname ?? "John",
-      lastname: overrides?.lastname ?? "Doe",
-      phoneNumber: overrides?.phoneNumber ?? "+33612345678",
-      birthdate: overrides?.birthdate ?? new Date("1990-01-01"),
-      placeOfBirth: overrides?.placeOfBirth ?? {
-        country: "FR",
-        city: "Paris",
-      },
-      professions: overrides?.professions ?? [
-        {
-          code: "physiotherapist",
-          healthId: { rpps: "12345678901" },
-        },
-      ],
-      residence: overrides?.residence ?? {
-        country: "FR",
-        frenchAreaCode: "75",
-      },
-      diploma: overrides?.diploma,
-      criminalRecordCertificate: overrides?.criminalRecordCertificate,
-    };
-  }
-}
+
 describeFeature(
   feature,
   ({ BeforeEachScenario, ScenarioOutline, Scenario, Background }) => {
@@ -366,13 +338,19 @@ describeFeature(
     );
 
     ScenarioOutline(
-      "Cannot register with invalid diploma file format",
+      "Cannot register with invalid credential file format",
       ({ When, Then, And }, { fileType, error }) => {
         When(
-          'I submit my registration with a diploma file of type "<fileType>"',
+          'I submit my registration with a credential file of type "<fileType>"',
           async () => {
             const command = RegisterHelperCommandFixture.aValidCommand({
-              diploma: { fileType },
+              professions: [
+                {
+                  code: "physiotherapist",
+                  healthId: { rpps: "12345678901" },
+                  credential: { fileType },
+                },
+              ],
             });
             await harness.registerHelper(command);
           }
@@ -382,22 +360,28 @@ describeFeature(
           expect(harness.didHelperRegisterSuccessfully()).toBe(false);
         });
 
-        And("I must provide a valid PDF diploma to proceed", async () => {
+        And("I must provide a valid PDF credential to proceed", async () => {
           harness.expectRegistrationFailedWithError(error);
         });
       }
     );
 
     ScenarioOutline(
-      "Cannot register with diploma file exceeding size limit",
+      "Cannot register with credential file exceeding size limit",
       ({ When, Then, And }, { fileSize, error }) => {
         const fileSizeInBytes = parseInt(fileSize) * 1024 * 1024;
 
         When(
-          "I submit my registration with a diploma file of size <fileSize>",
+          "I submit my registration with a credential file of size <fileSize>",
           async () => {
             const command = RegisterHelperCommandFixture.aValidCommand({
-              diploma: { fileType: ".pdf", fileSize: fileSizeInBytes },
+              professions: [
+                {
+                  code: "physiotherapist",
+                  healthId: { rpps: "12345678901" },
+                  credential: { fileType: ".pdf", fileSize: fileSizeInBytes },
+                },
+              ],
             });
             await harness.registerHelper(command);
           }
@@ -408,7 +392,7 @@ describeFeature(
         });
 
         And(
-          "I must provide a diploma within the size limit to proceed",
+          "I must provide a credential within the size limit to proceed",
           async () => {
             harness.expectRegistrationFailedWithError(error);
           }

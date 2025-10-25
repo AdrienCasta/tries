@@ -162,28 +162,28 @@ Background:
       | CA      |                | Invalid residence |
       | GB      |                | Invalid residence |
 
-  Scenario Outline: Cannot register with invalid diploma file format
-    When I submit my registration with a diploma file of type "<fileType>"
+  Scenario Outline: Cannot register with invalid credential file format
+    When I submit my registration with a credential file of type "<fileType>"
     Then I am notified it went wrong because <error>
-    And I must provide a valid PDF diploma to proceed
+    And I must provide a valid PDF credential to proceed
 
     Examples: Invalid file formats
-      | fileType | error                         |
-      | .jpg     | Diploma must be in PDF format |
-      | .png     | Diploma must be in PDF format |
-      | .docx    | Diploma must be in PDF format |
-      | .txt     | Diploma must be in PDF format |
-      | .exe     | Diploma must be in PDF format |
+      | fileType | error                            |
+      | .jpg     | Credential must be in PDF format |
+      | .png     | Credential must be in PDF format |
+      | .docx    | Credential must be in PDF format |
+      | .txt     | Credential must be in PDF format |
+      | .exe     | Credential must be in PDF format |
 
-  Scenario Outline: Cannot register with diploma file exceeding size limit
-    When I submit my registration with a diploma file of size <fileSize>
+  Scenario Outline: Cannot register with credential file exceeding size limit
+    When I submit my registration with a credential file of size <fileSize>
     Then I am notified it went wrong because <error>
-    And I must provide a diploma within the size limit to proceed
+    And I must provide a credential within the size limit to proceed
 
     Examples: File too large
-      | fileSize | error                                |
-      | 11MB     | Diploma file size exceeds 10MB limit |
-      | 50MB     | Diploma file size exceeds 10MB limit |
+      | fileSize | error                                   |
+      | 11MB     | Credential file size exceeds 10MB limit |
+      | 50MB     | Credential file size exceeds 10MB limit |
 
   Scenario Outline: Cannot register with invalid criminal record certificate file format
     When I submit my registration with a criminal record certificate file of type "<fileType>"
