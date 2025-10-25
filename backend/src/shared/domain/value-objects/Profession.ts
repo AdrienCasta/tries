@@ -20,7 +20,7 @@ export const VALID_PROFESSIONS = [
 
 export type ProfessionType = (typeof VALID_PROFESSIONS)[number];
 
-type ProfessionWithHealthId = {
+export type ProfessionWithHealthId = {
   code: ProfessionType;
   healthId: { rpps: string } | { adeli: string };
 };
