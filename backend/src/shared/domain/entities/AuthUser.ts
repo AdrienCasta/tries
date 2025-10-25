@@ -19,6 +19,7 @@ export interface AuthUserRead {
     frenchAreaCode?: string;
   };
   emailConfirmed: boolean;
+  criminalRecordCertificateId?: string;
 }
 export interface AuthUserWrite {
   firstname: string;
@@ -26,6 +27,7 @@ export interface AuthUserWrite {
   email: string;
   phoneNumber: string;
   birthdate: string;
+  criminalRecordCertificateId?: string;
   placeOfBirth: {
     country: string;
     city: string;

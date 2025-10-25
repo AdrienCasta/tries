@@ -71,10 +71,17 @@ export default class RegisterHelper {
       })
     );
 
+    const criminalRecordCertificateId = command.criminalRecordCertificate
+      ? crypto.randomUUID()
+      : undefined;
+
     try {
       await this.authUserRepository.createUser({
         ...command,
         professions: professionsWithCredentialIds,
+        ...(criminalRecordCertificateId
+          ? { criminalRecordCertificateId }
+          : {}),
       });
     } catch (error) {}
     return Result.ok(undefined);
