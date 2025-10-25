@@ -12,6 +12,7 @@ export interface AuthUserRead {
   professions: Array<{
     code: string;
     healthId: { rpps: string } | { adeli: string };
+    credentialFileId?: string;
   }>;
   residence: {
     country: string;
@@ -32,6 +33,7 @@ export interface AuthUserWrite {
   professions: Array<{
     code: string;
     healthId: { rpps: string } | { adeli: string };
+    credentialId?: string;
   }>;
   residence: {
     country: string;

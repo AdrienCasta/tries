@@ -12,6 +12,7 @@ import CriminalRecordCertificate from "@shared/domain/value-objects/CriminalReco
 import AuthUserRepository from "@shared/domain/repositories/AuthUserRepository";
 import { Clock } from "@shared/domain/services/Clock";
 import Password from "@shared/domain/value-objects/Password";
+import crypto from "node:crypto";
 
 export default class RegisterHelper {
   constructor(
@@ -60,8 +61,21 @@ export default class RegisterHelper {
       return duplicatePhoneCheck;
     }
 
+    const professionsWithCredentialIds = command.professions.map(
+      (profession) => ({
+        code: profession.code,
+        healthId: profession.healthId,
+        ...(profession.credential
+          ? { credentialId: crypto.randomUUID() }
+          : {}),
+      })
+    );
+
     try {
-      await this.authUserRepository.createUser(command);
+      await this.authUserRepository.createUser({
+        ...command,
+        professions: professionsWithCredentialIds,
+      });
     } catch (error) {}
     return Result.ok(undefined);
   }
