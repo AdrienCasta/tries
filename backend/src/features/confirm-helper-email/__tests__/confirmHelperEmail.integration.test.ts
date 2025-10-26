@@ -11,10 +11,10 @@ import { SystemClock } from "@infrastructure/time/SystemClock";
 import InMemoryEventBus from "@infrastructure/events/InMemoryEventBus";
 import { createApp } from "@app/createApp";
 import { EmailFixtures } from "@shared/__tests__/fixtures/EmailFixtures";
-import RegisterHelperRequestFixture from "./fixtures/RegisterHelperRequestFixture";
+import RegisterHelperRequestFixture from "@features/registerHelper/__tests__/fixtures/RegisterHelperRequestFixture";
 
 // @ts-ignore
-import featureContent from "../../../../../features/registerHelper.feature?raw";
+import featureContent from "../../../../../features/confirmEmail.feature?raw";
 
 const feature = await loadFeatureFromText(featureContent);
 
@@ -61,49 +61,76 @@ describeFeature(
     });
 
     Background(({ Given }) => {
-      Given(
-        "I am healthcare professional wishing to become an helper",
-        () => {}
-      );
+      Given("I am a helper who registered on the platform", () => {});
     });
 
-    Scenario("Helper register successfully", ({ When, Then, And }) => {
-      When("I submit my information", async () => {
-        const payload = RegisterHelperRequestFixture.aValidRequest({
-          email: context.testEmail,
-          professions: [
-            {
-              code: "physiotherapist",
-              healthId: { rpps: "12345678901" },
-            },
-          ],
-          criminalRecordCertificate: undefined,
-        });
+    Scenario(
+      "Successfully confirm email with valid token",
+      ({ Given, When, Then, And }) => {
+        let confirmationToken: string;
 
-        context.response = await context.server.inject({
-          method: "POST",
-          url: "/api/helpers/register",
-          payload,
-        });
-      });
+        Given(
+          "I registered information including criminal record and diploma",
+          async () => {
+            const registerPayload = RegisterHelperRequestFixture.aValidRequest({
+              email: context.testEmail,
+            });
 
-      Then("I am notified it went well", () => {
-        expect(context.response?.statusCode).toBe(201);
+            await context.server.inject({
+              method: "POST",
+              url: "/api/helpers/register",
+              payload: registerPayload,
+            });
 
-        const body = context.response?.json();
-        expect(body).toHaveProperty("message");
-        expect(body.message).toContain("successfully");
-      });
-
-      And("notified I have to confirm my email", async () => {
-        const user = await context.supabaseHelper.waitForUser(
-          context.testEmail
+            confirmationToken =
+              await context.supabaseHelper.generateEmailConfirmationToken(
+                context.testEmail
+              );
+          }
         );
-        expect(user).toBeDefined();
-        expect(user.email).toBe(context.testEmail);
-        expect(user.email_confirmed_at).toBeFalsy();
-      });
-    });
+
+        And("I have never confirm my email before", async () => {
+          const user = await context.supabaseHelper.getUserByEmail(
+            context.testEmail
+          );
+          expect(user?.email_confirmed_at).toBeFalsy();
+        });
+
+        When("I confirm my email", async () => {
+          context.response = await context.server.inject({
+            method: "POST",
+            url: "/api/helpers/confirm-email",
+            payload: {
+              email: context.testEmail,
+              token: confirmationToken,
+            },
+          });
+        });
+
+        Then("I have been granted limited access", async () => {
+          expect(context.response?.statusCode).toBe(200);
+
+          const body = context.response?.json();
+          expect(body).toHaveProperty("message");
+          expect(body.message).toContain("confirmed successfully");
+
+          const user = await context.supabaseHelper.getUserByEmail(
+            context.testEmail
+          );
+          expect(user?.email_confirmed_at).toBeTruthy();
+        });
+
+        And("I cannot apply to events", () => {});
+
+        And("I should be pending review", async () => {
+          const helper = await context.supabaseHelper.waitForHelper(
+            context.testEmail
+          );
+          expect(helper).toBeDefined();
+          expect(helper.status).toBe("pending_review");
+        });
+      }
+    );
   },
   { includeTags: ["integration"] }
 );

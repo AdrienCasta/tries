@@ -6,6 +6,7 @@ Feature: Confirm Helper Email
   Background:
     Given I am a helper who registered on the platform
 
+  @integration
   Scenario: Successfully confirm email with valid token
     Given I registered information including criminal record and diploma
     And I have never confirm my email before

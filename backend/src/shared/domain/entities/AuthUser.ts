@@ -26,6 +26,7 @@ export interface AuthUserWrite {
   lastname: string;
   email: string;
   phoneNumber: string;
+  password: string;
   birthdate: string;
   criminalRecordCertificateId?: string;
   placeOfBirth: {

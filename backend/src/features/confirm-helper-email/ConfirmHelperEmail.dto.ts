@@ -1,5 +1,6 @@
 export interface ConfirmHelperEmailRequest {
   token: string;
+  email: string;
 }
 
 export interface ConfirmHelperEmailSuccessResponse {

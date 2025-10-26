@@ -1,5 +1,4 @@
 import { ConfirmHelperEmail } from "./ConfirmHelperEmail.usecase.js";
-import { ConfirmHelperEmailCommand } from "./ConfirmHelperEmail.command.js";
 import { Result } from "@shared/infrastructure/Result.js";
 import {
   ConfirmHelperEmailRequest,
@@ -27,9 +26,10 @@ export default class ConfirmHelperEmailController {
   async handle(
     request: ConfirmHelperEmailRequest
   ): Promise<ConfirmHelperEmailControllerResponse> {
-    const command = new ConfirmHelperEmailCommand(request.token);
-
-    const result = await this.confirmHelperEmailUseCase.execute(command);
+    const result = await this.confirmHelperEmailUseCase.execute({
+      email: request.email,
+      token: request.token,
+    });
 
     if (Result.isSuccess(result)) {
       await this.eventBus.publish(

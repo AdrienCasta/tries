@@ -1,17 +1,17 @@
-import RegisterHelperCommand from "@features/registerHelper/registerHelper.command";
+import { RegisterHelperRequest } from "@features/registerHelper/registerHelper.controller";
 import { EmailFixtures } from "@shared/__tests__/fixtures/EmailFixtures";
 
 export default class RegisterHelperCommandFixture {
-  static aValidCommand(
-    overrides?: Partial<RegisterHelperCommand>
-  ): RegisterHelperCommand {
+  static aValidRequest(
+    overrides?: Partial<RegisterHelperRequest>
+  ): RegisterHelperRequest {
     return {
       email: overrides?.email ?? EmailFixtures.aRandomEmail(),
       password: overrides?.password ?? "12345AZERTpoiu!!!",
       firstname: overrides?.firstname ?? "John",
       lastname: overrides?.lastname ?? "Doe",
       phoneNumber: overrides?.phoneNumber ?? "+33612345678",
-      birthdate: overrides?.birthdate ?? new Date("1990-01-01"),
+      birthdate: overrides?.birthdate ?? new Date("1990-01-01").toISOString(),
       placeOfBirth: overrides?.placeOfBirth ?? {
         country: "FR",
         city: "Paris",

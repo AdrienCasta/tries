@@ -21,6 +21,7 @@ export class HelperPersistenceMapper {
       birth_city: helper.placeOfBirth.value.city,
       residence_country_code: helper.residence.value.country,
       residence_french_county_code: helper.residence.value.frenchAreaCode,
+      status: helper.status,
     };
   }
 

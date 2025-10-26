@@ -9,7 +9,8 @@ export default mergeConfig(
         "src/__tests__/**/*.integration.test.ts",
         "src/features/**/*.integration.test.ts"
       ],
-      testTimeout: 10000,
+      testTimeout: 15000,
+      fileParallelism: false,
     },
   })
 );

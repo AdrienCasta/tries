@@ -45,7 +45,8 @@ export function createApp(
 
   const confirmHelperEmail = new ConfirmHelperEmail(
     dependencies.emailConfirmationService,
-    dependencies.clock
+    dependencies.authUserRepository,
+    dependencies.helperRepository
   );
 
   const onboardHelperController = new OnboardHelperController(

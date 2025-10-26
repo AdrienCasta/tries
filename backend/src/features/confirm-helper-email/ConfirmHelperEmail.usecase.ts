@@ -23,6 +23,14 @@ export class ConfirmHelperEmail {
       return Result.fail(new Error("Account not found"));
     }
 
+    const confirmResult = await this.emailConfirmationService.confirmEmail(
+      token
+    );
+
+    if (Result.isFailure(confirmResult)) {
+      return Result.fail(confirmResult.error);
+    }
+
     const isIncomplete =
       authUser.professions.some((p) => !p.credentialId) ||
       !authUser.criminalRecordCertificateId;
@@ -47,8 +55,6 @@ export class ConfirmHelperEmail {
     if (Result.isFailure(saveResult)) {
       return Result.fail(saveResult.error);
     }
-
-    await this.authUserRepository.confirmEmail(email);
 
     return Result.ok();
   }
