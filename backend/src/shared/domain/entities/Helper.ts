@@ -7,7 +7,7 @@ import Birthdate from "../value-objects/Birthdate.js";
 import Residence from "../value-objects/Residence.js";
 import PlaceOfBirth from "../value-objects/PlaceOfBirth.js";
 
-type Helperdata = {
+export type HelperProps = {
   id: HelperId;
   email: HelperEmail;
   lastname: Lastname;
@@ -27,7 +27,7 @@ export class Helper {
   professions: Profession[];
   residence: Residence;
   placeOfBirth: PlaceOfBirth;
-  status: "pending_review";
+  status: "pending_review" | "incomplete";
 
   private constructor({
     id,
@@ -39,7 +39,7 @@ export class Helper {
     residence,
     placeOfBirth,
     status,
-  }: Helperdata & { status: "pending_review" }) {
+  }: HelperProps & { status: "pending_review" | "incomplete" }) {
     this.id = id;
     this.email = email;
     this.lastname = lastname;
@@ -51,8 +51,16 @@ export class Helper {
     this.status = status;
   }
 
-  static inPendingReview(helper: Helperdata) {
-    return new this({ ...helper, status: "pending_review" });
+  static inPendingReview(props: HelperProps) {
+    return new this({ ...props, status: "pending_review" });
+  }
+
+  static asIncomplete(props: HelperProps) {
+    return new this({ ...props, status: "incomplete" });
+  }
+
+  isIncomplete() {
+    return this.status === "incomplete";
   }
 
   isPendingReview() {

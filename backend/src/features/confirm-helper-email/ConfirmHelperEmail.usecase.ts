@@ -1,53 +1,55 @@
-import { ConfirmHelperEmailCommand } from "./ConfirmHelperEmail.command.js";
-import { EmailConfirmationService } from "@shared/domain/services/EmailConfirmationService.js";
-import { Clock } from "@shared/domain/services/Clock.js";
-import { Result } from "@shared/infrastructure/Result.js";
-import {
-  InvalidTokenFormatError,
-  TokenExpiredError,
-  EmailAlreadyConfirmedError,
-} from "./ConfirmHelperEmail.errors.js";
+import { AuthUserToHelperMapper } from "@infrastructure/persistence/mappers/AuthUserToHelperMapper";
+import { Helper } from "@shared/domain/entities/Helper";
+import AuthUserRepository from "@shared/domain/repositories/AuthUserRepository";
+import { HelperRepository } from "@shared/domain/repositories/HelperRepository";
+import { EmailConfirmationService } from "@shared/domain/services/EmailConfirmationService";
+import { Result } from "@shared/infrastructure/Result";
+import { ConfirmHelperEmailCommand } from "./ConfirmHelperEmail.command";
 
 export class ConfirmHelperEmail {
   constructor(
     private readonly emailConfirmationService: EmailConfirmationService,
-    private readonly clock: Clock
+    private readonly authUserRepository: AuthUserRepository,
+    private readonly helperRepository: HelperRepository
   ) {}
 
   async execute({
+    email,
     token,
-  }: ConfirmHelperEmailCommand): Promise<
-    Result<
-      void,
-      InvalidTokenFormatError | TokenExpiredError | EmailAlreadyConfirmedError
-    >
-  > {
-    if (!this.isValidTokenFormat(token)) {
-      return Result.fail(new InvalidTokenFormatError());
+  }: ConfirmHelperEmailCommand): Promise<Result<void, Error>> {
+    const authUser = await this.authUserRepository.getUserByEmail(email);
+
+    if (!authUser) {
+      return Result.fail(new Error("Account not found"));
     }
 
-    const confirmationResult = await this.emailConfirmationService.confirmEmail(
-      token
-    );
+    const isIncomplete =
+      authUser.professions.some((p) => !p.credentialId) ||
+      !authUser.criminalRecordCertificateId;
 
-    if (Result.isFailure(confirmationResult)) {
-      return Result.fail(confirmationResult.error);
+    const helperPropsResult = AuthUserToHelperMapper.toHelperProps(authUser);
+    if (Result.isFailure(helperPropsResult)) {
+      console.error(
+        "Failed to map AuthUser to HelperProps:",
+        helperPropsResult.error
+      );
+      return Result.fail(
+        new Error("System error - unable to process account data")
+      );
     }
 
-    return Result.ok(undefined);
-  }
+    const helper = isIncomplete
+      ? Helper.asIncomplete(helperPropsResult.value)
+      : Helper.inPendingReview(helperPropsResult.value);
 
-  private isValidTokenFormat(token: string): boolean {
-    if (!token || token.trim().length === 0) {
-      return false;
+    const saveResult = await this.helperRepository.save(helper);
+
+    if (Result.isFailure(saveResult)) {
+      return Result.fail(saveResult.error);
     }
-    if (token.length < 10) {
-      return false;
-    }
-    return true;
+
+    await this.authUserRepository.confirmEmail(email);
+
+    return Result.ok();
   }
 }
-
-export type ConfirmHelperEmailResult = ReturnType<
-  typeof ConfirmHelperEmail.prototype.execute
->;

@@ -1,32 +1,17 @@
-import {
-  describeFeature,
-  getVitestCucumberConfiguration,
-  loadFeatureFromText,
-  setVitestCucumberConfiguration,
-} from "@amiceli/vitest-cucumber";
+import { describeFeature, loadFeatureFromText } from "@amiceli/vitest-cucumber";
 
-// @ts-ignore
-import featureContent from "../../../../../features/confirmEmail.feature?raw";
 import RegisterHelper from "@features/registerHelper/registerHelper.usecase";
 import InMemoryAuthUserRepository from "@infrastructure/persistence/InMemoryAuthUserRepository";
 import { FixedClock } from "@infrastructure/time/FixedClock";
 import RegisterHelperCommandFixture from "@features/registerHelper/__tests__/fixtures/RegisterHelperCommandFixture";
 import { EmailConfirmationService } from "@shared/domain/services/EmailConfirmationService";
-import { Result, Success } from "@shared/infrastructure/Result";
-import AuthUserRepository from "@shared/domain/repositories/AuthUserRepository";
+import { Result } from "@shared/infrastructure/Result";
 import { InMemoryHelperRepository } from "@infrastructure/persistence/InMemoryHelperRepository";
-import { HelperRepository } from "@shared/domain/repositories/HelperRepository";
 import { Helper } from "@shared/domain/entities/Helper";
-import HelperEmail from "@shared/domain/value-objects/HelperEmail";
-import Lastname from "@shared/domain/value-objects/Lastname";
-import Firstname from "@shared/domain/value-objects/Firstname";
-import Birthdate from "@shared/domain/value-objects/Birthdate";
-import Profession, {
-  ProfessionWithHealthId,
-} from "@shared/domain/value-objects/Profession";
-import Residence from "@shared/domain/value-objects/Residence";
-import HelperId from "@shared/domain/value-objects/HelperId";
-import PlaceOfBirth from "@shared/domain/value-objects/PlaceOfBirth";
+import { ConfirmHelperEmail } from "../ConfirmHelperEmail.usecase";
+
+// @ts-ignore
+import featureContent from "../../../../../features/confirmEmail.feature?raw";
 const feature = await loadFeatureFromText(featureContent);
 
 const VALID_CONFIRMATION_TOKEN = "valid-token-12345";
@@ -64,10 +49,10 @@ class TestHarness {
   }
 
   async confirmEmail(email: string) {
-    return await this.confirmHelperEmail.execute(
+    return await this.confirmHelperEmail.execute({
       email,
-      VALID_CONFIRMATION_TOKEN
-    );
+      token: VALID_CONFIRMATION_TOKEN,
+    });
   }
 
   isEmailConfirmed(email: string): boolean {
@@ -78,66 +63,6 @@ class TestHarness {
 
   async getHelper(email: string): Promise<Helper | null> {
     return await this.helperRepository.findByEmail(email);
-  }
-}
-
-class ConfirmHelperEmail {
-  constructor(
-    private readonly emailConfirmationService: EmailConfirmationService,
-    private readonly authUserRepository: AuthUserRepository,
-    private readonly helperRepository: HelperRepository
-  ) {}
-
-  async execute(email: string, token: string): Promise<Result<void, Error>> {
-    const authUser = await this.authUserRepository.getUserByEmail(email);
-
-    if (!authUser) {
-      return Result.fail(new Error("Account not found"));
-    }
-
-    const isIncomplete =
-      authUser.professions.some((p) => !p.credentialId) ||
-      !authUser.criminalRecordCertificateId;
-
-    const helperDataResult = this.buildHelperData(authUser);
-    if (Result.isFailure(helperDataResult)) {
-      console.error("Failed to build helper data from repository:", helperDataResult.error);
-      return Result.fail(new Error("System error - unable to process account data"));
-    }
-
-    const helper = isIncomplete
-      ? Helper.asIncomplete(helperDataResult.value)
-      : Helper.inPendingReview(helperDataResult.value);
-
-    const saveResult = await this.helperRepository.save(helper);
-
-    if (Result.isFailure(saveResult)) {
-      return Result.fail(saveResult.error);
-    }
-
-    await this.authUserRepository.confirmEmail(email);
-
-    return Result.ok(undefined);
-  }
-
-  private buildHelperData(authUser: any): Result<any, Error> {
-    return Result.combineObject({
-      id: Result.ok(HelperId.create(authUser.id)),
-      email: HelperEmail.create(authUser.email),
-      lastname: Lastname.create(authUser.lastname),
-      firstname: Firstname.create(authUser.firstname),
-      birthdate: Birthdate.create(new Date(authUser.birthdate)),
-      residence:
-        authUser.residence.country === "FR"
-          ? Residence.createFrenchResidence(
-              authUser.residence.frenchAreaCode as string
-            )
-          : Residence.createForeignResidence(authUser.residence.country),
-      placeOfBirth: PlaceOfBirth.create(authUser.placeOfBirth),
-      professions: Profession.createMany(
-        authUser.professions.map((p) => p as ProfessionWithHealthId)
-      ),
-    });
   }
 }
 
@@ -273,5 +198,3 @@ describeFeature(feature, ({ BeforeEachScenario, Scenario, Background }) => {
     }
   );
 });
-
-// describe("Cannot confirm email when repository fails to fetch user", () => {});
