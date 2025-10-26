@@ -15,6 +15,7 @@ Feature: Confirm Helper Email
     And I cannot apply to events
     And I should be pending review
 
+  @integration
   Scenario: Successfully confirm email without providing credential
     Given I registered information
     When I confirm my email

@@ -16,19 +16,13 @@ export interface RegisterHelperRequest {
   professions: Array<{
     code: string;
     healthId: { rpps: string } | { adeli: string };
+    credential?: { fileType: string; fileSize: number };
   }>;
   residence: {
     country: string;
     frenchAreaCode?: string;
   };
-  diploma?: {
-    fileType: string;
-    fileSize?: number;
-  };
-  criminalRecordCertificate?: {
-    fileType: string;
-    fileSize?: number;
-  };
+  criminalRecordCertificate?: { fileType: string; fileSize: number };
 }
 
 export interface RegisterHelperSuccessResponse {
@@ -80,7 +74,6 @@ export default class RegisterHelperController {
       placeOfBirth: request.placeOfBirth,
       professions: request.professions,
       residence: request.residence,
-      diploma: request.diploma,
       criminalRecordCertificate: request.criminalRecordCertificate,
     };
   }

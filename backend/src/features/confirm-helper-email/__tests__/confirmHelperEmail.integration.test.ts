@@ -131,6 +131,68 @@ describeFeature(
         });
       }
     );
+
+    Scenario(
+      "Successfully confirm email without providing credential",
+      ({ Given, When, Then, And }) => {
+        let confirmationToken: string;
+
+        Given("I registered information", async () => {
+          const registerPayload = RegisterHelperRequestFixture.aValidRequest({
+            email: context.testEmail,
+            professions: [
+              {
+                code: "physiotherapist",
+                healthId: { rpps: "12345678901" },
+              },
+            ],
+          });
+
+          await context.server.inject({
+            method: "POST",
+            url: "/api/helpers/register",
+            payload: registerPayload,
+          });
+
+          confirmationToken =
+            await context.supabaseHelper.generateEmailConfirmationToken(
+              context.testEmail
+            );
+        });
+
+        When("I confirm my email", async () => {
+          context.response = await context.server.inject({
+            method: "POST",
+            url: "/api/helpers/confirm-email",
+            payload: {
+              email: context.testEmail,
+              token: confirmationToken,
+            },
+          });
+        });
+
+        Then("I have been granted limited access", async () => {
+          expect(context.response?.statusCode).toBe(200);
+
+          const body = context.response?.json();
+          expect(body).toHaveProperty("message");
+          expect(body.message).toContain("confirmed successfully");
+
+          const user = await context.supabaseHelper.getUserByEmail(
+            context.testEmail
+          );
+          expect(user?.email_confirmed_at).toBeTruthy();
+        });
+
+        And("my profile should be incomplete", async () => {
+          const helper = await context.supabaseHelper.waitForHelper(
+            context.testEmail
+          );
+          expect(helper).toBeDefined();
+          expect(helper.status).toBe("incomplete");
+        });
+      }
+    );
   },
   { includeTags: ["integration"] }
 );

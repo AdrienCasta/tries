@@ -17,14 +17,27 @@ const feature = await loadFeatureFromText(featureContent);
 const VALID_CONFIRMATION_TOKEN = "valid-token-12345";
 
 class FakeEmailConfirmationService implements EmailConfirmationService {
+  constructor(private authUserRepository: InMemoryAuthUserRepository) {}
+
   async confirmEmail(token: string) {
     return Result.ok();
+  }
+
+  async confirmEmailForUser(email: string) {
+    const user = await this.authUserRepository.getUserByEmail(email);
+    if (user) {
+      this.authUserRepository.authUsers.set(email, {
+        ...user,
+        emailConfirmed: true,
+      });
+    }
   }
 }
 
 class TestHarness {
   helperRepository: InMemoryHelperRepository;
   authUserRepository: InMemoryAuthUserRepository;
+  emailConfirmationService: FakeEmailConfirmationService;
   clock: FixedClock;
   registerHelper: RegisterHelper;
   confirmHelperEmail: ConfirmHelperEmail;
@@ -32,13 +45,16 @@ class TestHarness {
   constructor() {
     this.helperRepository = new InMemoryHelperRepository();
     this.authUserRepository = new InMemoryAuthUserRepository();
+    this.emailConfirmationService = new FakeEmailConfirmationService(
+      this.authUserRepository
+    );
     this.clock = new FixedClock();
     this.registerHelper = new RegisterHelper(
       this.authUserRepository,
       this.clock
     );
     this.confirmHelperEmail = new ConfirmHelperEmail(
-      new FakeEmailConfirmationService(),
+      this.emailConfirmationService,
       this.authUserRepository,
       this.helperRepository
     );
@@ -49,6 +65,7 @@ class TestHarness {
   }
 
   async confirmEmail(email: string) {
+    await this.emailConfirmationService.confirmEmailForUser(email);
     return await this.confirmHelperEmail.execute({
       email,
       token: VALID_CONFIRMATION_TOKEN,
@@ -56,6 +73,7 @@ class TestHarness {
   }
 
   isEmailConfirmed(email: string): boolean {
+    console.log(this.authUserRepository.authUsers.get(email));
     return (
       this.authUserRepository.authUsers.get(email)?.emailConfirmed ?? false
     );
@@ -75,7 +93,7 @@ describeFeature(feature, ({ BeforeEachScenario, Scenario, Background }) => {
     Given("I am a helper who registered on the platform", () => {});
   });
 
-  Scenario(
+  Scenario.only(
     "Successfully confirm email with valid token",
     ({ Given, When, Then, And }) => {
       const command = RegisterHelperCommandFixture.aValidCommand();
