@@ -11,7 +11,6 @@ import RegisterHelper from "@features/registerHelper/registerHelper.usecase";
 import InMemoryAuthUserRepository from "@infrastructure/persistence/InMemoryAuthUserRepository";
 import { FixedClock } from "@infrastructure/time/FixedClock";
 import RegisterHelperCommandFixture from "@features/registerHelper/__tests__/fixtures/RegisterHelperCommandFixture";
-import { ConfirmHelperEmail } from "../ConfirmHelperEmail.usecase";
 import { EmailConfirmationService } from "@shared/domain/services/EmailConfirmationService";
 import { Result, Success } from "@shared/infrastructure/Result";
 import AuthUserRepository from "@shared/domain/repositories/AuthUserRepository";
@@ -65,11 +64,13 @@ class TestHarness {
   }
 
   async confirmEmail(email: string) {
-    await this.confirmHelperEmail.execute(email, VALID_CONFIRMATION_TOKEN);
+    return await this.confirmHelperEmail.execute(email, VALID_CONFIRMATION_TOKEN);
   }
 
   isEmailConfirmed(email: string): boolean {
-    return this.authUserRepository.authUsers.get(email)?.emailConfirmed ?? false;
+    return (
+      this.authUserRepository.authUsers.get(email)?.emailConfirmed ?? false
+    );
   }
 
   async getHelper(email: string): Promise<Helper | null> {
@@ -84,33 +85,34 @@ class ConfirmHelperEmail {
     private readonly helperRepository: HelperRepository
   ) {}
 
-  async execute(email: string, token: string) {
+  async execute(email: string, token: string): Promise<Result<void, Error>> {
     const authUser = await this.authUserRepository.getUserByEmail(email);
+
+    if (!authUser) {
+      return Result.fail(new Error("Account not found"));
+    }
 
     await this.authUserRepository.confirmEmail(email);
 
-    if (authUser) {
-      const isIncomplete =
-        authUser.professions.some((p) => !p.credentialId) ||
-        !authUser.criminalRecordCertificateId;
+    const isIncomplete =
+      authUser.professions.some((p) => !p.credentialId) ||
+      !authUser.criminalRecordCertificateId;
 
-      const helperData = this.buildHelperData(authUser);
-      const helper = isIncomplete
-        ? Helper.asIncomplete(helperData)
-        : Helper.inPendingReview(helperData);
+    const helperData = this.buildHelperData(authUser);
+    const helper = isIncomplete
+      ? Helper.asIncomplete(helperData)
+      : Helper.inPendingReview(helperData);
 
-      await this.helperRepository.save(helper);
-    }
-    return Result.ok();
+    await this.helperRepository.save(helper);
+
+    return Result.ok(undefined);
   }
 
   private buildHelperData(authUser: any) {
     return {
       id: HelperId.create(authUser.id),
-      email: (HelperEmail.create(authUser.email) as Success<HelperEmail>)
-        .value,
-      lastname: (Lastname.create(authUser.lastname) as Success<Lastname>)
-        .value,
+      email: (HelperEmail.create(authUser.email) as Success<HelperEmail>).value,
+      lastname: (Lastname.create(authUser.lastname) as Success<Lastname>).value,
       firstname: (Firstname.create(authUser.firstname) as Success<Firstname>)
         .value,
       birthdate: (
@@ -121,7 +123,9 @@ class ConfirmHelperEmail {
           ? Residence.createFrenchResidence(
               authUser.residence.frenchAreaCode as string
             )
-          : Residence.createForeignResidence(authUser.residence.country)) as Success<Residence>
+          : Residence.createForeignResidence(
+              authUser.residence.country
+            )) as Success<Residence>
       ).value,
       placeOfBirth: (
         PlaceOfBirth.create(authUser.placeOfBirth) as Success<PlaceOfBirth>
@@ -138,6 +142,10 @@ class ConfirmHelperEmail {
 describeFeature(
   feature,
   ({ BeforeEachScenario, ScenarioOutline, Scenario, Background }) => {
+    let harness = new TestHarness();
+    BeforeEachScenario(() => {
+      harness = new TestHarness();
+    });
     Background(({ Given }) => {
       Given("I am a helper who registered on the platform", () => {});
     });
@@ -145,7 +153,6 @@ describeFeature(
     Scenario(
       "Successfully confirm email with valid token",
       ({ Given, When, Then, And }) => {
-        const harness = new TestHarness();
         const command = RegisterHelperCommandFixture.aValidCommand();
 
         Given(
@@ -174,7 +181,6 @@ describeFeature(
     Scenario(
       "Successfully confirm email without providing credential",
       ({ Given, When, Then, And }) => {
-        const harness = new TestHarness();
         const command = RegisterHelperCommandFixture.aValidCommand({
           professions: [
             {
@@ -218,5 +224,28 @@ describeFeature(
         });
       }
     );
+
+    Scenario(
+      "Cannot confirm email when account does not exist",
+      ({ Given, When, Then, And }) => {
+        const harness = new TestHarness();
+        const nonExistentEmail = "nonexistent@example.com";
+        let confirmResult: any;
+
+        Given("I never registered on the platform", () => {});
+        When("I confirm my email", async () => {
+          confirmResult = await harness.confirmEmail(nonExistentEmail);
+        });
+        Then('I should see "Account not found" error', () => {
+          expect(Result.isFailure(confirmResult)).toBe(true);
+          expect((confirmResult as any).error.message).toContain("Account not found");
+        });
+        And("my email should not be confirmed", () => {
+          expect(harness.isEmailConfirmed(nonExistentEmail)).toBe(false);
+        });
+      }
+    );
   }
 );
+
+// describe("Cannot confirm email when repository fails to fetch user", () => {});

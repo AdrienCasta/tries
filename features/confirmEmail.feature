@@ -3,6 +3,9 @@ Feature: Confirm Helper Email
   I want to confirm my email address
   So that I can activate my account
 
+  Background:
+    Given I am a helper who registered on the platform
+
   Scenario: Successfully confirm email with valid token
     Given I registered information including criminal record and diploma
     And I have never confirm my email before
@@ -10,6 +13,24 @@ Feature: Confirm Helper Email
     Then I have been granted limited access
     And I cannot apply to events
     And I should be pending review
+
+  Scenario: Successfully confirm email without providing credential
+    Given I registered information
+    When I confirm my email
+    Then I have been granted limited access
+    And my profile should be incomplete
+
+  Scenario: Successfully confirm email without providing criminal record
+    Given I registered information
+    When I confirm my email
+    Then I have been granted limited access
+    And my profile should be incomplete
+
+  Scenario: Cannot confirm email when account does not exist
+    Given I never registered on the platform
+    When I confirm my email
+    Then I should see "Account not found" error
+    And my email should not be confirmed
 
   # Scenario Outline: Cannot confirm email with invalid token format
   #   Given a helper account exists with unconfirmed email
