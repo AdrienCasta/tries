@@ -32,6 +32,13 @@ Feature: Confirm Helper Email
     Then I should see "Account not found" error
     And my email should not be confirmed
 
+  Scenario: Cannot confirm email when system fails to save
+    Given I registered information
+    And the system encounters an error while saving
+    When I confirm my email
+    Then I should see "System error" message
+    And my email should not be confirmed
+
   # Scenario Outline: Cannot confirm email with invalid token format
   #   Given a helper account exists with unconfirmed email
   #   When I confirm my email with token "<token>"

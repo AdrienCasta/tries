@@ -92,8 +92,6 @@ class ConfirmHelperEmail {
       return Result.fail(new Error("Account not found"));
     }
 
-    await this.authUserRepository.confirmEmail(email);
-
     const isIncomplete =
       authUser.professions.some((p) => !p.credentialId) ||
       !authUser.criminalRecordCertificateId;
@@ -103,7 +101,13 @@ class ConfirmHelperEmail {
       ? Helper.asIncomplete(helperData)
       : Helper.inPendingReview(helperData);
 
-    await this.helperRepository.save(helper);
+    const saveResult = await this.helperRepository.save(helper);
+
+    if (Result.isFailure(saveResult)) {
+      return Result.fail(saveResult.error);
+    }
+
+    await this.authUserRepository.confirmEmail(email);
 
     return Result.ok(undefined);
   }
@@ -242,6 +246,32 @@ describeFeature(
         });
         And("my email should not be confirmed", () => {
           expect(harness.isEmailConfirmed(nonExistentEmail)).toBe(false);
+        });
+      }
+    );
+
+    Scenario(
+      "Cannot confirm email when system fails to save",
+      ({ Given, When, Then, And }) => {
+        const harness = new TestHarness();
+        const command = RegisterHelperCommandFixture.aValidCommand();
+        let confirmResult: any;
+
+        Given("I registered information", async () => {
+          await harness.registerHelperWith(command);
+        });
+        And("the system encounters an error while saving", () => {
+          harness.helperRepository.simulateFailure();
+        });
+        When("I confirm my email", async () => {
+          confirmResult = await harness.confirmEmail(command.email);
+        });
+        Then('I should see "System error" message', () => {
+          expect(Result.isFailure(confirmResult)).toBe(true);
+          expect((confirmResult as any).error.message).toContain("Failed to save helper profile");
+        });
+        And("my email should not be confirmed", () => {
+          expect(harness.isEmailConfirmed(command.email)).toBe(false);
         });
       }
     );
