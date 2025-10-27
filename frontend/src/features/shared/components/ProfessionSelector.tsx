@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -110,7 +111,9 @@ export function ProfessionSelector({
                             <Input
                               type="file"
                               accept="application/pdf"
-                              {...field}
+                              name={field.name}
+                              ref={field.ref}
+                              onBlur={field.onBlur}
                               onChange={(e) => {
                                 const file = e.target.files?.[0];
                                 if (file) {
@@ -128,6 +131,9 @@ export function ProfessionSelector({
                               {fileNames[code]}
                             </p>
                           )}
+                          <FormDescription>
+                            Upload your credential to unlock full platform access
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}

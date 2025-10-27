@@ -6,7 +6,7 @@ export interface OnboardHelperCommand {
   phoneNumber: string;
   professions: string[];
   rppsNumbers: Record<string, string>;
-  credentialFiles: Record<string, File>;
+  credentialFiles: Record<string, File | undefined>;
   birthdate: string;
   frenchAreaCode: string;
   placeOfBirth: {

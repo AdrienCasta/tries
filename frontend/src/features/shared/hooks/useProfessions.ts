@@ -44,6 +44,10 @@ export function useProfessions({
       const currentRpps = form.getValues("rppsNumbers") || {};
       const { [professionCode]: removed, ...remainingRpps } = currentRpps;
       form.setValue("rppsNumbers", remainingRpps, { shouldValidate: true });
+
+      const currentFiles = form.getValues("credentialFiles") || {};
+      const { [professionCode]: removedFile, ...remainingFiles } = currentFiles;
+      form.setValue("credentialFiles", remainingFiles, { shouldValidate: true });
     },
     [form]
   );

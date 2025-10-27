@@ -4,7 +4,8 @@ import type { OnboardHelperCommand } from "./OnboardHelper.types";
 import { onboardHelperSchema } from "./OnboardHelper.schema";
 import { useProfessions } from "../shared/hooks/useProfessions";
 import { ProfessionSelector } from "../shared/components/ProfessionSelector";
-import { LocationFields } from "../shared/components/LocationFields";
+import { PlaceOfBirthFields } from "../shared/components/PlaceOfBirthFields";
+import { ResidenceFields } from "../shared/components/ResidenceFields";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -212,7 +213,12 @@ export function OnboardHelperForm({
               )}
             />
 
-            <LocationFields
+            <PlaceOfBirthFields
+              control={form.control}
+              countryOfResidence={countryOfResidence}
+            />
+
+            <ResidenceFields
               control={form.control}
               countryOfResidence={countryOfResidence}
             />

@@ -141,9 +141,7 @@ describeFeature(
         await context.page.getByLabel(/last name/i).fill("Doe");
         await context.page.getByLabel(/phone number/i).fill("+33612345678");
 
-        await context.page
-          .getByTestId("profession-selector-add")
-          .click();
+        await context.page.getByTestId("profession-selector-add").click();
         await context.page
           .getByRole("option", { name: /physiotherapist/i })
           .click();
@@ -154,9 +152,7 @@ describeFeature(
 
         await context.page.getByLabel(/birthdate/i).fill("1990-01-01");
 
-        await context.page
-          .getByTestId("place-of-birth-country-select")
-          .click();
+        await context.page.getByTestId("place-of-birth-country-select").click();
         await context.page
           .getByRole("option", { name: /france/i })
           .first()
@@ -164,17 +160,11 @@ describeFeature(
 
         await context.page.getByLabel(/city.*birth/i).fill("Paris");
 
-        await context.page
-          .getByTestId("residence-country-select")
-          .click();
-        await context.page
-          .getByRole("option", { name: /france/i })
-          .click();
+        await context.page.getByTestId("residence-country-select").click();
+        await context.page.getByRole("option", { name: /france/i }).click();
 
-        await context.page
-          .getByTestId("residence-area-code-select")
-          .click();
-        await context.page.getByRole("option", { name: "75" }).click();
+        await context.page.getByTestId("residence-area-code-select").click();
+        await context.page.getByRole("option", { name: "44" }).click();
 
         await context.page
           .getByLabel(/professional description/i)

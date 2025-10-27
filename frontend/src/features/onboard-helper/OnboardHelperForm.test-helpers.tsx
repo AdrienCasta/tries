@@ -156,9 +156,7 @@ export const selectCountryOfResidence = async (
   user: ReturnType<typeof userEvent.setup>,
   country: string | RegExp = /france/i
 ) => {
-  const countrySelect = screen.getByRole("combobox", {
-    name: /country of residence/i,
-  });
+  const countrySelect = screen.getByTestId("residence-country-select");
   await user.click(countrySelect);
 
   const countryOption = await screen.findByRole("option", {
