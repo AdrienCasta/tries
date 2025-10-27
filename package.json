@@ -23,5 +23,9 @@
   "bugs": {
     "url": "https://github.com/AdrienCasta/tries/issues"
   },
-  "homepage": "https://github.com/AdrienCasta/tries#readme"
+  "homepage": "https://github.com/AdrienCasta/tries#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "playwright": "^1.56.1"
+  }
 }

@@ -38,6 +38,7 @@ export function OnboardHelperForm({
     resolver: zodResolver(onboardHelperSchema),
     defaultValues: {
       email: "",
+      password: "",
       firstname: "",
       lastname: "",
       phoneNumber: "",
@@ -100,6 +101,24 @@ export function OnboardHelperForm({
                     <Input
                       type="email"
                       placeholder="email@example.com"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="Enter your password"
                       {...field}
                     />
                   </FormControl>

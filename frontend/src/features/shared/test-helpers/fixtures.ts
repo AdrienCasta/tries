@@ -12,6 +12,7 @@ export class HelperCommandFixtures {
 
     return {
       email: overrides?.email ?? "john.doe@example.com",
+      password: overrides?.password ?? "12345AZERTpoiu!!!",
       firstname: overrides?.firstname ?? "John",
       lastname: overrides?.lastname ?? "Doe",
       phoneNumber: overrides?.phoneNumber ?? "+33612345678",

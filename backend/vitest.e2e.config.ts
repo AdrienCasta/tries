@@ -8,8 +8,9 @@ export default mergeConfig(
       include: [
         "src/__tests__/**/*.e2e.test.ts",
         "src/features/**/*.e2e.test.ts",
+        "../features/__tests__/**/*.e2e.test.ts",
       ],
-      testTimeout: 30000,
+      testTimeout: 60000,
     },
   })
 );

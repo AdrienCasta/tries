@@ -9,6 +9,14 @@ const MINIMUM_AGE = 16;
 export const onboardHelperSchema = z
   .object({
     email: z.string().min(1, "Email is required").email("Invalid email format"),
+    password: z
+      .string()
+      .min(1, "Password is required")
+      .min(8, "Password too short")
+      .regex(/[A-Z]/, "Password format invalid")
+      .regex(/[a-z]/, "Password format invalid")
+      .regex(/[0-9]/, "Password format invalid")
+      .regex(/[^A-Za-z0-9]/, "Password format invalid"),
     firstname: z
       .string()
       .min(1, "First name is required")

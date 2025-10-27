@@ -84,6 +84,13 @@ export const enterEmail = async (
   await user.type(screen.getByLabelText(/email/i), email);
 };
 
+export const enterPassword = async (
+  user: ReturnType<typeof userEvent.setup>,
+  password = "12345AZERTpoiu!!!"
+) => {
+  await user.type(screen.getByLabelText(/password/i), password);
+};
+
 export const enterFirstname = async (
   user: ReturnType<typeof userEvent.setup>,
   firstname = "John"
@@ -205,6 +212,7 @@ export const fillCompleteForm = async (
   user: ReturnType<typeof userEvent.setup>
 ) => {
   await enterEmail(user);
+  await enterPassword(user);
   await enterFirstname(user);
   await enterLastname(user);
   await enterPhoneNumber(user);
@@ -221,6 +229,7 @@ export const fillValidHelperForm = async (
   const cmd = command || HelperCommandFixtures.aValidCommand();
 
   await enterEmail(user, cmd.email);
+  await enterPassword(user, cmd.password);
   await enterFirstname(user, cmd.firstname);
   await enterLastname(user, cmd.lastname);
   await enterPhoneNumber(user, cmd.phoneNumber);
@@ -240,6 +249,7 @@ export const fillFormWithBelgiumResidence = async (
   user: ReturnType<typeof userEvent.setup>
 ) => {
   await enterEmail(user);
+  await enterPassword(user);
   await enterFirstname(user);
   await enterLastname(user);
   await enterPhoneNumber(user);
@@ -255,6 +265,7 @@ export const fillBasicInfoOnly = async (
   user: ReturnType<typeof userEvent.setup>
 ) => {
   await enterEmail(user);
+  await enterPassword(user);
   await enterFirstname(user);
   await enterLastname(user);
   await enterPhoneNumber(user);

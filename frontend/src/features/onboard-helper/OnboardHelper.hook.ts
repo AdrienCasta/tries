@@ -13,7 +13,7 @@ export function useOnboardHelper() {
 
   useEffect(() => {
     if (status === "completed") {
-      toast.success("Helper onboarded successfully");
+      toast.success("Helper registered successfully! Please confirm your email to activate your account.");
     }
   }, [status]);
 
