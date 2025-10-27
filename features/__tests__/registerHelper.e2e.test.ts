@@ -133,64 +133,58 @@ describeFeature(
     Scenario("Helper register successfully", ({ When, Then, And }) => {
       When("I submit my information", async () => {
         await context.page.goto(FRONTEND_URL);
-        await context.page.waitForSelector('input[type="email"]', {
-          timeout: 10000,
-        });
+        await context.page.getByLabel(/email/i).waitFor({ timeout: 10000 });
 
-        await context.page.fill('input[type="email"]', context.testEmail);
-        await context.page.fill('input[type="password"]', "12345AZERTpoiu!!!");
-        await context.page.fill('input[placeholder="John"]', "John");
-        await context.page.fill('input[placeholder="Doe"]', "Doe");
-        await context.page.fill('input[type="tel"]', "+33612345678");
+        await context.page.getByLabel(/email/i).fill(context.testEmail);
+        await context.page.getByLabel(/password/i).fill("12345AZERTpoiu!!!");
+        await context.page.getByLabel(/first name/i).fill("John");
+        await context.page.getByLabel(/last name/i).fill("Doe");
+        await context.page.getByLabel(/phone number/i).fill("+33612345678");
 
-        const professionSelect = context.page
-          .locator('[role="combobox"]')
-          .first();
-        await professionSelect.click();
         await context.page
-          .locator('[role="option"]:has-text("Physiotherapist")')
+          .getByTestId("profession-selector-add")
+          .click();
+        await context.page
+          .getByRole("option", { name: /physiotherapist/i })
           .click();
 
-        await context.page.fill(
-          'input[name="rppsNumbers.physiotherapist"]',
-          "12345678901"
-        );
-
-        await context.page.fill('input[type="date"]', "1990-01-01");
-
-        const countryOfBirthSelect = context.page
-          .locator("text=Select a country")
-          .first();
-        await countryOfBirthSelect.click();
         await context.page
-          .locator('[role="option"]:has-text("France")')
+          .getByLabel(/rpps.*physiotherapist/i)
+          .fill("12345678901");
+
+        await context.page.getByLabel(/birthdate/i).fill("1990-01-01");
+
+        await context.page
+          .getByTestId("place-of-birth-country-select")
+          .click();
+        await context.page
+          .getByRole("option", { name: /france/i })
           .first()
           .click();
 
-        await context.page
-          .locator("input")
-          .filter({ hasText: /city/i })
-          .fill("Paris");
+        await context.page.getByLabel(/city.*birth/i).fill("Paris");
 
-        const residenceSelect = context.page.locator("text=Select country");
-        await residenceSelect.click();
         await context.page
-          .locator('[role="option"]:has-text("France")')
-          .last()
+          .getByTestId("residence-country-select")
+          .click();
+        await context.page
+          .getByRole("option", { name: /france/i })
           .click();
 
-        const countySelect = context.page.locator("text=Select county");
-        await countySelect.click();
-        await context.page.locator('[role="option"]:has-text("75")').click();
+        await context.page
+          .getByTestId("residence-area-code-select")
+          .click();
+        await context.page.getByRole("option", { name: "75" }).click();
 
-        await context.page.fill(
-          'textarea[placeholder*="Tell us about your professional experience"]',
-          "I am an experienced physiotherapist with over 10 years of practice in sports medicine and rehabilitation."
-        );
+        await context.page
+          .getByLabel(/professional description/i)
+          .fill(
+            "I am an experienced physiotherapist with over 10 years of practice in sports medicine and rehabilitation."
+          );
 
-        await context.page.click(
-          'button[type="submit"]:has-text("Onboard Helper")'
-        );
+        await context.page
+          .getByRole("button", { name: /onboard helper/i })
+          .click();
       });
 
       Then("I am notified it went well", async () => {

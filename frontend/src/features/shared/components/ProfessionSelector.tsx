@@ -146,7 +146,7 @@ export function ProfessionSelector({
               value=""
             >
               <FormControl>
-                <SelectTrigger>
+                <SelectTrigger data-testid="profession-selector-add">
                   <SelectValue placeholder="Add profession" />
                 </SelectTrigger>
               </FormControl>
