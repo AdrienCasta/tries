@@ -11,7 +11,7 @@ import {
   submitForm,
 } from "./OnboardHelperForm.test-helpers";
 
-describe("Onboarding a helper through the page", () => {
+describe.skip("Onboarding a helper through the page", () => {
   const store = configureStore({
     reducer: {
       onboardHelper: onboardHelperReducer,

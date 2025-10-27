@@ -63,35 +63,6 @@ export function PlaceOfBirthFields({ control }: PlaceOfBirthFieldsProps) {
           </FormItem>
         )}
       />
-
-      <FormField
-        control={control}
-        name="countryOfResidence"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Country of Residence</FormLabel>
-            <Select
-              onValueChange={field.onChange}
-              value={field.value}
-              defaultValue={field.value}
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select country" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {RESIDENCE_COUNTRIES.map((country) => (
-                  <SelectItem key={country.code} value={country.code}>
-                    {country.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
     </>
   );
 }

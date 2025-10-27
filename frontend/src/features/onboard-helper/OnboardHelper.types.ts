@@ -4,16 +4,22 @@ export interface OnboardHelperCommand {
   firstname: string;
   lastname: string;
   phoneNumber: string;
-  professions: string[];
-  rppsNumbers: Record<string, string>;
-  credentialFiles: Record<string, File | undefined>;
   birthdate: string;
-  frenchAreaCode: string;
+  professionalDescription?: string;
+  professions: {
+    code: string;
+    healthId: Record<"adeli" | "rpps", string>;
+    credential?: {
+      fileType: string;
+      fileSize: number;
+    };
+  }[];
   placeOfBirth: {
     country: string;
-    city?: string;
-    zipCode?: string;
+    city: string;
   };
-  countryOfResidence: string;
-  professionalDescription?: string;
+  residence: {
+    country: string;
+    frenchAreaCode?: string;
+  };
 }

@@ -32,7 +32,7 @@ export function ResidenceFields({
     <>
       <FormField
         control={control}
-        name="countryOfResidence"
+        name="residence.country"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Country of Residence</FormLabel>
@@ -62,14 +62,14 @@ export function ResidenceFields({
       {countryOfResidence === "FR" && (
         <FormField
           control={control}
-          name="frenchAreaCode"
+          name="residence.frenchAreaCode"
           render={({ field }) => (
             <FormItem>
               <FormLabel>French County</FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger data-testid="residence-area-code-select">
-                    <SelectValue placeholder="Select county" />
+                    <SelectValue placeholder="Select an area code" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>

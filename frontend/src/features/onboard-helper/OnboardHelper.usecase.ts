@@ -6,7 +6,7 @@ import {
   onboardHelperCompleted,
   onboardHelperFailed,
 } from "./OnboardHelper.slice";
-import { onboardHelperSchema } from "./OnboardHelper.schema";
+import { registerHelperSchema } from "./RegisterHelper.schema";
 
 export function onboardHelperUsecase(
   repository: IHelperRepository,
@@ -16,7 +16,8 @@ export function onboardHelperUsecase(
     execute: async (command: OnboardHelperCommand) => {
       dispatch(onboardHelperStarted());
 
-      const validation = onboardHelperSchema.safeParse(command);
+      const validation = registerHelperSchema.safeParse(command);
+      console.log(validation);
       if (!validation.success) {
         dispatch(onboardHelperFailed());
         return;

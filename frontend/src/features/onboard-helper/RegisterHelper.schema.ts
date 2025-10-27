@@ -1,13 +1,12 @@
 import { z } from "zod";
 import { PROFESSION_CODES } from "../shared/constants/professions";
 import { ALL_FRENCH_COUNTIES } from "../shared/constants/counties";
-import { RESIDENCE_COUNTRY_CODES } from "../shared/constants/countries";
 
 const phoneRegex = /^(\+33|0)[1-9]\d{8}$/;
 const MINIMUM_AGE = 16;
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-export const onboardHelperSchema = z
+export const registerHelperSchema = z
   .object({
     email: z.string().min(1, "Email is required").email("Invalid email format"),
     password: z
@@ -40,7 +39,7 @@ export const onboardHelperSchema = z
       z.string(),
       z.string().regex(/^\d{11}$/, "Rpps must be exactly 11 digits.")
     ),
-    credentialFiles: z.record(z.string(), z.union([z.instanceof(File), z.undefined()])).optional(),
+    credentialFiles: z.record(z.string(), z.instanceof(File)).optional(),
     birthdate: z
       .string()
       .min(1, "Birthdate is required")
@@ -53,18 +52,14 @@ export const onboardHelperSchema = z
         const age = new Date().getFullYear() - date.getFullYear();
         return age >= MINIMUM_AGE;
       }, `Must be at least ${MINIMUM_AGE} years old`),
-    frenchAreaCode: z.string().optional(),
     placeOfBirth: z.object({
       country: z.string().min(1, "Country of birth is required"),
-      city: z.string().optional(),
-      zipCode: z.string().optional(),
+      city: z.string(),
     }),
-    countryOfResidence: z
-      .string()
-      .min(1, "Country of residence is required")
-      .refine((val) => RESIDENCE_COUNTRY_CODES.includes(val), {
-        message: "Invalid country of residence",
-      }),
+    residence: z.object({
+      country: z.string().min(1, "Country of residence is required"),
+      frenchAreaCode: z.string().optional(),
+    }),
     professionalDescription: z
       .string()
       .min(
@@ -76,8 +71,8 @@ export const onboardHelperSchema = z
   })
   .refine(
     (data) => {
-      if (data.countryOfResidence === "FR") {
-        return data.frenchAreaCode && data.frenchAreaCode.length > 0;
+      if (data.residence.country === "FR") {
+        return !!data.residence.frenchAreaCode;
       }
       return true;
     },
@@ -88,8 +83,8 @@ export const onboardHelperSchema = z
   )
   .refine(
     (data) => {
-      if (data.frenchAreaCode && data.frenchAreaCode.length > 0) {
-        return ALL_FRENCH_COUNTIES.includes(data.frenchAreaCode);
+      if (!!data.residence.frenchAreaCode) {
+        return ALL_FRENCH_COUNTIES.includes(data.residence.frenchAreaCode);
       }
       return true;
     },
@@ -113,7 +108,9 @@ export const onboardHelperSchema = z
   .refine(
     (data) => {
       if (!data.credentialFiles) return true;
-      const files = Object.values(data.credentialFiles).filter((file): file is File => file instanceof File);
+      const files = Object.values(data.credentialFiles).filter(
+        (file): file is File => file instanceof File
+      );
       if (files.length === 0) return true;
       return files.every((file) => file.type === "application/pdf");
     },
@@ -125,7 +122,9 @@ export const onboardHelperSchema = z
   .refine(
     (data) => {
       if (!data.credentialFiles) return true;
-      const files = Object.values(data.credentialFiles).filter((file): file is File => file instanceof File);
+      const files = Object.values(data.credentialFiles).filter(
+        (file): file is File => file instanceof File
+      );
       if (files.length === 0) return true;
       return files.every((file) => file.size <= MAX_FILE_SIZE);
     },
@@ -133,4 +132,4 @@ export const onboardHelperSchema = z
       message: "Credential file size exceeds 10MB limit",
       path: ["credentialFiles"],
     }
-  )
+  );

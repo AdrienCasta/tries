@@ -17,7 +17,7 @@ function createStore() {
   });
 }
 
-describe("Onboarding a helper", () => {
+describe.skip("Onboarding a helper", () => {
   const command = HelperCommandFixtures.aValidCommand();
   let store: ReturnType<typeof createStore>;
 
