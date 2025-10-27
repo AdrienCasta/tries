@@ -19,6 +19,7 @@ import {
   selectCountryOfResidence,
   selectAProfession,
   enterRppsNumber,
+  uploadCredentialFile,
 } from "./OnboardHelperForm.test-helpers";
 
 describe("Place of birth", () => {
@@ -225,15 +226,18 @@ describe("Multiple Professions", () => {
 
     await selectAProfession(user, /doctor/i);
     await enterRppsNumber(user, "Doctor", "11111111111");
+    await uploadCredentialFile(user, "Doctor");
 
     await selectAProfession(user, /physiotherapist/i);
     await enterRppsNumber(user, "Physiotherapist", "22222222222");
+    await uploadCredentialFile(user, "Physiotherapist");
 
     const removeDoctorButton = screen.getByLabelText(/remove doctor/i);
     await user.click(removeDoctorButton);
 
     await selectAProfession(user, /sports coach/i);
     await enterRppsNumber(user, "Sports Coach", "33333333333");
+    await uploadCredentialFile(user, "Sports Coach");
 
     await waitFor(() => {
       expect(screen.queryByLabelText(/remove doctor/i)).not.toBeInTheDocument();
@@ -248,6 +252,214 @@ describe("Multiple Professions", () => {
     await expectSubmitToBeCalledWith(mockOnSubmit, {
       professions: ["physiotherapist", "sports_coach"],
     });
+  });
+});
+
+describe("Credential File Upload", () => {
+  it("displays credential file input when a profession is selected", async () => {
+    const user = userEvent.setup();
+    render(<OnboardHelperForm />);
+
+    await selectAProfession(user, /doctor/i);
+
+    expect(
+      screen.getByLabelText(/Credential File for Doctor/i)
+    ).toBeInTheDocument();
+  });
+
+  it("allows uploading a PDF file for a profession", async () => {
+    const user = userEvent.setup();
+    render(<OnboardHelperForm />);
+
+    await selectAProfession(user, /doctor/i);
+
+    const file = new File(["dummy content"], "credential.pdf", {
+      type: "application/pdf",
+    });
+    const fileInput = screen.getByLabelText(/Credential File for Doctor/i);
+
+    await user.upload(fileInput, file);
+
+    expect(fileInput).toHaveProperty("files[0].name", "credential.pdf");
+  });
+
+  it("displays file name after uploading", async () => {
+    const user = userEvent.setup();
+    render(<OnboardHelperForm />);
+
+    await selectAProfession(user, /doctor/i);
+
+    const file = new File(["dummy content"], "my-credential.pdf", {
+      type: "application/pdf",
+    });
+    const fileInput = screen.getByLabelText(/Credential File for Doctor/i);
+
+    await user.upload(fileInput, file);
+
+    expect(screen.getByText(/my-credential.pdf/i)).toBeInTheDocument();
+  });
+
+  it("shows validation error for non-PDF file", async () => {
+    const user = userEvent.setup();
+    const mockOnSubmit = vi.fn();
+    render(<OnboardHelperForm onSubmit={mockOnSubmit} />);
+
+    await fillBasicInfoOnly(user);
+    await selectAProfession(user, /doctor/i);
+    await enterRppsNumber(user, "Doctor", "12345678901");
+
+    const file = new File(["dummy content"], "credential.jpg", {
+      type: "image/jpeg",
+    });
+    const fileInput = screen.getByLabelText(/Credential File for Doctor/i);
+    await user.upload(fileInput, file);
+
+    await submitForm(user);
+
+    expect(
+      await screen.findByText(/Credential must be in PDF format/i)
+    ).toBeInTheDocument();
+    expect(mockOnSubmit).not.toHaveBeenCalled();
+  });
+
+  it("shows validation error for file exceeding 10MB", async () => {
+    const user = userEvent.setup();
+    const mockOnSubmit = vi.fn();
+    render(<OnboardHelperForm onSubmit={mockOnSubmit} />);
+
+    await fillBasicInfoOnly(user);
+    await selectAProfession(user, /doctor/i);
+    await enterRppsNumber(user, "Doctor", "12345678901");
+
+    const largeFile = new File(
+      [new ArrayBuffer(11 * 1024 * 1024)],
+      "credential.pdf",
+      { type: "application/pdf" }
+    );
+    const fileInput = screen.getByLabelText(/Credential File for Doctor/i);
+    await user.upload(fileInput, largeFile);
+
+    await submitForm(user);
+
+    expect(
+      await screen.findByText(/Credential file size exceeds 10MB limit/i)
+    ).toBeInTheDocument();
+    expect(mockOnSubmit).not.toHaveBeenCalled();
+  });
+
+  it("displays file input for each selected profession", async () => {
+    const user = userEvent.setup();
+    render(<OnboardHelperForm />);
+
+    await selectAProfession(user, /doctor/i);
+    await selectAProfession(user, /physiotherapist/i);
+
+    expect(
+      screen.getByLabelText(/Credential File for Doctor/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(/Credential File for Physiotherapist/i)
+    ).toBeInTheDocument();
+  });
+
+  it("removes credential file input when profession is removed", async () => {
+    const user = userEvent.setup();
+    render(<OnboardHelperForm />);
+
+    await selectAProfession(user, /doctor/i);
+    expect(
+      screen.getByLabelText(/Credential File for Doctor/i)
+    ).toBeInTheDocument();
+
+    const removeDoctorButton = screen.getByLabelText(/remove doctor/i);
+    await user.click(removeDoctorButton);
+
+    await waitFor(() => {
+      expect(
+        screen.queryByLabelText(/Credential File for Doctor/i)
+      ).not.toBeInTheDocument();
+    });
+  });
+
+  it("shows validation error when credential file is missing", async () => {
+    const user = userEvent.setup();
+    const mockOnSubmit = vi.fn();
+    render(<OnboardHelperForm onSubmit={mockOnSubmit} />);
+
+    await fillBasicInfoOnly(user);
+    await selectAProfession(user, /doctor/i);
+    await enterRppsNumber(user, "Doctor", "12345678901");
+
+    await submitForm(user);
+
+    expect(
+      await screen.findByText(/Credential file is required for each profession/i)
+    ).toBeInTheDocument();
+    expect(mockOnSubmit).not.toHaveBeenCalled();
+  });
+
+  it("successfully submits with valid PDF credentials for all professions", async () => {
+    const user = userEvent.setup();
+    const mockOnSubmit = vi.fn();
+    render(<OnboardHelperForm onSubmit={mockOnSubmit} />);
+
+    await fillBasicInfoOnly(user);
+
+    await selectAProfession(user, /doctor/i);
+    await enterRppsNumber(user, "Doctor", "12345678901");
+    const doctorFile = new File(["doctor content"], "doctor-credential.pdf", {
+      type: "application/pdf",
+    });
+    await user.upload(
+      screen.getByLabelText(/Credential File for Doctor/i),
+      doctorFile
+    );
+
+    await selectAProfession(user, /physiotherapist/i);
+    await enterRppsNumber(user, "Physiotherapist", "98765432109");
+    const physioFile = new File(["physio content"], "physio-credential.pdf", {
+      type: "application/pdf",
+    });
+    await user.upload(
+      screen.getByLabelText(/Credential File for Physiotherapist/i),
+      physioFile
+    );
+
+    await submitForm(user);
+
+    await waitFor(() => {
+      expect(mockOnSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          professions: ["doctor", "physiotherapist"],
+          credentialFiles: {
+            doctor: doctorFile,
+            physiotherapist: physioFile,
+          },
+        })
+      );
+    });
+  });
+
+  it("clears credential file data when profession is removed and re-added", async () => {
+    const user = userEvent.setup();
+    render(<OnboardHelperForm />);
+
+    await selectAProfession(user, /doctor/i);
+    const file = new File(["content"], "credential.pdf", {
+      type: "application/pdf",
+    });
+    await user.upload(
+      screen.getByLabelText(/Credential File for Doctor/i),
+      file
+    );
+
+    const removeDoctorButton = screen.getByLabelText(/remove doctor/i);
+    await user.click(removeDoctorButton);
+
+    await selectAProfession(user, /doctor/i);
+
+    const fileInput = screen.getByLabelText(/Credential File for Doctor/i);
+    expect(fileInput).toHaveProperty("files.length", 0);
   });
 });
 
@@ -348,6 +560,7 @@ describe("Add RPPS to a selected profession", () => {
   it("shows validation error when RPPS number is missing for a profession", async () => {
     await fillBasicInfoOnly(user);
     await setup.selectDoctor();
+    await uploadCredentialFile(user, "Doctor");
     await submitForm(user);
 
     expect(

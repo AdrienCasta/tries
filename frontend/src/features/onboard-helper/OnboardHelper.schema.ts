@@ -5,6 +5,7 @@ import { RESIDENCE_COUNTRY_CODES } from "../shared/constants/countries";
 
 const phoneRegex = /^(\+33|0)[1-9]\d{8}$/;
 const MINIMUM_AGE = 16;
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 export const onboardHelperSchema = z
   .object({
@@ -39,6 +40,7 @@ export const onboardHelperSchema = z
       z.string(),
       z.string().regex(/^\d{11}$/, "Rpps must be exactly 11 digits.")
     ),
+    credentialFiles: z.record(z.string(), z.instanceof(File)),
     birthdate: z
       .string()
       .min(1, "Birthdate is required")
@@ -106,5 +108,45 @@ export const onboardHelperSchema = z
     {
       message: "RPPS number is required for each profession",
       path: ["rppsNumbers"],
+    }
+  )
+  .refine(
+    (data) => {
+      const files = Object.values(data.credentialFiles || {});
+      if (files.length === 0) return true;
+      return files.every((file) => {
+        if (!(file instanceof File)) return true;
+        return file.type === "application/pdf";
+      });
+    },
+    {
+      message: "Credential must be in PDF format",
+      path: ["credentialFiles"],
+    }
+  )
+  .refine(
+    (data) => {
+      const files = Object.values(data.credentialFiles || {});
+      if (files.length === 0) return true;
+      return files.every((file) => {
+        if (!(file instanceof File)) return true;
+        return file.size <= MAX_FILE_SIZE;
+      });
+    },
+    {
+      message: "Credential file size exceeds 10MB limit",
+      path: ["credentialFiles"],
+    }
+  )
+  .refine(
+    (data) => {
+      return data.professions.every((profession) => {
+        const credentialFile = data.credentialFiles?.[profession];
+        return credentialFile instanceof File;
+      });
+    },
+    {
+      message: "Credential file is required for each profession",
+      path: ["credentialFiles"],
     }
   );

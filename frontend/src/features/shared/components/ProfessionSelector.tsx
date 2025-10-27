@@ -1,4 +1,5 @@
 import { type Control } from "react-hook-form";
+import { useState } from "react";
 import type { OnboardHelperCommand } from "../../onboard-helper/OnboardHelper.types";
 import {
   VALID_PROFESSIONS,
@@ -36,6 +37,8 @@ export function ProfessionSelector({
   onAddProfession,
   onRemoveProfession,
 }: ProfessionSelectorProps) {
+  const [fileNames, setFileNames] = useState<Record<string, string>>({});
+
   return (
     <FormField
       control={control}
@@ -63,9 +66,14 @@ export function ProfessionSelector({
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() =>
-                          onRemoveProfession(code as ProfessionCode)
-                        }
+                        onClick={() => {
+                          onRemoveProfession(code as ProfessionCode);
+                          setFileNames((prev) => {
+                            const newFileNames = { ...prev };
+                            delete newFileNames[code];
+                            return newFileNames;
+                          });
+                        }}
                         aria-label={`Remove ${profession.label}`}
                       >
                         ×
@@ -86,6 +94,40 @@ export function ProfessionSelector({
                               {...field}
                             />
                           </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={control}
+                      name={`credentialFiles.${code}` as any}
+                      render={({ field: { onChange, value, ...field } }) => (
+                        <FormItem>
+                          <FormLabel>
+                            Credential File for {profession.label}
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="file"
+                              accept="application/pdf"
+                              {...field}
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  onChange(file);
+                                  setFileNames((prev) => ({
+                                    ...prev,
+                                    [code]: file.name,
+                                  }));
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          {fileNames[code] && (
+                            <p className="text-sm text-muted-foreground">
+                              {fileNames[code]}
+                            </p>
+                          )}
                           <FormMessage />
                         </FormItem>
                       )}

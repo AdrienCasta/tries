@@ -34,8 +34,7 @@ async function waitForServer(url: string, timeout: number): Promise<void> {
       if (response.ok || response.status === 404) {
         return;
       }
-    } catch (error) {
-    }
+    } catch (error) {}
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
   throw new Error(`Server at ${url} did not start within ${timeout}ms`);
@@ -64,7 +63,10 @@ describeFeature(
         );
       }
 
-      context.supabaseClient = createClient(supabaseUrl, supabaseServiceRoleKey);
+      context.supabaseClient = createClient(
+        supabaseUrl,
+        supabaseServiceRoleKey
+      );
 
       context.backendProcess = spawn("npm", ["run", "start"], {
         cwd: path.join(__dirname, "../../backend"),
@@ -89,7 +91,7 @@ describeFeature(
 
       await waitForServer(FRONTEND_URL, FRONTEND_START_TIMEOUT);
 
-      context.browser = await chromium.launch({ headless: true });
+      context.browser = await chromium.launch({ headless: false });
       context.page = await context.browser.newPage();
     });
 
@@ -105,7 +107,10 @@ describeFeature(
         const { data } = await context.supabaseClient.auth.admin.listUsers();
         const user = data?.users?.find((u) => u.email === context.testEmail);
         if (user) {
-          await context.supabaseClient.from("helpers").delete().eq("id", user.id);
+          await context.supabaseClient
+            .from("helpers")
+            .delete()
+            .eq("id", user.id);
           await context.supabaseClient.auth.admin.deleteUser(user.id);
         }
       }
@@ -128,7 +133,9 @@ describeFeature(
     Scenario("Helper register successfully", ({ When, Then, And }) => {
       When("I submit my information", async () => {
         await context.page.goto(FRONTEND_URL);
-        await context.page.waitForSelector('input[type="email"]', { timeout: 10000 });
+        await context.page.waitForSelector('input[type="email"]', {
+          timeout: 10000,
+        });
 
         await context.page.fill('input[type="email"]', context.testEmail);
         await context.page.fill('input[type="password"]', "12345AZERTpoiu!!!");
@@ -136,25 +143,43 @@ describeFeature(
         await context.page.fill('input[placeholder="Doe"]', "Doe");
         await context.page.fill('input[type="tel"]', "+33612345678");
 
-        const professionSelect = context.page.locator('[role="combobox"]').first();
+        const professionSelect = context.page
+          .locator('[role="combobox"]')
+          .first();
         await professionSelect.click();
-        await context.page.locator('[role="option"]:has-text("Physiotherapist")').click();
+        await context.page
+          .locator('[role="option"]:has-text("Physiotherapist")')
+          .click();
 
-        await context.page.fill('input[name="rppsNumbers.physiotherapist"]', "12345678901");
+        await context.page.fill(
+          'input[name="rppsNumbers.physiotherapist"]',
+          "12345678901"
+        );
 
         await context.page.fill('input[type="date"]', "1990-01-01");
 
-        const countryOfBirthSelect = context.page.locator('text=Select a country').first();
+        const countryOfBirthSelect = context.page
+          .locator("text=Select a country")
+          .first();
         await countryOfBirthSelect.click();
-        await context.page.locator('[role="option"]:has-text("France")').first().click();
+        await context.page
+          .locator('[role="option"]:has-text("France")')
+          .first()
+          .click();
 
-        await context.page.locator('input').filter({ hasText: /city/i }).fill("Paris");
+        await context.page
+          .locator("input")
+          .filter({ hasText: /city/i })
+          .fill("Paris");
 
-        const residenceSelect = context.page.locator('text=Select country');
+        const residenceSelect = context.page.locator("text=Select country");
         await residenceSelect.click();
-        await context.page.locator('[role="option"]:has-text("France")').last().click();
+        await context.page
+          .locator('[role="option"]:has-text("France")')
+          .last()
+          .click();
 
-        const countySelect = context.page.locator('text=Select county');
+        const countySelect = context.page.locator("text=Select county");
         await countySelect.click();
         await context.page.locator('[role="option"]:has-text("75")').click();
 
@@ -163,12 +188,14 @@ describeFeature(
           "I am an experienced physiotherapist with over 10 years of practice in sports medicine and rehabilitation."
         );
 
-        await context.page.click('button[type="submit"]:has-text("Onboard Helper")');
+        await context.page.click(
+          'button[type="submit"]:has-text("Onboard Helper")'
+        );
       });
 
       Then("I am notified it went well", async () => {
         const successMessage = await context.page.waitForSelector(
-          'text=/successfully|success|registered/i',
+          "text=/successfully|success|registered/i",
           { timeout: 5000 }
         );
         expect(successMessage).toBeTruthy();
@@ -176,7 +203,7 @@ describeFeature(
 
       And("notified I have to confirm my email", async () => {
         const emailConfirmationMessage = await context.page.waitForSelector(
-          'text=/confirm.*email|email.*confirm/i',
+          "text=/confirm.*email|email.*confirm/i",
           { timeout: 5000 }
         );
         expect(emailConfirmationMessage).toBeTruthy();

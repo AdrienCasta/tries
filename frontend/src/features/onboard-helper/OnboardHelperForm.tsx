@@ -44,6 +44,7 @@ export function OnboardHelperForm({
       phoneNumber: "",
       professions: [],
       rppsNumbers: {},
+      credentialFiles: {},
       birthdate: "",
       frenchAreaCode: "",
       placeOfBirth: {
@@ -180,6 +181,16 @@ export function OnboardHelperForm({
             <FormField
               control={form.control}
               name="rppsNumbers"
+              render={() => (
+                <FormItem>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="credentialFiles"
               render={() => (
                 <FormItem>
                   <FormMessage />

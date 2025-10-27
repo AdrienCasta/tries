@@ -196,6 +196,23 @@ export const enterRppsNumber = async (
   await user.type(rppsInput, rppsNumber);
 };
 
+export const uploadCredentialFile = async (
+  user: ReturnType<typeof userEvent.setup>,
+  professionLabel: string | RegExp,
+  fileName = "credential.pdf"
+) => {
+  const file = new File(["dummy content"], fileName, {
+    type: "application/pdf",
+  });
+  const fileInput = screen.getByLabelText(
+    new RegExp(
+      `Credential File for ${professionLabel.toString().replace(/\/i?/g, "")}`,
+      "i"
+    )
+  );
+  await user.upload(fileInput, file);
+};
+
 export const enterprofessionalDescription = async (
   user: ReturnType<typeof userEvent.setup>,
   professionalDescription = "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Praesentium, natus inventore ipsam vel officiis cum suscipit fugiat laboriosam voluptates neque amet quis, ducimus reiciendis repellendus placeat quas nisi! Laboriosam, perspiciatis."
@@ -242,6 +259,7 @@ export const fillValidHelperForm = async (
     "Physiotherapist",
     cmd.rppsNumbers.physiotherapist
   );
+  await uploadCredentialFile(user, "Physiotherapist");
   await enterprofessionalDescription(user, cmd.professionalDescription);
 };
 
@@ -258,6 +276,7 @@ export const fillFormWithBelgiumResidence = async (
   await selectCountryOfResidence(user, /belgium/i);
   await selectAProfession(user, /physiotherapist/i);
   await enterRppsNumber(user, "Physiotherapist", "12345678901");
+  await uploadCredentialFile(user, "Physiotherapist");
   await enterprofessionalDescription(user);
 };
 
@@ -288,6 +307,7 @@ export const fillFormWithMultipleProfessions = async (
   for (const profession of professions) {
     await selectAProfession(user, profession.name);
     await enterRppsNumber(user, profession.label, profession.rpps);
+    await uploadCredentialFile(user, profession.label);
   }
 };
 
