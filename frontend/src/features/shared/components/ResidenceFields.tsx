@@ -1,6 +1,6 @@
 import { type Control } from "react-hook-form";
 import type { OnboardHelperCommand } from "../../onboard-helper/OnboardHelper.types";
-import { FRENCH_COUNTIES } from "../constants/counties";
+import { FRENCH_AREAS } from "../constants/frenchAreas";
 import { RESIDENCE_COUNTRIES } from "../constants/countries";
 import {
   FormControl,
@@ -75,7 +75,7 @@ export function ResidenceFields({
                 <SelectContent>
                   <SelectGroup>
                     <SelectLabel>Metropolitan France</SelectLabel>
-                    {FRENCH_COUNTIES.METROPOLITAN.map((county) => (
+                    {FRENCH_AREAS.METROPOLITAN.map((county) => (
                       <SelectItem key={county} value={county}>
                         {county}
                       </SelectItem>
@@ -83,7 +83,7 @@ export function ResidenceFields({
                   </SelectGroup>
                   <SelectGroup>
                     <SelectLabel>Corsica</SelectLabel>
-                    {FRENCH_COUNTIES.CORSICA.map((county) => (
+                    {FRENCH_AREAS.CORSICA.map((county) => (
                       <SelectItem key={county} value={county}>
                         {county}
                       </SelectItem>
@@ -91,7 +91,7 @@ export function ResidenceFields({
                   </SelectGroup>
                   <SelectGroup>
                     <SelectLabel>Overseas</SelectLabel>
-                    {FRENCH_COUNTIES.OVERSEAS.map((county) => (
+                    {FRENCH_AREAS.OVERSEAS.map((county) => (
                       <SelectItem key={county} value={county}>
                         {county}
                       </SelectItem>

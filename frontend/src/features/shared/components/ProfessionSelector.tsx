@@ -1,10 +1,7 @@
 import { type Control } from "react-hook-form";
 import { useState } from "react";
 import type { OnboardHelperCommand } from "../../onboard-helper/OnboardHelper.types";
-import {
-  VALID_PROFESSIONS,
-  type ProfessionCode,
-} from "../constants/professions";
+import { PROFESSIONS, type ProfessionCode } from "../constants/professions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,7 +23,7 @@ import {
 interface ProfessionSelectorProps {
   control: Control<OnboardHelperCommand>;
   selectedProfessions: string[];
-  availableProfessions: typeof VALID_PROFESSIONS;
+  availableProfessions: typeof PROFESSIONS;
   onAddProfession: (code: ProfessionCode) => void;
   onRemoveProfession: (code: ProfessionCode) => void;
 }
@@ -51,9 +48,7 @@ export function ProfessionSelector({
           {selectedProfessions.length > 0 && (
             <div className="space-y-4 mb-3">
               {selectedProfessions.map((code) => {
-                const profession = VALID_PROFESSIONS.find(
-                  (p) => p.code === code
-                );
+                const profession = PROFESSIONS.find((p) => p.code === code);
                 if (!profession) return null;
 
                 return (
@@ -132,7 +127,8 @@ export function ProfessionSelector({
                             </p>
                           )}
                           <FormDescription>
-                            Upload your credential to unlock full platform access
+                            Upload your credential to unlock full platform
+                            access
                           </FormDescription>
                           <FormMessage />
                         </FormItem>

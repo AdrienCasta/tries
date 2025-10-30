@@ -1,74 +1,67 @@
 import { z } from "zod";
 import { PROFESSION_CODES } from "../shared/constants/professions";
-import { ALL_FRENCH_COUNTIES } from "../shared/constants/counties";
+import { ALL_FRENCH_AREAS } from "../shared/constants/frenchAreas";
 
 const phoneRegex = /^(\+33|0)[1-9]\d{8}$/;
 const MINIMUM_AGE = 16;
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-export const registerHelperSchema = z
-  .object({
-    email: z.string().min(1, "Email is required").email("Invalid email format"),
-    password: z
-      .string()
-      .min(1, "Password is required")
-      .min(8, "Password too short")
-      .regex(/[A-Z]/, "Password format invalid")
-      .regex(/[a-z]/, "Password format invalid")
-      .regex(/[0-9]/, "Password format invalid")
-      .regex(/[^A-Za-z0-9]/, "Password format invalid"),
-    firstname: z
-      .string()
-      .min(1, "First name is required")
-      .min(2, "First name must be at least 2 characters"),
-    lastname: z
-      .string()
-      .min(1, "Last name is required")
-      .min(2, "Last name must be at least 2 characters"),
-    phoneNumber: z
-      .string()
-      .min(1, "Phone number is required")
-      .regex(phoneRegex, "Invalid phone number format"),
-    professions: z
-      .array(z.string())
-      .min(1, "At least one profession is required")
-      .refine((arr) => arr.every((code) => PROFESSION_CODES.includes(code)), {
-        message: "Invalid profession selected",
-      }),
-    rppsNumbers: z.record(
-      z.string(),
-      z.string().regex(/^\d{11}$/, "Rpps must be exactly 11 digits.")
-    ),
-    credentialFiles: z.record(z.string(), z.instanceof(File)).optional(),
-    birthdate: z
-      .string()
-      .min(1, "Birthdate is required")
-      .refine((val) => {
-        const date = new Date(val);
-        return date < new Date();
-      }, "Birthdate cannot be in the future")
-      .refine((val) => {
-        const date = new Date(val);
-        const age = new Date().getFullYear() - date.getFullYear();
-        return age >= MINIMUM_AGE;
-      }, `Must be at least ${MINIMUM_AGE} years old`),
-    placeOfBirth: z.object({
-      country: z.string().min(1, "Country of birth is required"),
-      city: z.string(),
+export const registerHelperSchema = z.object({
+  email: z.email("Invalid email format"),
+  password: z
+    .string()
+    .min(1, "Password is required")
+    .min(8, "Password too short")
+    .regex(/[A-Z]/, "Password format invalid")
+    .regex(/[a-z]/, "Password format invalid")
+    .regex(/[0-9]/, "Password format invalid")
+    .regex(/[^A-Za-z0-9]/, "Password format invalid"),
+  firstname: z
+    .string()
+    .min(1, "First name is required")
+    .min(2, "First name must be at least 2 characters"),
+  lastname: z
+    .string()
+    .min(1, "Last name is required")
+    .min(2, "Last name must be at least 2 characters"),
+  phoneNumber: z
+    .string()
+    .min(1, "Phone number is required")
+    .regex(phoneRegex, "Invalid phone number format"),
+  professions: z
+    .array(z.string())
+    .min(1, "At least one profession is required")
+    .refine((arr) => arr.every((code) => PROFESSION_CODES.includes(code)), {
+      message: "Invalid profession selected",
     }),
-    residence: z.object({
-      country: z.string().min(1, "Country of residence is required"),
-      frenchAreaCode: z.string().optional(),
-    }),
-    professionalDescription: z
-      .string()
-      .min(
-        50,
-        "Please provide at least 50 characters describing your experience"
-      )
-      .max(1000, "Description must not exceed 1000 characters")
-      .optional(),
-  })
+  rppsNumbers: z.record(
+    z.string(),
+    z.string().regex(/^\d{11}$/, "Rpps must be exactly 11 digits.")
+  ),
+  credentialFiles: z
+    .record(z.string(), z.instanceof(File).optional())
+    .optional(),
+  birthdate: z.string().refine((val) => {
+    const date = new Date(val);
+    const age = new Date().getFullYear() - date.getFullYear();
+    return age >= MINIMUM_AGE;
+  }, `Must be at least ${MINIMUM_AGE} years old`),
+  placeOfBirth: z.object({
+    country: z.string().min(1, "Country of birth is required"),
+    city: z.string().min(1, "City of birth is required"),
+  }),
+  residence: z.object({
+    country: z.string().min(1, "Country of residence is required"),
+    frenchAreaCode: z.string().optional(),
+  }),
+  experienceSummary: z
+    .string()
+    .min(
+      50,
+      "Please provide at least 50 characters describing your experience"
+    )
+    .max(1000, "Description must not exceed 1000 characters"),
+})
   .refine(
     (data) => {
       if (data.residence.country === "FR") {
@@ -78,19 +71,19 @@ export const registerHelperSchema = z
     },
     {
       message: "French county is required for residents of France",
-      path: ["frenchAreaCode"],
+      path: ["residence", "frenchAreaCode"],
     }
   )
   .refine(
     (data) => {
       if (!!data.residence.frenchAreaCode) {
-        return ALL_FRENCH_COUNTIES.includes(data.residence.frenchAreaCode);
+        return ALL_FRENCH_AREAS.includes(data.residence.frenchAreaCode);
       }
       return true;
     },
     {
       message: "Invalid French county",
-      path: ["frenchAreaCode"],
+      path: ["residence", "frenchAreaCode"],
     }
   )
   .refine(
@@ -109,7 +102,7 @@ export const registerHelperSchema = z
     (data) => {
       if (!data.credentialFiles) return true;
       const files = Object.values(data.credentialFiles).filter(
-        (file): file is File => file instanceof File
+        (file): file is File => file !== undefined && file instanceof File
       );
       if (files.length === 0) return true;
       return files.every((file) => file.type === "application/pdf");
@@ -123,7 +116,7 @@ export const registerHelperSchema = z
     (data) => {
       if (!data.credentialFiles) return true;
       const files = Object.values(data.credentialFiles).filter(
-        (file): file is File => file instanceof File
+        (file): file is File => file !== undefined && file instanceof File
       );
       if (files.length === 0) return true;
       return files.every((file) => file.size <= MAX_FILE_SIZE);
