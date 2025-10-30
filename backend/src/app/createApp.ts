@@ -45,5 +45,14 @@ export function createApp(
   registerConfirmEmailRoutes(server, confirmHelperEmailController);
   registerRegisterHelperRoutes(server, registerHelperController);
 
+  server.get("/health", async (request, response) => {
+    response.status(200).send({
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      environment: process.env.NODE_ENV || "development",
+    });
+  });
+
   return server;
 }

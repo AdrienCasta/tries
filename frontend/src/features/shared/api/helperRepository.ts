@@ -4,7 +4,7 @@ import type RegisterHelperCommand from "../../register-helper/RegisterHelper.typ
 export class HttpHelperRepository implements IHelperRepository {
   private readonly baseUrl: string;
 
-  constructor(baseUrl: string = "http://localhost:3000/api/helpers") {
+  constructor(baseUrl: string = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/helpers") {
     this.baseUrl = baseUrl;
   }
 

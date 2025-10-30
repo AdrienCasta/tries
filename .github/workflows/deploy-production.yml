@@ -1,0 +1,59 @@
+name: Deploy to Production
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Run Full Test Suite
+    uses: ./.github/workflows/ci.yml
+
+  deploy-backend:
+    name: Deploy Backend to Railway (Production)
+    runs-on: ubuntu-latest
+    needs: test
+    environment:
+      name: production
+      url: https://backend-production.railway.app
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy to Railway
+        run: railway up --service backend-production
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        working-directory: ./backend
+
+  deploy-frontend:
+    name: Deploy Frontend to Vercel (Production)
+    runs-on: ubuntu-latest
+    needs: test
+    environment:
+      name: production
+      url: https://tries.vercel.app
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Deploy to Vercel
+        run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_PRODUCTION }}
+        working-directory: ./frontend
