@@ -93,11 +93,6 @@ describe("Fail to register an helper", () => {
       },
     });
   });
-  it("knows a bried description is required to submit form", async () => {
-    await fillForm(user, {
-      experienceSummary: "lorem ipsum",
-    });
-  });
   it("knows at least one profession is required to submit form", async () => {
     await fillForm(user, {
       professions: [],
@@ -105,10 +100,12 @@ describe("Fail to register an helper", () => {
   });
   it("knows a valid RPPS number is required for each profession", async () => {
     await fillForm(user, {
-      professions: ["physiotherapist"],
-      rppsNumbers: {
-        physiotherapist: "567",
-      },
+      professions: [
+        {
+          code: "physiotherapist",
+          healthId: { rpps: "567" },
+        },
+      ],
     });
   });
 });
@@ -247,29 +244,18 @@ async function fillForm(
     }
   };
 
-  const typeExperienceSummary = async () => {
-    const experienceSummary =
-      overrides?.experienceSummary ??
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Similique, laborum exercitationem magnam adipisci esse enim expedita corporis doloremque consequatur laudantium dignissimos maiores ea mollitia quia, nostrum culpa magni! Magnam, ab.";
-    const element = screen.getByLabelText(
-      /relevant sports\/clinical experience/i
-    );
-
-    if (experienceSummary === "") {
-      await user.clear(element);
-    } else {
-      await user.type(element, experienceSummary);
-    }
-  };
-
   const selectProfessions = async () => {
-    const professions =
-      overrides?.professions !== undefined
-        ? overrides.professions
-        : ["physiotherapist"];
+    const professions = overrides?.professions !== undefined
+      ? overrides.professions
+      : [
+          {
+            code: "physiotherapist",
+            healthId: { rpps: "12345678901" },
+          },
+        ];
 
-    for (const professionCode of professions) {
-      const profession = PROFESSIONS.find((p) => p.code === professionCode);
+    for (const professionObj of professions) {
+      const profession = PROFESSIONS.find((p) => p.code === professionObj.code);
       if (profession) {
         const professionSelector = screen.getByTestId(
           "profession-selector-add"
@@ -282,28 +268,30 @@ async function fillForm(
     }
   };
 
-  const typeRppsNumbers = async () => {
-    const professions =
-      overrides?.professions !== undefined
-        ? overrides.professions
-        : ["physiotherapist"];
-    const rppsNumbers = overrides?.rppsNumbers ?? {
-      physiotherapist: "12345678901",
-    };
+  const typeHealthIds = async () => {
+    const professions = overrides?.professions !== undefined
+      ? overrides.professions
+      : [
+          {
+            code: "physiotherapist",
+            healthId: { rpps: "12345678901" },
+          },
+        ];
 
-    for (const professionCode of professions) {
-      const profession = PROFESSIONS.find((p) => p.code === professionCode);
+    for (const professionObj of professions) {
+      const profession = PROFESSIONS.find((p) => p.code === professionObj.code);
       if (profession) {
-        const rppsNumber = rppsNumbers[professionCode];
-        if (rppsNumber !== undefined) {
-          const rppsInput = screen.getByLabelText(
-            new RegExp(`rpps number for ${profession.label}`, "i")
+        const hasRpps = "rpps" in professionObj.healthId;
+        const healthId = hasRpps
+          ? professionObj.healthId.rpps
+          : professionObj.healthId.adeli;
+
+        if (healthId !== undefined && healthId !== "") {
+          const healthIdInput = screen.getByLabelText(
+            new RegExp(`${hasRpps ? "rpps" : "adeli"} number for ${profession.label}`, "i")
           );
-          if (rppsNumber === "") {
-            await user.clear(rppsInput);
-          } else {
-            await user.type(rppsInput, rppsNumber);
-          }
+          await user.clear(healthIdInput);
+          await user.type(healthIdInput, healthId);
         }
       }
     }
@@ -318,10 +306,9 @@ async function fillForm(
   await selectPlaceOfBirthCountry();
   await typePlaceOfBirthCity();
   await selectProfessions();
-  await typeRppsNumbers();
+  await typeHealthIds();
   await selectResidenceCountry();
   await selectFrenchAreaCode();
-  await typeExperienceSummary();
 }
 
 export default interface RegisterHelperCommand {
@@ -335,13 +322,20 @@ export default interface RegisterHelperCommand {
     country: string;
     city: string;
   };
-  professions: string[];
-  rppsNumbers: Record<string, string>;
-  credentialFiles?: Record<string, File>;
+  professions: Array<{
+    code: string;
+    healthId: { rpps: string } | { adeli: string };
+    credential?: {
+      fileType: string;
+      fileSize?: number;
+    };
+  }>;
   residence: {
     country: string;
     frenchAreaCode?: string;
   };
-  experienceSummary: string;
-  criminalRecordCertificate?: File;
+  criminalRecordCertificate?: {
+    fileType: string;
+    fileSize?: number;
+  };
 }

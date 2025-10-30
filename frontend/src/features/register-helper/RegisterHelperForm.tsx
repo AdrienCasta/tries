@@ -37,28 +37,6 @@ import { FRENCH_AREAS } from "../shared/constants/frenchAreas";
 import { useProfessions } from "../shared/hooks/useProfessions";
 import { ProfessionSelector } from "../shared/components/ProfessionSelector";
 
-export default interface RegisterHelperCommand {
-  firstname: string;
-  lastname: string;
-  email: string;
-  password: string;
-  phoneNumber: string;
-  birthdate: string;
-  placeOfBirth: {
-    country: string;
-    city: string;
-  };
-  professions: string[];
-  rppsNumbers: Record<string, string>;
-  credentialFiles?: Record<string, File>;
-  residence: {
-    country: string;
-    frenchAreaCode?: string;
-  };
-  experienceSummary: string;
-  criminalRecordCertificate?: File;
-}
-
 type RegisterHelperFormProps = {
   onSubmit: (data: z.infer<typeof registerHelperSchema>) => void;
 };
@@ -75,8 +53,6 @@ export default function RegisterHelperForm({
       birthdate: "",
       phoneNumber: "",
       professions: [],
-      rppsNumbers: {},
-      experienceSummary: "",
       placeOfBirth: {
         country: "",
         city: "",
@@ -241,7 +217,7 @@ export default function RegisterHelperForm({
                       defaultValue={field.value}
                       value={field.value}
                     >
-                      <SelectTrigger id="country" aria-label="Country of birth">
+                      <SelectTrigger id="country" aria-label="Country of birth" data-testid="place-of-birth-country-select">
                         <SelectValue placeholder="Select a country" />
                       </SelectTrigger>
                       <SelectContent>
@@ -345,6 +321,7 @@ export default function RegisterHelperForm({
                         <SelectTrigger
                           id="residence.country"
                           aria-label="Current country"
+                          data-testid="residence-country-select"
                         >
                           <SelectValue placeholder="e.g., France" />
                         </SelectTrigger>
@@ -382,6 +359,7 @@ export default function RegisterHelperForm({
                           <SelectTrigger
                             id="residence.frenchAreaCode"
                             aria-label="French County"
+                            data-testid="residence-area-code-select"
                           >
                             <SelectValue placeholder="Select an area code" />
                           </SelectTrigger>
@@ -419,31 +397,11 @@ export default function RegisterHelperForm({
                     )}
                   />
                 )}
-                <Controller
-                  name="experienceSummary"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="experienceSummary">
-                        Relevant Sports/Clinical Experience
-                      </FieldLabel>
-                      <Textarea
-                        {...field}
-                        id="experienceSummary"
-                        aria-invalid={fieldState.invalid}
-                        placeholder="List your current role, team/clinic, and specializations (e.g., Head Athletic Trainer, Pro Soccer Team, 5 years exp in injury rehab)."
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
               </FieldSet>
             </FieldGroup>
             <CardFooter>
               <Button type="submit" disabled={form.formState.disabled}>
-                Submit
+                Onboard helper
               </Button>
             </CardFooter>
           </CardContent>

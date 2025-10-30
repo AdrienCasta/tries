@@ -1,7 +1,7 @@
-import OnboardHelperPage from "./features/onboard-helper/OnboardHelper.page";
+import RegisterHelperPage from "./features/register-helper/RegisterHelper.page";
 
 function App() {
-  return <OnboardHelperPage />;
+  return <RegisterHelperPage />;
 }
 
 export default App;

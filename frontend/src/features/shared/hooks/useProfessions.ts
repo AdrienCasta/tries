@@ -1,11 +1,19 @@
 import { useCallback, useMemo } from "react";
 import { type UseFormReturn } from "react-hook-form";
-import type { OnboardHelperCommand } from "../../onboard-helper/OnboardHelper.types";
 import { PROFESSIONS, type ProfessionCode } from "../constants/professions";
 
+interface Profession {
+  code: string;
+  healthId: { rpps: string } | { adeli: string };
+  credential?: {
+    fileType: string;
+    fileSize?: number;
+  };
+}
+
 interface UseProfessionsProps {
-  form: UseFormReturn<OnboardHelperCommand>;
-  selectedProfessions: string[];
+  form: UseFormReturn<any>;
+  selectedProfessions: Profession[];
 }
 
 export function useProfessions({
@@ -13,17 +21,23 @@ export function useProfessions({
   selectedProfessions,
 }: UseProfessionsProps) {
   const availableProfessions = useMemo(
-    () => PROFESSIONS.filter((p) => !selectedProfessions.includes(p.code)),
+    () => PROFESSIONS.filter((p) => !selectedProfessions.some(sp => sp.code === p.code)),
     [selectedProfessions]
   );
 
   const handleAddProfession = useCallback(
     (professionCode: ProfessionCode) => {
-      const selectedProfessions = form.getValues("professions") || [];
-      form.setValue("professions", [...selectedProfessions, professionCode]);
+      const currentProfessions = form.getValues("professions") || [];
+      const profession = PROFESSIONS.find(p => p.code === professionCode);
 
-      const currentRpps = form.getValues("rppsNumbers") || {};
-      form.setValue("rppsNumbers", { ...currentRpps, [professionCode]: "" });
+      const newProfession: Profession = {
+        code: professionCode,
+        healthId: profession?.heathIdType === "rpps"
+          ? { rpps: "" }
+          : { adeli: "" },
+      };
+
+      form.setValue("professions", [...currentProfessions, newProfession]);
     },
     [form]
   );
@@ -33,19 +47,9 @@ export function useProfessions({
       const current = form.getValues("professions") || [];
       form.setValue(
         "professions",
-        current.filter((p) => p !== professionCode),
+        current.filter((p: Profession) => p.code !== professionCode),
         { shouldValidate: true }
       );
-
-      const currentRpps = form.getValues("rppsNumbers") || {};
-      const { [professionCode]: removed, ...remainingRpps } = currentRpps;
-      form.setValue("rppsNumbers", remainingRpps, { shouldValidate: true });
-
-      const currentFiles = form.getValues("credentialFiles") || {};
-      const { [professionCode]: removedFile, ...remainingFiles } = currentFiles;
-      form.setValue("credentialFiles", remainingFiles, {
-        shouldValidate: true,
-      });
     },
     [form]
   );

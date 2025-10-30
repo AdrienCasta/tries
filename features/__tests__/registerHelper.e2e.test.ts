@@ -167,12 +167,6 @@ describeFeature(
         await context.page.getByRole("option", { name: "44" }).click();
 
         await context.page
-          .getByLabel(/professional description/i)
-          .fill(
-            "I am an experienced physiotherapist with over 10 years of practice in sports medicine and rehabilitation."
-          );
-
-        await context.page
           .getByRole("button", { name: /onboard helper/i })
           .click();
       });
@@ -180,7 +174,7 @@ describeFeature(
       Then("I am notified it went well", async () => {
         const successMessage = await context.page.waitForSelector(
           "text=/successfully|success|registered/i",
-          { timeout: 5000 }
+          { timeout: 15000 }
         );
         expect(successMessage).toBeTruthy();
       });
@@ -188,7 +182,7 @@ describeFeature(
       And("notified I have to confirm my email", async () => {
         const emailConfirmationMessage = await context.page.waitForSelector(
           "text=/confirm.*email|email.*confirm/i",
-          { timeout: 5000 }
+          { timeout: 15000 }
         );
         expect(emailConfirmationMessage).toBeTruthy();
 

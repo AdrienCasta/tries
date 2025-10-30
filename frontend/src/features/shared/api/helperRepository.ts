@@ -1,5 +1,5 @@
 import type { IHelperRepository, OnboardHelperResult } from "./types";
-import type { OnboardHelperCommand } from "../../onboard-helper/OnboardHelper.types";
+import type RegisterHelperCommand from "../../register-helper/RegisterHelper.types";
 
 export class HttpHelperRepository implements IHelperRepository {
   private readonly baseUrl: string;
@@ -8,7 +8,7 @@ export class HttpHelperRepository implements IHelperRepository {
     this.baseUrl = baseUrl;
   }
 
-  async onboard(data: OnboardHelperCommand): Promise<OnboardHelperResult> {
+  async onboard(data: RegisterHelperCommand): Promise<OnboardHelperResult> {
     try {
       const backendRequest = this.mapToBackendRequest(data);
 
@@ -22,6 +22,7 @@ export class HttpHelperRepository implements IHelperRepository {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.log(response.json());
         return {
           success: false,
           error: errorData.error || "Failed to onboard helper",
@@ -42,7 +43,7 @@ export class HttpHelperRepository implements IHelperRepository {
     }
   }
 
-  private mapToBackendRequest(data: OnboardHelperCommand) {
+  private mapToBackendRequest(data: RegisterHelperCommand) {
     return {
       email: data.email,
       password: data.password,
@@ -54,14 +55,8 @@ export class HttpHelperRepository implements IHelperRepository {
         country: data.placeOfBirth.country,
         city: data.placeOfBirth.city || "",
       },
-      professions: Object.keys(data.rppsNumbers).map((professionCode) => ({
-        code: professionCode,
-        healthId: { rpps: data.rppsNumbers[professionCode] },
-      })),
-      residence: {
-        country: data.countryOfResidence,
-        ...(data.frenchAreaCode ? { frenchAreaCode: data.frenchAreaCode } : {}),
-      },
+      professions: data.professions,
+      residence: data.residence,
     };
   }
 }

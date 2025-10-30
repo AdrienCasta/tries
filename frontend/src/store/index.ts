@@ -1,5 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
-import onboardHelperReducer from "../features/onboard-helper/OnboardHelper.slice";
+import onboardHelperReducer from "../features/register-helper/RegisterHelper.slice";
 
 export const store = configureStore({
   reducer: {

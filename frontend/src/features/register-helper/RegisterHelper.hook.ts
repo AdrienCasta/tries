@@ -1,19 +1,21 @@
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { onboardHelperUsecase } from "./OnboardHelper.usecase";
+import { registerHelperUsecase } from "./RegisterHelper.usecase";
 import { HttpHelperRepository } from "../shared/api/helperRepository";
-import type { OnboardHelperCommand } from "./OnboardHelper.types";
+import type RegisterHelperCommand from "./RegisterHelper.types";
 
-export function useOnboardHelper() {
+export function useRegisterHelper() {
   const dispatch = useAppDispatch();
   const status = useAppSelector((state) => state.onboardHelper.status);
   const repository = new HttpHelperRepository();
-  const handler = onboardHelperUsecase(repository, dispatch);
+  const handler = registerHelperUsecase(repository, dispatch);
 
   useEffect(() => {
     if (status === "completed") {
-      toast.success("Helper registered successfully! Please confirm your email to activate your account.");
+      toast.success(
+        "Helper registered successfully! Please confirm your email to activate your account."
+      );
     }
   }, [status]);
 
@@ -23,7 +25,7 @@ export function useOnboardHelper() {
     }
   }, [status]);
 
-  const onboard = async (command: OnboardHelperCommand) => {
+  const onboard = async (command: RegisterHelperCommand) => {
     await handler.execute(command);
   };
 

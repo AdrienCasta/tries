@@ -1,4 +1,4 @@
-import type { OnboardHelperCommand } from "../../onboard-helper/OnboardHelper.types";
+import type { OnboardHelperCommand } from "../../register-helper/RegisterHelper.types";
 
 export interface OnboardHelperResult {
   success: boolean;

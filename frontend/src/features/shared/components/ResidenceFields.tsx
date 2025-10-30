@@ -1,5 +1,5 @@
 import { type Control } from "react-hook-form";
-import type { OnboardHelperCommand } from "../../onboard-helper/OnboardHelper.types";
+import type { OnboardHelperCommand } from "../../register-helper/RegisterHelper.types";
 import { FRENCH_AREAS } from "../constants/frenchAreas";
 import { RESIDENCE_COUNTRIES } from "../constants/countries";
 import {

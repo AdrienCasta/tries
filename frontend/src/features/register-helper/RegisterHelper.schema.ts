@@ -6,6 +6,16 @@ const phoneRegex = /^(\+33|0)[1-9]\d{8}$/;
 const MINIMUM_AGE = 16;
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
+const healthIdSchema = z.union([
+  z.object({ rpps: z.string().regex(/^\d{11}$/, "RPPS must be exactly 11 digits") }),
+  z.object({ adeli: z.string().regex(/^\d{9}$/, "ADELI must be exactly 9 digits") }),
+]);
+
+const credentialSchema = z.object({
+  fileType: z.string(),
+  fileSize: z.number().optional(),
+});
+
 export const registerHelperSchema = z.object({
   email: z.email("Invalid email format"),
   password: z
@@ -29,18 +39,20 @@ export const registerHelperSchema = z.object({
     .min(1, "Phone number is required")
     .regex(phoneRegex, "Invalid phone number format"),
   professions: z
-    .array(z.string())
+    .array(
+      z.object({
+        code: z.string(),
+        healthId: healthIdSchema,
+        credential: credentialSchema.optional(),
+      })
+    )
     .min(1, "At least one profession is required")
-    .refine((arr) => arr.every((code) => PROFESSION_CODES.includes(code)), {
-      message: "Invalid profession selected",
-    }),
-  rppsNumbers: z.record(
-    z.string(),
-    z.string().regex(/^\d{11}$/, "Rpps must be exactly 11 digits.")
-  ),
-  credentialFiles: z
-    .record(z.string(), z.instanceof(File).optional())
-    .optional(),
+    .refine(
+      (arr) => arr.every((prof) => PROFESSION_CODES.includes(prof.code)),
+      {
+        message: "Invalid profession selected",
+      }
+    ),
   birthdate: z.string().refine((val) => {
     const date = new Date(val);
     const age = new Date().getFullYear() - date.getFullYear();
@@ -54,13 +66,7 @@ export const registerHelperSchema = z.object({
     country: z.string().min(1, "Country of residence is required"),
     frenchAreaCode: z.string().optional(),
   }),
-  experienceSummary: z
-    .string()
-    .min(
-      50,
-      "Please provide at least 50 characters describing your experience"
-    )
-    .max(1000, "Description must not exceed 1000 characters"),
+  criminalRecordCertificate: credentialSchema.optional(),
 })
   .refine(
     (data) => {
@@ -84,45 +90,5 @@ export const registerHelperSchema = z.object({
     {
       message: "Invalid French county",
       path: ["residence", "frenchAreaCode"],
-    }
-  )
-  .refine(
-    (data) => {
-      return data.professions.every((profession) => {
-        const rppsNumber = data.rppsNumbers[profession];
-        return rppsNumber && rppsNumber.length > 0;
-      });
-    },
-    {
-      message: "RPPS number is required for each profession",
-      path: ["rppsNumbers"],
-    }
-  )
-  .refine(
-    (data) => {
-      if (!data.credentialFiles) return true;
-      const files = Object.values(data.credentialFiles).filter(
-        (file): file is File => file !== undefined && file instanceof File
-      );
-      if (files.length === 0) return true;
-      return files.every((file) => file.type === "application/pdf");
-    },
-    {
-      message: "Credential must be in PDF format",
-      path: ["credentialFiles"],
-    }
-  )
-  .refine(
-    (data) => {
-      if (!data.credentialFiles) return true;
-      const files = Object.values(data.credentialFiles).filter(
-        (file): file is File => file !== undefined && file instanceof File
-      );
-      if (files.length === 0) return true;
-      return files.every((file) => file.size <= MAX_FILE_SIZE);
-    },
-    {
-      message: "Credential file size exceeds 10MB limit",
-      path: ["credentialFiles"],
     }
   );

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { configureStore } from "@reduxjs/toolkit";
-import { onboardHelperUsecase } from "./OnboardHelper.usecase";
-import onboardHelperReducer from "./OnboardHelper.slice";
+import { registerHelperUsecase } from "./RegisterHelper.usecase";
+import onboardHelperReducer from "./RegisterHelper.slice";
 import { HelperCommandFixtures } from "../shared/test-helpers/fixtures";
 import {
   FakeSuccessRepository,
@@ -17,7 +17,7 @@ function createStore() {
   });
 }
 
-describe.skip("Onboarding a helper", () => {
+describe("Onboarding a helper", () => {
   const command = HelperCommandFixtures.aValidCommand();
   let store: ReturnType<typeof createStore>;
 
@@ -36,7 +36,7 @@ describe.skip("Onboarding a helper", () => {
     describe("When helper is onboarded successfully", () => {
       it("Then the current state should be completed", async () => {
         const repository = new FakeSuccessRepository();
-        const useCase = onboardHelperUsecase(repository, store.dispatch);
+        const useCase = registerHelperUsecase(repository, store.dispatch);
 
         await useCase.execute(command);
 
@@ -48,7 +48,7 @@ describe.skip("Onboarding a helper", () => {
     describe("When helper onboarding fails", () => {
       it("Then the current state should be failed", async () => {
         const repository = new FakeFailureRepository();
-        const useCase = onboardHelperUsecase(repository, store.dispatch);
+        const useCase = registerHelperUsecase(repository, store.dispatch);
 
         await useCase.execute(command);
 
@@ -60,7 +60,7 @@ describe.skip("Onboarding a helper", () => {
     describe("When helper is being onboarded", () => {
       it("Then the current state should be started", async () => {
         const repository = new FakeSlowRepository();
-        const useCase = onboardHelperUsecase(repository, store.dispatch);
+        const useCase = registerHelperUsecase(repository, store.dispatch);
 
         const onboardPromise = useCase.execute(command);
 
@@ -74,7 +74,7 @@ describe.skip("Onboarding a helper", () => {
     describe("When command has invalid email", () => {
       it("Then the current state should be failed", async () => {
         const repository = new FakeSuccessRepository();
-        const useCase = onboardHelperUsecase(repository, store.dispatch);
+        const useCase = registerHelperUsecase(repository, store.dispatch);
         const invalidCommand = { ...command, email: "invalid-email" };
 
         await useCase.execute(invalidCommand);

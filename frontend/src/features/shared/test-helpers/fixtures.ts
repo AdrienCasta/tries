@@ -1,58 +1,50 @@
-import type { OnboardHelperCommand } from "../../onboard-helper/OnboardHelper.types";
+import type RegisterHelperCommand from "../../register-helper/RegisterHelper.types";
 
 export class HelperCommandFixtures {
   static aValidCommand(
-    overrides?: Partial<OnboardHelperCommand>
-  ): OnboardHelperCommand {
-    const professions = overrides?.professions ?? ["physiotherapist"];
-    const defaultRppsNumbers: Record<string, string> = {};
-    professions.forEach((profession) => {
-      defaultRppsNumbers[profession] = `12345678901`;
-    });
-
+    overrides?: Partial<RegisterHelperCommand>
+  ): RegisterHelperCommand {
     return {
       email: overrides?.email ?? "john.doe@example.com",
       password: overrides?.password ?? "12345AZERTpoiu!!!",
       firstname: overrides?.firstname ?? "John",
       lastname: overrides?.lastname ?? "Doe",
       phoneNumber: overrides?.phoneNumber ?? "+33612345678",
-      professions,
-      rppsNumbers: overrides?.rppsNumbers ?? defaultRppsNumbers,
-      birthdate: overrides?.birthdate ?? "1995-03-26",
-      frenchAreaCode: overrides?.frenchAreaCode ?? "44",
+      birthdate: overrides?.birthdate ?? ("1995-03-26" as any),
       placeOfBirth: overrides?.placeOfBirth ?? {
         country: "FR",
         city: "Nantes",
-        zipCode: "44000",
       },
-      countryOfResidence: overrides?.countryOfResidence ?? "FR",
-      professionalDescription:
-        overrides?.professionalDescription ??
-        "I have 5 years of experience as a physiotherapist working with elderly patients. I specialize in post-operative rehabilitation and mobility recovery.",
+      professions: overrides?.professions ?? [
+        {
+          code: "physiotherapist",
+          healthId: { rpps: "12345678901" },
+        },
+      ],
+      residence: overrides?.residence ?? {
+        country: "FR",
+        frenchAreaCode: "44",
+      },
     };
   }
 
-  static withEmail(email: string): OnboardHelperCommand {
+  static withEmail(email: string): RegisterHelperCommand {
     return this.aValidCommand({ email });
   }
 
-  static withFirstname(firstname: string): OnboardHelperCommand {
+  static withFirstname(firstname: string): RegisterHelperCommand {
     return this.aValidCommand({ firstname });
   }
 
-  static withLastname(lastname: string): OnboardHelperCommand {
+  static withLastname(lastname: string): RegisterHelperCommand {
     return this.aValidCommand({ lastname });
   }
 
-  static withPhoneNumber(phoneNumber: string): OnboardHelperCommand {
+  static withPhoneNumber(phoneNumber: string): RegisterHelperCommand {
     return this.aValidCommand({ phoneNumber });
   }
 
-  static withBirthdate(birthdate: string): OnboardHelperCommand {
+  static withBirthdate(birthdate: any): RegisterHelperCommand {
     return this.aValidCommand({ birthdate });
-  }
-
-  static withfrenchAreaCodes(frenchAreaCode: string): OnboardHelperCommand {
-    return this.aValidCommand({ frenchAreaCode });
   }
 }

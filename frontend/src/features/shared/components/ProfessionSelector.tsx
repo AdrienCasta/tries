@@ -1,6 +1,5 @@
 import { type Control } from "react-hook-form";
 import { useState } from "react";
-import type { OnboardHelperCommand } from "../../onboard-helper/OnboardHelper.types";
 import { PROFESSIONS, type ProfessionCode } from "../constants/professions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,9 +19,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+interface Profession {
+  code: string;
+  healthId: { rpps: string } | { adeli: string };
+  credential?: {
+    fileType: string;
+    fileSize?: number;
+  };
+}
+
 interface ProfessionSelectorProps {
-  control: Control<OnboardHelperCommand>;
-  selectedProfessions: string[];
+  control: Control<any>;
+  selectedProfessions: Profession[];
   availableProfessions: typeof PROFESSIONS;
   onAddProfession: (code: ProfessionCode) => void;
   onRemoveProfession: (code: ProfessionCode) => void;
@@ -47,13 +55,15 @@ export function ProfessionSelector({
 
           {selectedProfessions.length > 0 && (
             <div className="space-y-4 mb-3">
-              {selectedProfessions.map((code) => {
-                const profession = PROFESSIONS.find((p) => p.code === code);
+              {selectedProfessions.map((selectedProf, index) => {
+                const profession = PROFESSIONS.find((p) => p.code === selectedProf.code);
                 if (!profession) return null;
+
+                const hasRpps = "rpps" in selectedProf.healthId;
 
                 return (
                   <div
-                    key={code}
+                    key={selectedProf.code}
                     className="flex flex-col gap-2 p-3 border rounded"
                   >
                     <div className="flex items-center justify-between">
@@ -63,10 +73,10 @@ export function ProfessionSelector({
                         variant="ghost"
                         size="sm"
                         onClick={() => {
-                          onRemoveProfession(code as ProfessionCode);
+                          onRemoveProfession(selectedProf.code as ProfessionCode);
                           setFileNames((prev) => {
                             const newFileNames = { ...prev };
-                            delete newFileNames[code];
+                            delete newFileNames[selectedProf.code];
                             return newFileNames;
                           });
                         }}
@@ -77,16 +87,16 @@ export function ProfessionSelector({
                     </div>
                     <FormField
                       control={control}
-                      name={`rppsNumbers.${code}` as any}
+                      name={hasRpps ? `professions.${index}.healthId.rpps` : `professions.${index}.healthId.adeli`}
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            RPPS Number for {profession.label}
+                            {hasRpps ? "RPPS" : "ADELI"} Number for {profession.label}
                           </FormLabel>
                           <FormControl>
                             <Input
                               type="text"
-                              placeholder="Enter RPPS number"
+                              placeholder={`Enter ${hasRpps ? "RPPS" : "ADELI"} number`}
                               {...field}
                             />
                           </FormControl>
@@ -96,7 +106,7 @@ export function ProfessionSelector({
                     />
                     <FormField
                       control={control}
-                      name={`credentialFiles.${code}` as any}
+                      name={`professions.${index}.credential`}
                       render={({ field: { onChange, value, ...field } }) => (
                         <FormItem>
                           <FormLabel>
@@ -112,18 +122,21 @@ export function ProfessionSelector({
                               onChange={(e) => {
                                 const file = e.target.files?.[0];
                                 if (file) {
-                                  onChange(file);
+                                  onChange({
+                                    fileType: file.type,
+                                    fileSize: file.size,
+                                  });
                                   setFileNames((prev) => ({
                                     ...prev,
-                                    [code]: file.name,
+                                    [selectedProf.code]: file.name,
                                   }));
                                 }
                               }}
                             />
                           </FormControl>
-                          {fileNames[code] && (
+                          {fileNames[selectedProf.code] && (
                             <p className="text-sm text-muted-foreground">
-                              {fileNames[code]}
+                              {fileNames[selectedProf.code]}
                             </p>
                           )}
                           <FormDescription>

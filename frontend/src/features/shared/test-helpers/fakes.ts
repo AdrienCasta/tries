@@ -1,8 +1,5 @@
-import type {
-  IHelperRepository,
-  OnboardHelperResult,
-} from "../api/types";
-import type { OnboardHelperCommand } from "../../onboard-helper/OnboardHelper.types";
+import type { IHelperRepository, OnboardHelperResult } from "../api/types";
+import type { OnboardHelperCommand } from "../../register-helper/RegisterHelper.types";
 
 export class FakeSuccessRepository implements IHelperRepository {
   async onboard(_data: OnboardHelperCommand): Promise<OnboardHelperResult> {
