@@ -1,5 +1,6 @@
 import { ConfirmHelperEmail } from "@features/confirm-helper-email/ConfirmHelperEmail.usecase.js";
 import RegisterHelper from "@features/registerHelper/registerHelper.usecase.js";
+import Signup from "@features/signup/signup.usecase.js";
 import { HelperRepository } from "@shared/domain/repositories/HelperRepository.js";
 import AuthUserRepository from "@shared/domain/repositories/AuthUserRepository.js";
 import { EmailConfirmationService } from "@shared/domain/services/EmailConfirmationService.js";
@@ -7,8 +8,10 @@ import { Clock } from "@shared/domain/services/Clock.js";
 import EventBus from "@shared/infrastructure/EventBus.js";
 import ConfirmHelperEmailController from "@features/confirm-helper-email/ConfirmHelperEmail.controller.js";
 import RegisterHelperController from "@features/registerHelper/registerHelper.controller.js";
+import SignupController from "@features/signup/signup.controller.js";
 import { registerConfirmEmailRoutes } from "@features/confirm-helper-email/ConfirmHelperEmail.routes.js";
 import { registerRegisterHelperRoutes } from "@features/registerHelper/registerHelper.routes.js";
+import { registerSignupRoutes } from "@features/signup/signup.routes.js";
 import { HttpServer } from "@infrastructure/http/HttpServer.js";
 
 export interface AppDependencies {
@@ -42,8 +45,13 @@ export function createApp(
 
   const registerHelperController = new RegisterHelperController(registerHelper);
 
+  const signup = new Signup(dependencies.authUserRepository);
+
+  const signupController = new SignupController(signup);
+
   registerConfirmEmailRoutes(server, confirmHelperEmailController);
   registerRegisterHelperRoutes(server, registerHelperController);
+  registerSignupRoutes(server, signupController);
 
   server.get("/health", async (request, response) => {
     response.status(200).send({
