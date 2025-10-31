@@ -6,14 +6,14 @@ import {
   signupCompleted,
   signupFailed,
 } from "./Signup.slice";
-import { signupSchema } from "./Signup.schema";
+import { signupSchema, SignupFormData } from "./Signup.schema";
 
 export function signupUsecase(
   repository: IAuthRepository,
   dispatch: AppDispatch
 ) {
   return {
-    execute: async (command: SignupCommand) => {
+    execute: async (command: SignupFormData) => {
       dispatch(signupStarted());
 
       const validation = signupSchema.safeParse(command);
@@ -22,7 +22,10 @@ export function signupUsecase(
         return;
       }
 
-      const result = await repository.signup(command);
+      const result = await repository.signup({
+        email: validation.data.email,
+        password: validation.data.password,
+      });
 
       if (result.success) {
         dispatch(signupCompleted());

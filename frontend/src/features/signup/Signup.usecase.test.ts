@@ -20,6 +20,7 @@ describe("User Signup", () => {
   const command = {
     email: "john@example.com",
     password: "SecurePass123!",
+    confirmPassword: "SecurePass123!",
   };
   let store: ReturnType<typeof createStore>;
 
@@ -77,7 +78,11 @@ describe("User Signup", () => {
       it("Then the current state should be failed", async () => {
         const repository = new FakeSuccessAuthRepository();
         const useCase = signupUsecase(repository, store.dispatch);
-        const invalidCommand = { ...command, email: "invalid-email" };
+        const invalidCommand = {
+          ...command,
+          email: "invalid-email",
+          confirmPassword: "SecurePass123!",
+        };
 
         await useCase.execute(invalidCommand);
 
@@ -90,7 +95,11 @@ describe("User Signup", () => {
       it("Then the current state should be failed", async () => {
         const repository = new FakeSuccessAuthRepository();
         const useCase = signupUsecase(repository, store.dispatch);
-        const invalidCommand = { ...command, password: "short" };
+        const invalidCommand = {
+          ...command,
+          password: "short",
+          confirmPassword: "short",
+        };
 
         await useCase.execute(invalidCommand);
 

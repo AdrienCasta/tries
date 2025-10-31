@@ -31,6 +31,7 @@ export default function SignupForm({ onSubmit, isLoading }: SignupFormProps) {
     defaultValues: {
       email: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
@@ -80,6 +81,28 @@ export default function SignupForm({ onSubmit, isLoading }: SignupFormProps) {
                     />
                     <FieldDescription>
                       Must be at least 8 characters with uppercase, number, and special character
+                    </FieldDescription>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="confirmPassword"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="confirmPassword">Confirm Password</FieldLabel>
+                    <Input
+                      {...field}
+                      type="password"
+                      id="confirmPassword"
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Re-enter your password"
+                    />
+                    <FieldDescription>
+                      Must match the password above
                     </FieldDescription>
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />

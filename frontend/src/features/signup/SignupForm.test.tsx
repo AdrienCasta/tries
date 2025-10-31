@@ -11,7 +11,8 @@ describe("Signup Form", () => {
       render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
 
       await user.type(screen.getByLabelText(/email/i), "john@example.com");
-      await user.type(screen.getByLabelText(/password/i), "SecurePass123!");
+      await user.type(screen.getByLabelText(/^password$/i), "SecurePass123!");
+      await user.type(screen.getByLabelText(/confirm password/i), "SecurePass123!");
 
       const submitBtn = screen.getByRole("button", { name: /sign up/i });
       await user.click(submitBtn);
@@ -19,6 +20,7 @@ describe("Signup Form", () => {
       expect(handleSubmit).toHaveBeenCalledWith({
         email: "john@example.com",
         password: "SecurePass123!",
+        confirmPassword: "SecurePass123!",
       });
     });
   });
@@ -113,6 +115,37 @@ describe("Signup Form", () => {
       render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
 
       await user.type(screen.getByLabelText(/email/i), "john@example.com");
+
+      const submitBtn = screen.getByRole("button", { name: /sign up/i });
+      await user.click(submitBtn);
+
+      expect(handleSubmit).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Password confirmation validation", () => {
+    it("does not submit when passwords don't match", async () => {
+      const user = userEvent.setup();
+      const handleSubmit = vi.fn();
+      render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
+
+      await user.type(screen.getByLabelText(/email/i), "john@example.com");
+      await user.type(screen.getByLabelText(/^password$/i), "SecurePass123!");
+      await user.type(screen.getByLabelText(/confirm password/i), "DifferentPass!");
+
+      const submitBtn = screen.getByRole("button", { name: /sign up/i });
+      await user.click(submitBtn);
+
+      expect(handleSubmit).not.toHaveBeenCalled();
+    });
+
+    it("does not submit with empty confirm password", async () => {
+      const user = userEvent.setup();
+      const handleSubmit = vi.fn();
+      render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
+
+      await user.type(screen.getByLabelText(/email/i), "john@example.com");
+      await user.type(screen.getByLabelText(/^password$/i), "SecurePass123!");
 
       const submitBtn = screen.getByRole("button", { name: /sign up/i });
       await user.click(submitBtn);
