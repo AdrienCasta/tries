@@ -30,6 +30,8 @@ export default function SignupForm({ onSubmit, isLoading }: SignupFormProps) {
     resolver: zodResolver(signupSchema),
     defaultValues: {
       email: "",
+      firstname: "",
+      lastname: "",
       password: "",
       confirmPassword: "",
     },
@@ -65,6 +67,48 @@ export default function SignupForm({ onSubmit, isLoading }: SignupFormProps) {
                     />
                     <FieldDescription>
                       Entrez votre adresse email
+                    </FieldDescription>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="firstname"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="firstname">Prénom</FieldLabel>
+                    <Input
+                      {...field}
+                      id="firstname"
+                      aria-invalid={fieldState.invalid}
+                      placeholder="ex : Jean"
+                    />
+                    <FieldDescription>
+                      Veuillez entrer votre prénom légal.
+                    </FieldDescription>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="lastname"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="lastname">Nom</FieldLabel>
+                    <Input
+                      {...field}
+                      id="lastname"
+                      aria-invalid={fieldState.invalid}
+                      placeholder="ex : Dupont"
+                    />
+                    <FieldDescription>
+                      Veuillez entrer votre nom légal.
                     </FieldDescription>
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />

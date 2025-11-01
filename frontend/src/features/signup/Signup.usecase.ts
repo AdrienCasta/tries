@@ -20,6 +20,8 @@ export function signupUsecase(
 
       const result = await repository.signup({
         email: validation.data.email,
+        firstname: validation.data.firstname,
+        lastname: validation.data.lastname,
         password: validation.data.password,
       });
 

@@ -11,6 +11,8 @@ describe("Signup Form", () => {
       render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
 
       await user.type(screen.getByLabelText(/email/i), "john@example.com");
+      await user.type(screen.getByLabelText("Prénom"), "John");
+      await user.type(screen.getByLabelText("Nom"), "Doe");
       await user.type(screen.getByLabelText("Mot de passe"), "SecurePass123!");
       await user.type(screen.getByLabelText(/confirmer le mot de passe/i), "SecurePass123!");
 
@@ -20,6 +22,8 @@ describe("Signup Form", () => {
       expect(handleSubmit).toHaveBeenCalled();
       expect(handleSubmit.mock.calls[0][0]).toEqual({
         email: "john@example.com",
+        firstname: "John",
+        lastname: "Doe",
         password: "SecurePass123!",
         confirmPassword: "SecurePass123!",
       });
@@ -116,6 +120,70 @@ describe("Signup Form", () => {
       render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
 
       await user.type(screen.getByLabelText(/email/i), "john@example.com");
+
+      const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
+      await user.click(submitBtn);
+
+      expect(handleSubmit).not.toHaveBeenCalled();
+    });
+
+    it("does not submit with empty firstname", async () => {
+      const user = userEvent.setup();
+      const handleSubmit = vi.fn();
+      render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
+
+      await user.type(screen.getByLabelText(/email/i), "john@example.com");
+      await user.type(screen.getByLabelText("Mot de passe"), "SecurePass123!");
+      await user.type(screen.getByLabelText(/confirmer le mot de passe/i), "SecurePass123!");
+
+      const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
+      await user.click(submitBtn);
+
+      expect(handleSubmit).not.toHaveBeenCalled();
+    });
+
+    it("does not submit with firstname too short", async () => {
+      const user = userEvent.setup();
+      const handleSubmit = vi.fn();
+      render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
+
+      await user.type(screen.getByLabelText(/email/i), "john@example.com");
+      await user.type(screen.getByLabelText("Prénom"), "J");
+      await user.type(screen.getByLabelText("Mot de passe"), "SecurePass123!");
+      await user.type(screen.getByLabelText(/confirmer le mot de passe/i), "SecurePass123!");
+
+      const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
+      await user.click(submitBtn);
+
+      expect(handleSubmit).not.toHaveBeenCalled();
+    });
+
+    it("does not submit with empty lastname", async () => {
+      const user = userEvent.setup();
+      const handleSubmit = vi.fn();
+      render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
+
+      await user.type(screen.getByLabelText(/email/i), "john@example.com");
+      await user.type(screen.getByLabelText("Prénom"), "John");
+      await user.type(screen.getByLabelText("Mot de passe"), "SecurePass123!");
+      await user.type(screen.getByLabelText(/confirmer le mot de passe/i), "SecurePass123!");
+
+      const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
+      await user.click(submitBtn);
+
+      expect(handleSubmit).not.toHaveBeenCalled();
+    });
+
+    it("does not submit with lastname too short", async () => {
+      const user = userEvent.setup();
+      const handleSubmit = vi.fn();
+      render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
+
+      await user.type(screen.getByLabelText(/email/i), "john@example.com");
+      await user.type(screen.getByLabelText("Prénom"), "John");
+      await user.type(screen.getByLabelText("Nom"), "D");
+      await user.type(screen.getByLabelText("Mot de passe"), "SecurePass123!");
+      await user.type(screen.getByLabelText(/confirmer le mot de passe/i), "SecurePass123!");
 
       const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
       await user.click(submitBtn);

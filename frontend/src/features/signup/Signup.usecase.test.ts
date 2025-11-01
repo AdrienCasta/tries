@@ -21,6 +21,8 @@ describe("User Signup", () => {
     email: "john@example.com",
     password: "SecurePass123!",
     confirmPassword: "SecurePass123!",
+    firstname: "John",
+    lastname: "Doe",
   };
   let store: ReturnType<typeof createStore>;
 
