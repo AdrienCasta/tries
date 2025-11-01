@@ -4,7 +4,7 @@ import {
   loadFeatureFromText,
   setVitestCucumberConfiguration,
 } from "@amiceli/vitest-cucumber";
-import featureContent from "../../../../features/signup.feature?raw";
+import featureContent from "../../../../../features/signup.feature?raw";
 import { Failure, Result } from "@shared/infrastructure/Result";
 import DomainError from "@shared/domain/DomainError";
 
