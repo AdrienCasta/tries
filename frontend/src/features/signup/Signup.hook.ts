@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { signupUsecase } from "./Signup.usecase";
@@ -7,6 +8,7 @@ import type SignupCommand from "./Signup.types";
 
 export function useSignup() {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const status = useAppSelector((state) => state.signup.status);
   const repository = new AuthRepository();
   const handler = signupUsecase(repository, dispatch);
@@ -17,9 +19,9 @@ export function useSignup() {
       toast.success(
         "User signed up successfully! Please confirm your email to activate your account."
       );
-      window.location.href = `/verify-email?email=${encodeURIComponent(signupEmail)}`;
+      navigate(`/verify-email?email=${encodeURIComponent(signupEmail)}`);
     }
-  }, [status, signupEmail]);
+  }, [status, signupEmail, navigate]);
 
   useEffect(() => {
     if (status === "failed") {
