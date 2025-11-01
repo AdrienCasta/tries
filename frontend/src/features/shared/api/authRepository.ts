@@ -1,5 +1,11 @@
 import type { IAuthRepository, SignupResult } from "./types";
 import type SignupCommand from "../../signup/Signup.types";
+import type {
+  VerifyEmailRequest,
+  VerifyEmailResponse,
+  ResendOtpRequest,
+  ResendOtpResponse,
+} from "../../email-verification/EmailVerification.types";
 
 export class AuthRepository implements IAuthRepository {
   private readonly baseUrl: string;
@@ -33,6 +39,70 @@ export class AuthRepository implements IAuthRepository {
       };
     } catch (error) {
       console.error("Error signing up:", error);
+      return {
+        success: false,
+        error: "System unavailable. Please try again.",
+      };
+    }
+  }
+
+  async verifyOtp(data: VerifyEmailRequest): Promise<VerifyEmailResponse> {
+    try {
+      const response = await fetch(`${this.baseUrl}/verify-otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        return {
+          success: false,
+          error: errorData.error || "Failed to verify OTP",
+        };
+      }
+
+      const result = await response.json();
+      return {
+        success: true,
+        message: result.message || "Email verified successfully",
+      };
+    } catch (error) {
+      console.error("Error verifying OTP:", error);
+      return {
+        success: false,
+        error: "System unavailable. Please try again.",
+      };
+    }
+  }
+
+  async resendOtp(data: ResendOtpRequest): Promise<ResendOtpResponse> {
+    try {
+      const response = await fetch(`${this.baseUrl}/resend-otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        return {
+          success: false,
+          error: errorData.error || "Failed to resend OTP",
+        };
+      }
+
+      const result = await response.json();
+      return {
+        success: true,
+        message: result.message || "OTP sent successfully",
+      };
+    } catch (error) {
+      console.error("Error resending OTP:", error);
       return {
         success: false,
         error: "System unavailable. Please try again.",

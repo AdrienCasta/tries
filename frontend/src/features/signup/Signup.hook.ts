@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { signupUsecase } from "./Signup.usecase";
@@ -10,14 +10,16 @@ export function useSignup() {
   const status = useAppSelector((state) => state.signup.status);
   const repository = new AuthRepository();
   const handler = signupUsecase(repository, dispatch);
+  const [signupEmail, setSignupEmail] = useState<string>("");
 
   useEffect(() => {
-    if (status === "completed") {
+    if (status === "completed" && signupEmail) {
       toast.success(
         "User signed up successfully! Please confirm your email to activate your account."
       );
+      window.location.href = `/verify-email?email=${encodeURIComponent(signupEmail)}`;
     }
-  }, [status]);
+  }, [status, signupEmail]);
 
   useEffect(() => {
     if (status === "failed") {
@@ -26,6 +28,7 @@ export function useSignup() {
   }, [status]);
 
   const signup = async (command: SignupCommand) => {
+    setSignupEmail(command.email);
     await handler.execute(command);
   };
 
