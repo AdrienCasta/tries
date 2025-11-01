@@ -45,9 +45,9 @@ export default function SignupForm({ onSubmit, isLoading }: SignupFormProps) {
           <CardContent>
             <FieldGroup>
               <div className="flex flex-col items-center gap-1 text-center">
-                <h1 className="text-2xl font-bold">Create your account</h1>
+                <h1 className="text-2xl font-bold">Créez votre compte</h1>
                 <p className="text-muted-foreground text-sm text-balance">
-                  Fill in the form below to create your account
+                  Remplissez le formulaire ci-dessous pour créer votre compte
                 </p>
               </div>
               <Controller
@@ -61,10 +61,10 @@ export default function SignupForm({ onSubmit, isLoading }: SignupFormProps) {
                       type="email"
                       id="email"
                       aria-invalid={fieldState.invalid}
-                      placeholder="name@example.com"
+                      placeholder="nom@exemple.com"
                     />
                     <FieldDescription>
-                      Enter your email address
+                      Entrez votre adresse email
                     </FieldDescription>
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
@@ -77,17 +77,16 @@ export default function SignupForm({ onSubmit, isLoading }: SignupFormProps) {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="password">Password</FieldLabel>
+                    <FieldLabel htmlFor="password">Mot de passe</FieldLabel>
                     <Input
                       {...field}
                       type="password"
                       id="password"
                       aria-invalid={fieldState.invalid}
-                      placeholder="Enter your password"
+                      placeholder="Entrez votre mot de passe"
                     />
                     <FieldDescription>
-                      Must be at least 8 characters with uppercase, number, and
-                      special character
+                      Doit contenir au moins 8 caractères avec majuscule, chiffre et caractère spécial
                     </FieldDescription>
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
@@ -101,17 +100,17 @@ export default function SignupForm({ onSubmit, isLoading }: SignupFormProps) {
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="confirmPassword">
-                      Confirm Password
+                      Confirmer le mot de passe
                     </FieldLabel>
                     <Input
                       {...field}
                       type="password"
                       id="confirmPassword"
                       aria-invalid={fieldState.invalid}
-                      placeholder="Re-enter your password"
+                      placeholder="Resaisissez votre mot de passe"
                     />
                     <FieldDescription>
-                      Must match the password above
+                      Doit correspondre au mot de passe ci-dessus
                     </FieldDescription>
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
@@ -124,7 +123,7 @@ export default function SignupForm({ onSubmit, isLoading }: SignupFormProps) {
                   type="submit"
                   disabled={isLoading || form.formState.isSubmitting}
                 >
-                  {isLoading ? "Signing up..." : "Sign Up"}
+                  {isLoading ? "Inscription en cours..." : "S'inscrire"}
                 </Button>
               </Field>
             </FieldGroup>

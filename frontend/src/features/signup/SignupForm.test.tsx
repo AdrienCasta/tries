@@ -11,10 +11,10 @@ describe("Signup Form", () => {
       render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
 
       await user.type(screen.getByLabelText(/email/i), "john@example.com");
-      await user.type(screen.getByLabelText(/^password$/i), "SecurePass123!");
-      await user.type(screen.getByLabelText(/confirm password/i), "SecurePass123!");
+      await user.type(screen.getByLabelText(/mot de passe/i), "SecurePass123!");
+      await user.type(screen.getByLabelText(/confirmer le mot de passe/i), "SecurePass123!");
 
-      const submitBtn = screen.getByRole("button", { name: /sign up/i });
+      const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
       await user.click(submitBtn);
 
       expect(handleSubmit).toHaveBeenCalledWith({
@@ -32,9 +32,9 @@ describe("Signup Form", () => {
       render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
 
       await user.type(screen.getByLabelText(/email/i), "invalid-email");
-      await user.type(screen.getByLabelText(/password/i), "SecurePass123!");
+      await user.type(screen.getByLabelText(/mot de passe/i), "SecurePass123!");
 
-      const submitBtn = screen.getByRole("button", { name: /sign up/i });
+      const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
       await user.click(submitBtn);
 
       expect(handleSubmit).not.toHaveBeenCalled();
@@ -45,9 +45,9 @@ describe("Signup Form", () => {
       const handleSubmit = vi.fn();
       render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
 
-      await user.type(screen.getByLabelText(/password/i), "SecurePass123!");
+      await user.type(screen.getByLabelText(/mot de passe/i), "SecurePass123!");
 
-      const submitBtn = screen.getByRole("button", { name: /sign up/i });
+      const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
       await user.click(submitBtn);
 
       expect(handleSubmit).not.toHaveBeenCalled();
@@ -59,9 +59,9 @@ describe("Signup Form", () => {
       render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
 
       await user.type(screen.getByLabelText(/email/i), "john@example.com");
-      await user.type(screen.getByLabelText(/password/i), "Short1!");
+      await user.type(screen.getByLabelText(/mot de passe/i), "Short1!");
 
-      const submitBtn = screen.getByRole("button", { name: /sign up/i });
+      const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
       await user.click(submitBtn);
 
       expect(handleSubmit).not.toHaveBeenCalled();
@@ -73,9 +73,9 @@ describe("Signup Form", () => {
       render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
 
       await user.type(screen.getByLabelText(/email/i), "john@example.com");
-      await user.type(screen.getByLabelText(/password/i), "password123!");
+      await user.type(screen.getByLabelText(/mot de passe/i), "password123!");
 
-      const submitBtn = screen.getByRole("button", { name: /sign up/i });
+      const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
       await user.click(submitBtn);
 
       expect(handleSubmit).not.toHaveBeenCalled();
@@ -87,9 +87,9 @@ describe("Signup Form", () => {
       render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
 
       await user.type(screen.getByLabelText(/email/i), "john@example.com");
-      await user.type(screen.getByLabelText(/password/i), "SecurePass!");
+      await user.type(screen.getByLabelText(/mot de passe/i), "SecurePass!");
 
-      const submitBtn = screen.getByRole("button", { name: /sign up/i });
+      const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
       await user.click(submitBtn);
 
       expect(handleSubmit).not.toHaveBeenCalled();
@@ -101,9 +101,9 @@ describe("Signup Form", () => {
       render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
 
       await user.type(screen.getByLabelText(/email/i), "john@example.com");
-      await user.type(screen.getByLabelText(/password/i), "SecurePass123");
+      await user.type(screen.getByLabelText(/mot de passe/i), "SecurePass123");
 
-      const submitBtn = screen.getByRole("button", { name: /sign up/i });
+      const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
       await user.click(submitBtn);
 
       expect(handleSubmit).not.toHaveBeenCalled();
@@ -116,7 +116,7 @@ describe("Signup Form", () => {
 
       await user.type(screen.getByLabelText(/email/i), "john@example.com");
 
-      const submitBtn = screen.getByRole("button", { name: /sign up/i });
+      const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
       await user.click(submitBtn);
 
       expect(handleSubmit).not.toHaveBeenCalled();
@@ -130,10 +130,10 @@ describe("Signup Form", () => {
       render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
 
       await user.type(screen.getByLabelText(/email/i), "john@example.com");
-      await user.type(screen.getByLabelText(/^password$/i), "SecurePass123!");
-      await user.type(screen.getByLabelText(/confirm password/i), "DifferentPass!");
+      await user.type(screen.getByLabelText(/^mot de passe$/i), "SecurePass123!");
+      await user.type(screen.getByLabelText(/confirmer le mot de passe/i), "DifferentPass!");
 
-      const submitBtn = screen.getByRole("button", { name: /sign up/i });
+      const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
       await user.click(submitBtn);
 
       expect(handleSubmit).not.toHaveBeenCalled();
@@ -145,9 +145,9 @@ describe("Signup Form", () => {
       render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
 
       await user.type(screen.getByLabelText(/email/i), "john@example.com");
-      await user.type(screen.getByLabelText(/^password$/i), "SecurePass123!");
+      await user.type(screen.getByLabelText(/^mot de passe$/i), "SecurePass123!");
 
-      const submitBtn = screen.getByRole("button", { name: /sign up/i });
+      const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
       await user.click(submitBtn);
 
       expect(handleSubmit).not.toHaveBeenCalled();
@@ -159,7 +159,7 @@ describe("Signup Form", () => {
       const handleSubmit = vi.fn();
       render(<SignupForm onSubmit={handleSubmit} isLoading={true} />);
 
-      const submitBtn = screen.getByRole("button", { name: /sign up/i });
+      const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
       expect(submitBtn).toBeDisabled();
     });
   });

@@ -100,7 +100,7 @@ export default function EmailVerificationForm() {
   if (!email) {
     return (
       <div className="text-center">
-        <p className="text-red-500">No email provided. Please sign up first.</p>
+        <p className="text-red-500">Aucun email fourni. Veuillez vous inscrire d'abord.</p>
       </div>
     );
   }
@@ -108,16 +108,16 @@ export default function EmailVerificationForm() {
   return (
     <div className="w-full max-w-md mx-auto space-y-6">
       <div className="text-center space-y-2">
-        <h1 className="text-2xl font-bold">Verify Your Email</h1>
+        <h1 className="text-2xl font-bold">Vérifiez votre email</h1>
         <p className="text-muted-foreground">
-          We've sent a 6-digit code to <strong>{email}</strong>
+          Nous avons envoyé un code à 6 chiffres à <strong>{email}</strong>
         </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="space-y-2">
           <label htmlFor="otp" className="block text-sm font-medium text-center">
-            Enter verification code
+            Entrez le code de vérification
           </label>
           <div className="flex justify-center">
             <InputOTP
@@ -146,12 +146,12 @@ export default function EmailVerificationForm() {
 
         {isVerifying && (
           <p className="text-sm text-center text-muted-foreground">
-            Verifying...
+            Vérification en cours...
           </p>
         )}
 
         <div className="text-center space-y-2">
-          <p className="text-sm text-muted-foreground">Didn't receive the code?</p>
+          <p className="text-sm text-muted-foreground">Vous n'avez pas reçu le code ?</p>
           <button
             type="button"
             onClick={handleResendOtp}
@@ -159,10 +159,10 @@ export default function EmailVerificationForm() {
             className="text-sm text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isResending
-              ? "Sending..."
+              ? "Envoi en cours..."
               : canResend
-              ? "Resend Code"
-              : `Resend in ${resendCooldown}s`}
+              ? "Renvoyer le code"
+              : `Renvoyer dans ${resendCooldown}s`}
           </button>
           {resendError && (
             <p className="text-sm text-red-500">{resendError}</p>

@@ -85,7 +85,7 @@ export default function RegisterHelperForm({
     <Form {...form}>
       <Card className="w-full sm:max-w-md">
         <CardHeader>
-          <CardTitle>Signup to Tries</CardTitle>
+          <CardTitle>Inscription à Tries</CardTitle>
         </CardHeader>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent>
@@ -101,10 +101,10 @@ export default function RegisterHelperForm({
                       type="email"
                       id="email"
                       aria-invalid={fieldState.invalid}
-                      placeholder="name@example.com"
+                      placeholder="nom@exemple.com"
                     />
                     <FieldDescription>
-                      You'll use this to log in.
+                      Vous l'utiliserez pour vous connecter.
                     </FieldDescription>
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
@@ -117,17 +117,17 @@ export default function RegisterHelperForm({
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="password">Password</FieldLabel>
+                    <FieldLabel htmlFor="password">Mot de passe</FieldLabel>
                     <Input
                       {...field}
                       type="password"
                       id="password"
                       aria-invalid={fieldState.invalid}
-                      placeholder="Enter your password"
+                      placeholder="Entrez votre mot de passe"
                     />
                     <FieldDescription>
-                      Must be at least 8 characters, including a capital letter,
-                      a number and a special character.
+                      Doit contenir au moins 8 caractères, incluant une majuscule,
+                      un chiffre et un caractère spécial.
                     </FieldDescription>
                   </Field>
                 )}
@@ -137,15 +137,15 @@ export default function RegisterHelperForm({
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="firstname">First name</FieldLabel>
+                    <FieldLabel htmlFor="firstname">Prénom</FieldLabel>
                     <Input
                       {...field}
                       id="firstname"
                       aria-invalid={fieldState.invalid}
-                      placeholder="e.g., Jane"
+                      placeholder="ex : Jean"
                     />
                     <FieldDescription>
-                      Please enter your legal first name.
+                      Veuillez entrer votre prénom légal.
                     </FieldDescription>
                   </Field>
                 )}
@@ -155,15 +155,15 @@ export default function RegisterHelperForm({
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="lastname">Last name</FieldLabel>
+                    <FieldLabel htmlFor="lastname">Nom</FieldLabel>
                     <Input
                       {...field}
                       id="lastname"
                       aria-invalid={fieldState.invalid}
-                      placeholder="e.g., Doe"
+                      placeholder="ex : Dupont"
                     />
                     <FieldDescription>
-                      Please enter your legal last name.
+                      Veuillez entrer votre nom légal.
                     </FieldDescription>
                   </Field>
                 )}
@@ -173,13 +173,13 @@ export default function RegisterHelperForm({
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="birthdate">Birthdate</FieldLabel>
+                    <FieldLabel htmlFor="birthdate">Date de naissance</FieldLabel>
                     <Input
                       {...field}
                       type="date"
                       id="birthdate"
                       aria-invalid={fieldState.invalid}
-                      placeholder="Enter your birthdate"
+                      placeholder="Entrez votre date de naissance"
                     />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
@@ -192,13 +192,13 @@ export default function RegisterHelperForm({
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="phoneNumber">Phone number</FieldLabel>
+                    <FieldLabel htmlFor="phoneNumber">Numéro de téléphone</FieldLabel>
                     <Input
                       {...field}
                       type="tel"
                       id="phoneNumber"
                       aria-invalid={fieldState.invalid}
-                      placeholder="Enter your phone number"
+                      placeholder="Entrez votre numéro de téléphone"
                     />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
@@ -211,14 +211,14 @@ export default function RegisterHelperForm({
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="country">Country of birth</FieldLabel>
+                    <FieldLabel htmlFor="country">Pays de naissance</FieldLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                       value={field.value}
                     >
                       <SelectTrigger id="country" aria-label="Country of birth" data-testid="place-of-birth-country-select">
-                        <SelectValue placeholder="Select a country" />
+                        <SelectValue placeholder="Sélectionner un pays" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
@@ -230,7 +230,7 @@ export default function RegisterHelperForm({
                           ))}
                         </SelectGroup>
                         <SelectGroup>
-                          <SelectLabel>Africa</SelectLabel>
+                          <SelectLabel>Afrique</SelectLabel>
                           {BIRTH_COUNTRIES.AFRICA.map((country) => (
                             <SelectItem key={country.code} value={country.code}>
                               {country.label}
@@ -238,7 +238,7 @@ export default function RegisterHelperForm({
                           ))}
                         </SelectGroup>
                         <SelectGroup>
-                          <SelectLabel>Asia</SelectLabel>
+                          <SelectLabel>Asie</SelectLabel>
                           {BIRTH_COUNTRIES.ASIA.map((country) => (
                             <SelectItem key={country.code} value={country.code}>
                               {country.label}
@@ -246,7 +246,7 @@ export default function RegisterHelperForm({
                           ))}
                         </SelectGroup>
                         <SelectGroup>
-                          <SelectLabel>North America</SelectLabel>
+                          <SelectLabel>Amérique du Nord</SelectLabel>
                           {BIRTH_COUNTRIES.NORTH_AMERICA.map((country) => (
                             <SelectItem key={country.code} value={country.code}>
                               {country.label}
@@ -254,7 +254,7 @@ export default function RegisterHelperForm({
                           ))}
                         </SelectGroup>
                         <SelectGroup>
-                          <SelectLabel>South America</SelectLabel>
+                          <SelectLabel>Amérique du Sud</SelectLabel>
                           {BIRTH_COUNTRIES.SOUTH_AMERICA.map((country) => (
                             <SelectItem key={country.code} value={country.code}>
                               {country.label}
@@ -262,7 +262,7 @@ export default function RegisterHelperForm({
                           ))}
                         </SelectGroup>
                         <SelectGroup>
-                          <SelectLabel>Oceania</SelectLabel>
+                          <SelectLabel>Océanie</SelectLabel>
                           {BIRTH_COUNTRIES.OCEANIA.map((country) => (
                             <SelectItem key={country.code} value={country.code}>
                               {country.label}
@@ -282,13 +282,13 @@ export default function RegisterHelperForm({
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="city">City of birth</FieldLabel>
+                    <FieldLabel htmlFor="city">Ville de naissance</FieldLabel>
                     <Input
                       {...field}
                       type="text"
                       id="city"
                       aria-invalid={fieldState.invalid}
-                      placeholder="Enter your city"
+                      placeholder="Entrez votre ville"
                     />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
@@ -304,14 +304,14 @@ export default function RegisterHelperForm({
                 onRemoveProfession={handleRemoveProfession}
               />
               <FieldSet>
-                <FieldLegend>Current location</FieldLegend>
+                <FieldLegend>Localisation actuelle</FieldLegend>
                 <Controller
                   name="residence.country"
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel htmlFor="residence.country">
-                        Current country
+                        Pays actuel
                       </FieldLabel>
                       <Select
                         onValueChange={field.onChange}
@@ -323,7 +323,7 @@ export default function RegisterHelperForm({
                           aria-label="Current country"
                           data-testid="residence-country-select"
                         >
-                          <SelectValue placeholder="e.g., France" />
+                          <SelectValue placeholder="ex : France" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectGroup>
@@ -349,7 +349,7 @@ export default function RegisterHelperForm({
                     render={({ field, fieldState }) => (
                       <Field data-invalid={fieldState.invalid}>
                         <FieldLabel htmlFor="residence.frenchAreaCode">
-                          French County
+                          Département français
                         </FieldLabel>
                         <Select
                           onValueChange={field.onChange}
@@ -361,11 +361,11 @@ export default function RegisterHelperForm({
                             aria-label="French County"
                             data-testid="residence-area-code-select"
                           >
-                            <SelectValue placeholder="Select an area code" />
+                            <SelectValue placeholder="Sélectionner un département" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectGroup>
-                              <SelectLabel>Metropolitan France</SelectLabel>
+                              <SelectLabel>France métropolitaine</SelectLabel>
                               {FRENCH_AREAS.METROPOLITAN.map((county) => (
                                 <SelectItem key={county} value={county}>
                                   {county}
@@ -373,7 +373,7 @@ export default function RegisterHelperForm({
                               ))}
                             </SelectGroup>
                             <SelectGroup>
-                              <SelectLabel>Corsica</SelectLabel>
+                              <SelectLabel>Corse</SelectLabel>
                               {FRENCH_AREAS.CORSICA.map((county) => (
                                 <SelectItem key={county} value={county}>
                                   {county}
@@ -381,7 +381,7 @@ export default function RegisterHelperForm({
                               ))}
                             </SelectGroup>
                             <SelectGroup>
-                              <SelectLabel>Overseas</SelectLabel>
+                              <SelectLabel>Outre-mer</SelectLabel>
                               {FRENCH_AREAS.OVERSEAS.map((county) => (
                                 <SelectItem key={county} value={county}>
                                   {county}
@@ -401,7 +401,7 @@ export default function RegisterHelperForm({
             </FieldGroup>
             <CardFooter>
               <Button type="submit" disabled={form.formState.disabled}>
-                Onboard helper
+                Inscrire l'aidant
               </Button>
             </CardFooter>
           </CardContent>

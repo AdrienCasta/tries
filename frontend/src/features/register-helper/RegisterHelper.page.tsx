@@ -9,7 +9,7 @@ export default function RegisterHelperPage() {
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-2xl space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-center">Onboard Helper</h1>
+          <h1 className="text-3xl font-bold text-center">Inscription Aidant</h1>
         </div>
         <RegisterHelperForm onSubmit={onboard} isLoading={isLoading} />
       </div>

@@ -23,7 +23,7 @@ export function verifyEmailUsecase(
 
       const validation = emailVerificationSchema.safeParse(data);
       if (!validation.success) {
-        dispatch(verificationFailed("Invalid email or OTP format"));
+        dispatch(verificationFailed("Format d'email ou de code OTP invalide"));
         return;
       }
 
@@ -35,7 +35,7 @@ export function verifyEmailUsecase(
       if (result.success) {
         dispatch(verificationCompleted());
       } else {
-        dispatch(verificationFailed(result.error || "Verification failed"));
+        dispatch(verificationFailed(result.error || "Échec de la vérification"));
       }
     },
   };
@@ -54,7 +54,7 @@ export function resendOtpUsecase(
       if (result.success) {
         dispatch(resendCompleted());
       } else {
-        dispatch(resendFailed(result.error || "Failed to resend OTP"));
+        dispatch(resendFailed(result.error || "Échec du renvoi du code OTP"));
       }
     },
   };

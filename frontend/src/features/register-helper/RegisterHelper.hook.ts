@@ -14,14 +14,14 @@ export function useRegisterHelper() {
   useEffect(() => {
     if (status === "completed") {
       toast.success(
-        "Helper registered successfully! Please confirm your email to activate your account."
+        "Aidant inscrit avec succès ! Veuillez confirmer votre email pour activer votre compte."
       );
     }
   }, [status]);
 
   useEffect(() => {
     if (status === "failed") {
-      toast.error("Failed to onboard helper");
+      toast.error("Échec de l'inscription de l'aidant");
     }
   }, [status]);
 

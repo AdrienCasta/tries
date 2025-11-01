@@ -80,7 +80,7 @@ export function ProfessionSelector({
                             return newFileNames;
                           });
                         }}
-                        aria-label={`Remove ${profession.label}`}
+                        aria-label={`Retirer ${profession.label}`}
                       >
                         ×
                       </Button>
@@ -91,12 +91,12 @@ export function ProfessionSelector({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            {hasRpps ? "RPPS" : "ADELI"} Number for {profession.label}
+                            Numéro {hasRpps ? "RPPS" : "ADELI"} pour {profession.label}
                           </FormLabel>
                           <FormControl>
                             <Input
                               type="text"
-                              placeholder={`Enter ${hasRpps ? "RPPS" : "ADELI"} number`}
+                              placeholder={`Entrez le numéro ${hasRpps ? "RPPS" : "ADELI"}`}
                               {...field}
                             />
                           </FormControl>
@@ -110,7 +110,7 @@ export function ProfessionSelector({
                       render={({ field: { onChange, value, ...field } }) => (
                         <FormItem>
                           <FormLabel>
-                            Credential File for {profession.label}
+                            Fichier de justificatif pour {profession.label}
                           </FormLabel>
                           <FormControl>
                             <Input
@@ -140,8 +140,7 @@ export function ProfessionSelector({
                             </p>
                           )}
                           <FormDescription>
-                            Upload your credential to unlock full platform
-                            access
+                            Téléversez votre justificatif pour débloquer l'accès complet à la plateforme
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -162,7 +161,7 @@ export function ProfessionSelector({
             >
               <FormControl>
                 <SelectTrigger data-testid="profession-selector-add">
-                  <SelectValue placeholder="Add profession" />
+                  <SelectValue placeholder="Ajouter une profession" />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
@@ -175,7 +174,7 @@ export function ProfessionSelector({
             </Select>
           ) : (
             <p className="text-sm text-muted-foreground">
-              All professions have been selected
+              Toutes les professions ont été sélectionnées
             </p>
           )}
 

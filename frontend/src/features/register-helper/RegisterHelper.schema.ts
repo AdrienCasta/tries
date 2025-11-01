@@ -7,8 +7,8 @@ const MINIMUM_AGE = 16;
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 const healthIdSchema = z.union([
-  z.object({ rpps: z.string().regex(/^\d{11}$/, "RPPS must be exactly 11 digits") }),
-  z.object({ adeli: z.string().regex(/^\d{9}$/, "ADELI must be exactly 9 digits") }),
+  z.object({ rpps: z.string().regex(/^\d{11}$/, "Le RPPS doit contenir exactement 11 chiffres") }),
+  z.object({ adeli: z.string().regex(/^\d{9}$/, "L'ADELI doit contenir exactement 9 chiffres") }),
 ]);
 
 const credentialSchema = z.object({
@@ -17,27 +17,27 @@ const credentialSchema = z.object({
 });
 
 export const registerHelperSchema = z.object({
-  email: z.email("Invalid email format"),
+  email: z.email("Format d'email invalide"),
   password: z
     .string()
-    .min(1, "Password is required")
-    .min(8, "Password too short")
-    .regex(/[A-Z]/, "Password format invalid")
-    .regex(/[a-z]/, "Password format invalid")
-    .regex(/[0-9]/, "Password format invalid")
-    .regex(/[^A-Za-z0-9]/, "Password format invalid"),
+    .min(1, "Le mot de passe est requis")
+    .min(8, "Mot de passe trop court")
+    .regex(/[A-Z]/, "Format de mot de passe invalide")
+    .regex(/[a-z]/, "Format de mot de passe invalide")
+    .regex(/[0-9]/, "Format de mot de passe invalide")
+    .regex(/[^A-Za-z0-9]/, "Format de mot de passe invalide"),
   firstname: z
     .string()
-    .min(1, "First name is required")
-    .min(2, "First name must be at least 2 characters"),
+    .min(1, "Le prénom est requis")
+    .min(2, "Le prénom doit contenir au moins 2 caractères"),
   lastname: z
     .string()
-    .min(1, "Last name is required")
-    .min(2, "Last name must be at least 2 characters"),
+    .min(1, "Le nom est requis")
+    .min(2, "Le nom doit contenir au moins 2 caractères"),
   phoneNumber: z
     .string()
-    .min(1, "Phone number is required")
-    .regex(phoneRegex, "Invalid phone number format"),
+    .min(1, "Le numéro de téléphone est requis")
+    .regex(phoneRegex, "Format de numéro de téléphone invalide"),
   professions: z
     .array(
       z.object({
@@ -46,24 +46,24 @@ export const registerHelperSchema = z.object({
         credential: credentialSchema.optional(),
       })
     )
-    .min(1, "At least one profession is required")
+    .min(1, "Au moins une profession est requise")
     .refine(
       (arr) => arr.every((prof) => PROFESSION_CODES.includes(prof.code)),
       {
-        message: "Invalid profession selected",
+        message: "Profession invalide sélectionnée",
       }
     ),
   birthdate: z.string().refine((val) => {
     const date = new Date(val);
     const age = new Date().getFullYear() - date.getFullYear();
     return age >= MINIMUM_AGE;
-  }, `Must be at least ${MINIMUM_AGE} years old`),
+  }, `Vous devez avoir au moins ${MINIMUM_AGE} ans`),
   placeOfBirth: z.object({
-    country: z.string().min(1, "Country of birth is required"),
-    city: z.string().min(1, "City of birth is required"),
+    country: z.string().min(1, "Le pays de naissance est requis"),
+    city: z.string().min(1, "La ville de naissance est requise"),
   }),
   residence: z.object({
-    country: z.string().min(1, "Country of residence is required"),
+    country: z.string().min(1, "Le pays de résidence est requis"),
     frenchAreaCode: z.string().optional(),
   }),
   criminalRecordCertificate: credentialSchema.optional(),
@@ -76,7 +76,7 @@ export const registerHelperSchema = z.object({
       return true;
     },
     {
-      message: "French county is required for residents of France",
+      message: "Le département français est requis pour les résidents de France",
       path: ["residence", "frenchAreaCode"],
     }
   )
@@ -88,7 +88,7 @@ export const registerHelperSchema = z.object({
       return true;
     },
     {
-      message: "Invalid French county",
+      message: "Département français invalide",
       path: ["residence", "frenchAreaCode"],
     }
   );
