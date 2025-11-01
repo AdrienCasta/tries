@@ -11,13 +11,14 @@ describe("Signup Form", () => {
       render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
 
       await user.type(screen.getByLabelText(/email/i), "john@example.com");
-      await user.type(screen.getByLabelText(/mot de passe/i), "SecurePass123!");
+      await user.type(screen.getByLabelText("Mot de passe"), "SecurePass123!");
       await user.type(screen.getByLabelText(/confirmer le mot de passe/i), "SecurePass123!");
 
       const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
       await user.click(submitBtn);
 
-      expect(handleSubmit).toHaveBeenCalledWith({
+      expect(handleSubmit).toHaveBeenCalled();
+      expect(handleSubmit.mock.calls[0][0]).toEqual({
         email: "john@example.com",
         password: "SecurePass123!",
         confirmPassword: "SecurePass123!",
@@ -32,7 +33,7 @@ describe("Signup Form", () => {
       render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
 
       await user.type(screen.getByLabelText(/email/i), "invalid-email");
-      await user.type(screen.getByLabelText(/mot de passe/i), "SecurePass123!");
+      await user.type(screen.getByLabelText("Mot de passe"), "SecurePass123!");
 
       const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
       await user.click(submitBtn);
@@ -45,7 +46,7 @@ describe("Signup Form", () => {
       const handleSubmit = vi.fn();
       render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
 
-      await user.type(screen.getByLabelText(/mot de passe/i), "SecurePass123!");
+      await user.type(screen.getByLabelText("Mot de passe"), "SecurePass123!");
 
       const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
       await user.click(submitBtn);
@@ -59,7 +60,7 @@ describe("Signup Form", () => {
       render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
 
       await user.type(screen.getByLabelText(/email/i), "john@example.com");
-      await user.type(screen.getByLabelText(/mot de passe/i), "Short1!");
+      await user.type(screen.getByLabelText("Mot de passe"), "Short1!");
 
       const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
       await user.click(submitBtn);
@@ -73,7 +74,7 @@ describe("Signup Form", () => {
       render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
 
       await user.type(screen.getByLabelText(/email/i), "john@example.com");
-      await user.type(screen.getByLabelText(/mot de passe/i), "password123!");
+      await user.type(screen.getByLabelText("Mot de passe"), "password123!");
 
       const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
       await user.click(submitBtn);
@@ -87,7 +88,7 @@ describe("Signup Form", () => {
       render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
 
       await user.type(screen.getByLabelText(/email/i), "john@example.com");
-      await user.type(screen.getByLabelText(/mot de passe/i), "SecurePass!");
+      await user.type(screen.getByLabelText("Mot de passe"), "SecurePass!");
 
       const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
       await user.click(submitBtn);
@@ -101,7 +102,7 @@ describe("Signup Form", () => {
       render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
 
       await user.type(screen.getByLabelText(/email/i), "john@example.com");
-      await user.type(screen.getByLabelText(/mot de passe/i), "SecurePass123");
+      await user.type(screen.getByLabelText("Mot de passe"), "SecurePass123");
 
       const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
       await user.click(submitBtn);
@@ -130,7 +131,7 @@ describe("Signup Form", () => {
       render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
 
       await user.type(screen.getByLabelText(/email/i), "john@example.com");
-      await user.type(screen.getByLabelText(/^mot de passe$/i), "SecurePass123!");
+      await user.type(screen.getByLabelText("Mot de passe"), "SecurePass123!");
       await user.type(screen.getByLabelText(/confirmer le mot de passe/i), "DifferentPass!");
 
       const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
@@ -145,7 +146,7 @@ describe("Signup Form", () => {
       render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
 
       await user.type(screen.getByLabelText(/email/i), "john@example.com");
-      await user.type(screen.getByLabelText(/^mot de passe$/i), "SecurePass123!");
+      await user.type(screen.getByLabelText("Mot de passe"), "SecurePass123!");
 
       const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
       await user.click(submitBtn);
@@ -159,7 +160,7 @@ describe("Signup Form", () => {
       const handleSubmit = vi.fn();
       render(<SignupForm onSubmit={handleSubmit} isLoading={true} />);
 
-      const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
+      const submitBtn = screen.getByRole("button", { name: /inscription en cours/i });
       expect(submitBtn).toBeDisabled();
     });
   });

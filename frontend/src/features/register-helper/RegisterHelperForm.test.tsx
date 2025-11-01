@@ -13,7 +13,7 @@ describe("Register helper successfully", () => {
     const handleSubmit = vi.fn();
     render(<RegisterHelperForm onSubmit={handleSubmit} />);
     await fillForm(user);
-    const submitBtn = screen.getByRole("button", { name: /submit/i });
+    const submitBtn = screen.getByRole("button", { name: /inscrire l'aidant/i });
 
     await user.click(submitBtn);
 
@@ -32,7 +32,7 @@ describe("Fail to register an helper", () => {
   });
 
   afterEach(async () => {
-    const submitBtn = screen.getByRole("button", { name: /submit/i });
+    const submitBtn = screen.getByRole("button", { name: /inscrire l'aidant/i });
 
     await user.click(submitBtn);
 
@@ -127,7 +127,7 @@ async function fillForm(
 
   const typeFirstname = async () => {
     const firstname = overrides?.firstname ?? "Adrien";
-    const element = screen.getByLabelText(/first name/i);
+    const element = screen.getByLabelText("Prénom");
 
     if (firstname === "") {
       await user.clear(element);
@@ -138,7 +138,7 @@ async function fillForm(
 
   const typeLastname = async () => {
     const lastname = overrides?.lastname ?? "Adrien";
-    const element = screen.getByLabelText(/last name/i);
+    const element = screen.getByLabelText("Nom");
 
     if (lastname === "") {
       await user.clear(element);
@@ -149,7 +149,7 @@ async function fillForm(
 
   const typePassword = async () => {
     const password = overrides?.password ?? "P@ssw0rd!";
-    const element = screen.getByLabelText(/password/i);
+    const element = screen.getByLabelText(/mot de passe/i);
 
     if (password === "") {
       await user.clear(element);
@@ -160,7 +160,7 @@ async function fillForm(
 
   const typePhoneNumber = async () => {
     const phoneNumber = overrides?.phoneNumber ?? "0647048866";
-    const element = screen.getByLabelText(/phone number/i);
+    const element = screen.getByLabelText(/numéro de téléphone/i);
 
     if (phoneNumber === "") {
       await user.clear(element);
@@ -171,7 +171,7 @@ async function fillForm(
 
   const typeBirthdate = async () => {
     const birthdate = overrides?.birthdate ?? "1995-01-01";
-    const element = screen.getByLabelText(/birthdate/i);
+    const element = screen.getByLabelText(/date de naissance/i);
 
     if (birthdate === "") {
       await user.clear(element);
@@ -191,7 +191,7 @@ async function fillForm(
         .find((c) => c.code === countryCode);
 
       if (country) {
-        const countrySelect = screen.getByLabelText(/country of birth/i);
+        const countrySelect = screen.getByLabelText(/pays de naissance/i);
         await user.click(countrySelect);
         await user.click(screen.getByRole("option", { name: country.label }));
       }
@@ -202,7 +202,7 @@ async function fillForm(
     const city = overrides?.placeOfBirth
       ? overrides.placeOfBirth.city
       : "Paris";
-    const element = screen.getByLabelText(/city of birth/i);
+    const element = screen.getByLabelText(/ville de naissance/i);
 
     if (city === "") {
       await user.clear(element);
@@ -220,7 +220,7 @@ async function fillForm(
       const country = RESIDENCE_COUNTRIES.find((c) => c.code === countryCode);
 
       if (country) {
-        const countrySelect = screen.getByLabelText(/current country/i);
+        const countrySelect = screen.getByLabelText(/pays actuel/i);
         await user.click(countrySelect);
         await user.click(screen.getByRole("option", { name: country.label }));
       }
@@ -238,7 +238,7 @@ async function fillForm(
       frenchAreaCode !== undefined &&
       frenchAreaCode !== ""
     ) {
-      const areaCodeSelect = screen.getByLabelText(/french county/i);
+      const areaCodeSelect = screen.getByLabelText(/département français/i);
       await user.click(areaCodeSelect);
       await user.click(screen.getByRole("option", { name: frenchAreaCode }));
     }
@@ -288,7 +288,7 @@ async function fillForm(
 
         if (healthId !== undefined && healthId !== "") {
           const healthIdInput = screen.getByLabelText(
-            new RegExp(`${hasRpps ? "rpps" : "adeli"} number for ${profession.label}`, "i")
+            new RegExp(`numéro ${hasRpps ? "rpps" : "adeli"} pour ${profession.label}`, "i")
           );
           await user.clear(healthIdInput);
           await user.type(healthIdInput, healthId);
