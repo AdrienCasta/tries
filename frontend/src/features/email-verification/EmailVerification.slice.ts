@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { EmailVerificationState } from "./EmailVerification.types";
 
-const initialState: EmailVerificationState = {
+const emailVerificationInitialState: EmailVerificationState = {
   isVerifying: false,
   isResending: false,
   verificationError: null,
@@ -12,7 +12,7 @@ const initialState: EmailVerificationState = {
 
 const emailVerificationSlice = createSlice({
   name: "emailVerification",
-  initialState,
+  initialState: emailVerificationInitialState,
   reducers: {
     verificationStarted: (state) => {
       state.isVerifying = true;
@@ -40,7 +40,7 @@ const emailVerificationSlice = createSlice({
       state.isResending = false;
       state.resendError = action.payload;
     },
-    resetVerification: () => initialState,
+    resetVerification: () => emailVerificationInitialState,
   },
 });
 
@@ -53,5 +53,7 @@ export const {
   resendFailed,
   resetVerification,
 } = emailVerificationSlice.actions;
+
+export { emailVerificationInitialState };
 
 export default emailVerificationSlice.reducer;

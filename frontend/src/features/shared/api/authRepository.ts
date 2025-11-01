@@ -1,5 +1,5 @@
 import type { IAuthRepository, SignupResult } from "./types";
-import type SignupCommand from "../../signup/Signup.types";
+import type SignupRequest from "../../signup/Signup.types";
 import type {
   VerifyEmailRequest,
   VerifyEmailResponse,
@@ -10,11 +10,14 @@ import type {
 export class AuthRepository implements IAuthRepository {
   private readonly baseUrl: string;
 
-  constructor(baseUrl: string = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/auth") {
+  constructor(
+    baseUrl: string = import.meta.env.VITE_API_BASE_URL ||
+      "http://localhost:3000/api/auth"
+  ) {
     this.baseUrl = baseUrl;
   }
 
-  async signup(data: SignupCommand): Promise<SignupResult> {
+  async signup(data: SignupRequest): Promise<SignupResult> {
     try {
       const response = await fetch(`${this.baseUrl}/signup`, {
         method: "POST",

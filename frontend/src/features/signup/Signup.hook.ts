@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { signupUsecase } from "./Signup.usecase";
 import { AuthRepository } from "../shared/api/authRepository";
-import type SignupCommand from "./Signup.types";
+import type SignupRequest from "./Signup.types";
 
 export function useSignup() {
   const dispatch = useAppDispatch();
@@ -29,7 +29,7 @@ export function useSignup() {
     }
   }, [status]);
 
-  const signup = async (command: SignupCommand) => {
+  const signup = async (command: SignupRequest) => {
     setSignupEmail(command.email);
     await handler.execute(command);
   };
