@@ -1,5 +1,3 @@
-import { ConfirmHelperEmail } from "@features/confirm-helper-email/ConfirmHelperEmail.usecase.js";
-import RegisterHelper from "@features/registerHelper/registerHelper.usecase.js";
 import Signup from "@features/signup/signup.usecase.js";
 import VerifyOtp from "@features/verify-email/verify-otp.usecase.js";
 import ResendOtp from "@features/resend-otp/resend-otp.usecase.js";
@@ -8,13 +6,9 @@ import AuthUserRepository from "@shared/domain/repositories/AuthUserRepository.j
 import { EmailConfirmationService } from "@shared/domain/services/EmailConfirmationService.js";
 import { Clock } from "@shared/domain/services/Clock.js";
 import EventBus from "@shared/infrastructure/EventBus.js";
-import ConfirmHelperEmailController from "@features/confirm-helper-email/ConfirmHelperEmail.controller.js";
-import RegisterHelperController from "@features/registerHelper/registerHelper.controller.js";
 import SignupController from "@features/signup/signup.controller.js";
 import VerifyOtpController from "@features/verify-email/verify-otp.controller.js";
 import ResendOtpController from "@features/resend-otp/resend-otp.controller.js";
-import { registerConfirmEmailRoutes } from "@features/confirm-helper-email/ConfirmHelperEmail.routes.js";
-import { registerRegisterHelperRoutes } from "@features/registerHelper/registerHelper.routes.js";
 import { registerSignupRoutes } from "@features/signup/signup.routes.js";
 import { registerVerifyOtpRoutes } from "@features/verify-email/verify-otp.routes.js";
 import { registerResendOtpRoutes } from "@features/resend-otp/resend-otp.routes.js";
@@ -22,36 +16,13 @@ import { registerTestHelperRoutes } from "@features/test-helpers/test-helpers.ro
 import { HttpServer } from "@infrastructure/http/HttpServer.js";
 
 export interface AppDependencies {
-  helperRepository: HelperRepository;
   authUserRepository: AuthUserRepository;
-  emailConfirmationService: EmailConfirmationService;
-  clock: Clock;
-  eventBus: EventBus;
 }
 
 export function createApp(
   server: HttpServer,
   dependencies: AppDependencies
 ): HttpServer {
-  const confirmHelperEmail = new ConfirmHelperEmail(
-    dependencies.emailConfirmationService,
-    dependencies.authUserRepository,
-    dependencies.helperRepository
-  );
-
-  const confirmHelperEmailController = new ConfirmHelperEmailController(
-    confirmHelperEmail,
-    dependencies.eventBus,
-    dependencies.clock
-  );
-
-  const registerHelper = new RegisterHelper(
-    dependencies.authUserRepository,
-    dependencies.clock
-  );
-
-  const registerHelperController = new RegisterHelperController(registerHelper);
-
   const signup = new Signup(dependencies.authUserRepository);
 
   const signupController = new SignupController(signup);
@@ -64,8 +35,6 @@ export function createApp(
 
   const resendOtpController = new ResendOtpController(resendOtp);
 
-  registerConfirmEmailRoutes(server, confirmHelperEmailController);
-  registerRegisterHelperRoutes(server, registerHelperController);
   registerSignupRoutes(server, signupController);
   registerVerifyOtpRoutes(server, verifyOtpController);
   registerResendOtpRoutes(server, resendOtpController);

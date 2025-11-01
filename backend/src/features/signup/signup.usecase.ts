@@ -39,7 +39,7 @@ export default class Signup {
   private async checkDuplicateEmail(
     email: string
   ): Promise<Result<void, Error>> {
-    const existingUser = await this.authUserRepository.findUserByEmail(email);
+    const existingUser = await this.authUserRepository.existsByEmail(email);
     if (existingUser) {
       return Result.fail(new EmailAlreadyInUseError());
     }

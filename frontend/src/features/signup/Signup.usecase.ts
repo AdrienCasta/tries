@@ -1,19 +1,15 @@
-import type SignupCommand from "./Signup.types";
+// import type SignupCommand from "./Signup.types";
 import type { IAuthRepository } from "../shared/api/types";
 import type { AppDispatch } from "@/store";
-import {
-  signupStarted,
-  signupCompleted,
-  signupFailed,
-} from "./Signup.slice";
-import { signupSchema, SignupFormData } from "./Signup.schema";
+import { signupStarted, signupCompleted, signupFailed } from "./Signup.slice";
+import { signupSchema, type SignupCommand } from "./Signup.schema";
 
 export function signupUsecase(
   repository: IAuthRepository,
   dispatch: AppDispatch
 ) {
   return {
-    execute: async (command: SignupFormData) => {
+    execute: async (command: SignupCommand) => {
       dispatch(signupStarted());
 
       const validation = signupSchema.safeParse(command);

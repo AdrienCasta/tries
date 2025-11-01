@@ -171,6 +171,7 @@ export class PlaceOfBirthFixtures {
   };
 
   static aRandomPlaceOfBirth() {
+    //@ts-ignore
     const randomCountry = RandomHelper.pickRandom<CountryCode>(countryCodes);
     return this.withCountry(randomCountry);
   }

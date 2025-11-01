@@ -1,6 +1,6 @@
 import { HttpServer } from "@infrastructure/http/HttpServer.js";
+import InMemoryAuthUserRepository from "@infrastructure/persistence/InMemoryAuthUserRepository";
 import AuthUserRepository from "@shared/domain/repositories/AuthUserRepository.js";
-import { InMemoryAuthUserRepository } from "@infrastructure/persistence/InMemoryAuthUserRepository.js";
 
 export function registerTestHelperRoutes(
   server: HttpServer,
@@ -19,7 +19,9 @@ export function registerTestHelperRoutes(
     }
 
     if (authUserRepository instanceof InMemoryAuthUserRepository) {
-      const otpCode = authUserRepository.getLastOtpCode(decodeURIComponent(email));
+      const otpCode = authUserRepository.getLastOtpCode(
+        decodeURIComponent(email)
+      );
 
       if (!otpCode) {
         response.status(404).send({ error: "No OTP found for this email" });
@@ -29,7 +31,8 @@ export function registerTestHelperRoutes(
       response.status(200).send({ otpCode });
     } else {
       response.status(501).send({
-        error: "Test OTP retrieval only available with InMemoryAuthUserRepository",
+        error:
+          "Test OTP retrieval only available with InMemoryAuthUserRepository",
       });
     }
   });

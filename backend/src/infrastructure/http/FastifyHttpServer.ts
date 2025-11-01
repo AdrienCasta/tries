@@ -1,4 +1,9 @@
-import Fastify, { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import Fastify, {
+  FastifyInstance,
+  FastifyReply,
+  FastifyRequest,
+  InjectOptions,
+} from "fastify";
 import cors from "@fastify/cors";
 import {
   HttpServer,
@@ -12,7 +17,7 @@ import {
  */
 export class FastifyHttpServer implements HttpServer {
   private app: FastifyInstance;
-  private pluginsReady: Promise<void>;
+  private pluginsReady: ReturnType<typeof this.app.register>;
 
   constructor() {
     this.app = Fastify({
@@ -24,9 +29,12 @@ export class FastifyHttpServer implements HttpServer {
   }
 
   post(path: string, handler: RouteHandler): void {
-    this.app.post(path, async (request: FastifyRequest, reply: FastifyReply) => {
-      await handler(this.adaptRequest(request), this.adaptResponse(reply));
-    });
+    this.app.post(
+      path,
+      async (request: FastifyRequest, reply: FastifyReply) => {
+        await handler(this.adaptRequest(request), this.adaptResponse(reply));
+      }
+    );
   }
 
   get(path: string, handler: RouteHandler): void {
@@ -42,9 +50,12 @@ export class FastifyHttpServer implements HttpServer {
   }
 
   delete(path: string, handler: RouteHandler): void {
-    this.app.delete(path, async (request: FastifyRequest, reply: FastifyReply) => {
-      await handler(this.adaptRequest(request), this.adaptResponse(reply));
-    });
+    this.app.delete(
+      path,
+      async (request: FastifyRequest, reply: FastifyReply) => {
+        await handler(this.adaptRequest(request), this.adaptResponse(reply));
+      }
+    );
   }
 
   async listen(port: number): Promise<void> {
@@ -65,7 +76,7 @@ export class FastifyHttpServer implements HttpServer {
     url: string;
     payload?: any;
   }): Promise<{ statusCode: number; json: () => any }> {
-    const response = await this.app.inject(options);
+    const response = await this.app.inject(options as InjectOptions);
     return {
       statusCode: response.statusCode,
       json: () => response.json(),

@@ -4,13 +4,14 @@ import {
   loadFeatureFromText,
   setVitestCucumberConfiguration,
 } from "@amiceli/vitest-cucumber";
-import featureContent from "../../../../../features/verify-email.feature?raw";
 import { Result } from "@shared/infrastructure/Result";
 import VerifyOtp from "../verify-otp.usecase";
 import InMemoryAuthUserRepository from "@infrastructure/persistence/InMemoryAuthUserRepository";
 import VerifyOtpCommandFixture from "./fixtures/VerifyOtpCommandFixture";
 import VerifyOtpCommand from "../verify-otp.command";
 
+// @ts-ignore
+import featureContent from "../../../../../features/verify-email.feature?raw";
 const feature = await loadFeatureFromText(featureContent);
 
 const errorMessageMappedToErrorCode = {
@@ -28,7 +29,7 @@ setVitestCucumberConfiguration({
 
 describeFeature(
   feature,
-  ({ BeforeEachScenario, Scenario, ScenarioOutline, Background, Given }) => {
+  ({ BeforeEachScenario, Scenario, ScenarioOutline, Background }) => {
     let harness: VerifyOtpTestHarness;
 
     BeforeEachScenario(async () => {
@@ -181,7 +182,7 @@ class VerifyOtpTestHarness {
 
   expectVerificationFailedWithError(errorCode: string) {
     if (this.result && Result.isFailure(this.result)) {
-      expect(this.result.error.name).toBe(errorCode);
+      expect((this.result.error as Error).name).toBe(errorCode);
     } else {
       throw new Error("Expected verification to fail but it succeeded");
     }

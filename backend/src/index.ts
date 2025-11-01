@@ -1,15 +1,9 @@
 import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 import { FastifyHttpServer } from "@infrastructure/http/FastifyHttpServer.js";
-import { SupabaseHelperRepository } from "@infrastructure/persistence/SupabaseHelperRepository.js";
-import { SupabaseAuthRepository } from "@infrastructure/persistence/SupabaseAuthRepository.js";
 import { SupabaseAuthUserRepository } from "@infrastructure/persistence/SupabaseAuthUserRepository.js";
-import { InMemoryAuthUserRepository } from "@infrastructure/persistence/InMemoryAuthUserRepository.js";
-import { SupabaseOnboardedHelperNotificationService } from "@infrastructure/notifications/SupabaseOnboardedHelperNotificationService.js";
-import { SupabaseEmailConfirmationService } from "@infrastructure/services/SupabaseEmailConfirmationService.js";
-import { SystemClock } from "@infrastructure/time/SystemClock.js";
-import InMemoryEventBus from "@infrastructure/events/InMemoryEventBus.js";
 import { createApp } from "./app/createApp";
+import InMemoryAuthUserRepository from "@infrastructure/persistence/InMemoryAuthUserRepository";
 
 dotenv.config();
 
@@ -23,13 +17,7 @@ if (IS_TEST_MODE) {
   const authUserRepository = new InMemoryAuthUserRepository();
 
   dependencies = {
-    helperRepository: authUserRepository as any,
-    helperAccountRepository: authUserRepository as any,
     authUserRepository: authUserRepository,
-    notificationService: {} as any,
-    emailConfirmationService: {} as any,
-    clock: new SystemClock(),
-    eventBus: new InMemoryEventBus(),
   };
 } else {
   const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -44,13 +32,7 @@ if (IS_TEST_MODE) {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   dependencies = {
-    helperRepository: new SupabaseHelperRepository(supabase),
-    helperAccountRepository: new SupabaseAuthRepository(supabase),
     authUserRepository: new SupabaseAuthUserRepository(supabase),
-    notificationService: new SupabaseOnboardedHelperNotificationService(supabase),
-    emailConfirmationService: new SupabaseEmailConfirmationService(supabase),
-    clock: new SystemClock(),
-    eventBus: new InMemoryEventBus(),
   };
 }
 

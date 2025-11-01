@@ -2,17 +2,12 @@ import { expect } from "vitest";
 import { describeFeature, loadFeatureFromText } from "@amiceli/vitest-cucumber";
 import { FastifyHttpServer } from "@infrastructure/http/FastifyHttpServer";
 import { SupabaseTestHelper } from "@__tests__/helpers/SupabaseTestHelper";
-import { SupabaseHelperRepository } from "@infrastructure/persistence/SupabaseHelperRepository";
-import { SupabaseAuthRepository } from "@infrastructure/persistence/SupabaseAuthRepository";
 import { SupabaseAuthUserRepository } from "@infrastructure/persistence/SupabaseAuthUserRepository";
-import { SupabaseOnboardedHelperNotificationService } from "@infrastructure/notifications/SupabaseOnboardedHelperNotificationService";
-import { SupabaseEmailConfirmationService } from "@infrastructure/services/SupabaseEmailConfirmationService";
-import { SystemClock } from "@infrastructure/time/SystemClock";
-import InMemoryEventBus from "@infrastructure/events/InMemoryEventBus";
-import { createApp } from "@app/createApp";
+import { AppDependencies, createApp } from "@app/createApp";
 import { EmailFixtures } from "@shared/__tests__/fixtures/EmailFixtures";
 
-import featureContent from "../../../../features/signup.feature?raw";
+//@ts-ignore
+import featureContent from "../../../../../features/signup.feature?raw";
 
 const feature = await loadFeatureFromText(featureContent);
 
@@ -25,7 +20,7 @@ interface IntegrationTestContext {
 
 describeFeature(
   feature,
-  ({ BeforeEachScenario, AfterEachScenario, Scenario, Background, Given }) => {
+  ({ BeforeEachScenario, AfterEachScenario, Scenario, Background }) => {
     const context: IntegrationTestContext = {} as IntegrationTestContext;
 
     BeforeEachScenario(async () => {
@@ -33,18 +28,8 @@ describeFeature(
       context.supabaseHelper = new SupabaseTestHelper();
       const supabase = context.supabaseHelper.getClient();
 
-      const dependencies = {
-        helperRepository: new SupabaseHelperRepository(supabase),
-        helperAccountRepository: new SupabaseAuthRepository(supabase),
+      const dependencies: AppDependencies = {
         authUserRepository: new SupabaseAuthUserRepository(supabase),
-        notificationService: new SupabaseOnboardedHelperNotificationService(
-          supabase
-        ),
-        emailConfirmationService: new SupabaseEmailConfirmationService(
-          supabase
-        ),
-        clock: new SystemClock(),
-        eventBus: new InMemoryEventBus(),
       };
 
       context.server = new FastifyHttpServer();
@@ -81,7 +66,7 @@ describeFeature(
       });
 
       And("notified I have to confirm my email", async () => {
-        const user = await context.supabaseHelper.findUserByEmail(
+        const user = await context.supabaseHelper.getUserByEmail(
           context.testEmail
         );
         expect(user).toBeDefined();
@@ -90,40 +75,49 @@ describeFeature(
       });
     });
 
-    Scenario("Cannot sign up with duplicate email", ({ Given, When, Then, And }) => {
-      Given('a user with email "john@example.com" already exists', async () => {
-        await context.server.inject({
-          method: "POST",
-          url: "/api/auth/signup",
-          payload: {
-            email: "john@example.com",
-            password: "FirstPass123!",
-          },
+    Scenario(
+      "Cannot sign up with duplicate email",
+      ({ Given, When, Then, And }) => {
+        Given(
+          'a user with email "john@example.com" already exists',
+          async () => {
+            await context.server.inject({
+              method: "POST",
+              url: "/api/auth/signup",
+              payload: {
+                email: "john@example.com",
+                password: "FirstPass123!",
+              },
+            });
+          }
+        );
+
+        When("I attempt to sign up with the same email", async () => {
+          context.response = await context.server.inject({
+            method: "POST",
+            url: "/api/auth/signup",
+            payload: {
+              email: "john@example.com",
+              password: "SecondPass456!",
+            },
+          });
         });
-      });
 
-      When("I attempt to sign up with the same email", async () => {
-        context.response = await context.server.inject({
-          method: "POST",
-          url: "/api/auth/signup",
-          payload: {
-            email: "john@example.com",
-            password: "SecondPass456!",
-          },
+        Then(
+          'I am notified it went wrong because "Email already in use"',
+          () => {
+            expect(context.response?.statusCode).toBe(409);
+            const body = context.response?.json();
+            expect(body.error).toBe("this email address is already in use.");
+          }
+        );
+
+        And("I must use a different email to proceed", () => {
+          const body = context.response?.json();
+          expect(body.code).toBe("EmailAlreadyInUseError");
         });
-      });
-
-      Then('I am notified it went wrong because "Email already in use"', () => {
-        expect(context.response?.statusCode).toBe(409);
-        const body = context.response?.json();
-        expect(body.error).toBe("this email address is already in use.");
-      });
-
-      And("I must use a different email to proceed", () => {
-        const body = context.response?.json();
-        expect(body.code).toBe("EmailAlreadyInUseError");
-      });
-    });
+      }
+    );
   },
   { includeTags: ["integration"] }
 );

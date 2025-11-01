@@ -34,15 +34,6 @@ export default class InMemoryAuthUserRepository implements AuthUserRepository {
     return this.authUsers.has(email);
   }
 
-  async existsByPhoneNumber(phoneNumber: string): Promise<boolean> {
-    for (const user of this.authUsers.values()) {
-      if (user.phoneNumber === phoneNumber) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   async verifyOtp(
     email: string,
     otpCode: string

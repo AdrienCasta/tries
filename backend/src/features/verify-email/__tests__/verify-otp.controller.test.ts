@@ -1,12 +1,10 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import VerifyOtpController from "../verify-otp.controller";
+import VerifyOtpController, {
+  VerifyOtpErrorResponse,
+  VerifyOtpSuccessResponse,
+} from "../verify-otp.controller";
 import VerifyOtp from "../verify-otp.usecase";
 import InMemoryAuthUserRepository from "@infrastructure/persistence/InMemoryAuthUserRepository";
-import { Result } from "@shared/infrastructure/Result";
-import {
-  InvalidOtpError,
-  OtpExpiredError,
-} from "@shared/domain/repositories/AuthUserRepository";
 
 describe("VerifyOtpController", () => {
   let controller: VerifyOtpController;
@@ -34,7 +32,9 @@ describe("VerifyOtpController", () => {
       });
 
       expect(response.status).toBe(200);
-      expect(response.body.message).toContain("verified");
+      expect((response.body as VerifyOtpSuccessResponse).message).toContain(
+        "verified"
+      );
     });
 
     it("should return 400 on invalid OTP format", async () => {
@@ -49,8 +49,10 @@ describe("VerifyOtpController", () => {
       });
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toBeDefined();
-      expect(response.body.error).toContain("6 digits");
+      expect((response.body as VerifyOtpErrorResponse).error).toBeDefined();
+      expect((response.body as VerifyOtpErrorResponse).error).toContain(
+        "6 digits"
+      );
     });
 
     it("should return 400 on invalid OTP code", async () => {
@@ -66,7 +68,7 @@ describe("VerifyOtpController", () => {
       });
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toBeDefined();
+      expect((response.body as VerifyOtpErrorResponse).error).toBeDefined();
     });
 
     it("should return 410 on expired OTP", async () => {
@@ -84,7 +86,9 @@ describe("VerifyOtpController", () => {
       });
 
       expect(response.status).toBe(410);
-      expect(response.body.error).toContain("expired");
+      expect((response.body as VerifyOtpErrorResponse).error).toContain(
+        "expired"
+      );
     });
 
     it("should return 400 on invalid email format", async () => {
@@ -94,7 +98,7 @@ describe("VerifyOtpController", () => {
       });
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toBeDefined();
+      expect((response.body as VerifyOtpErrorResponse).error).toBeDefined();
     });
 
     it("should include error code in response", async () => {
@@ -110,7 +114,9 @@ describe("VerifyOtpController", () => {
       });
 
       expect(response.status).toBe(400);
-      expect(response.body.code).toBe("InvalidOtpError");
+      expect((response.body as VerifyOtpErrorResponse).code).toBe(
+        "InvalidOtpError"
+      );
     });
   });
 });

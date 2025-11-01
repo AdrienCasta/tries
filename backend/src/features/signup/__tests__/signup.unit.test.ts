@@ -4,15 +4,15 @@ import {
   loadFeatureFromText,
   setVitestCucumberConfiguration,
 } from "@amiceli/vitest-cucumber";
-import featureContent from "../../../../../features/signup.feature?raw";
 import { Failure, Result } from "@shared/infrastructure/Result";
-import DomainError from "@shared/domain/DomainError";
 
 import Signup, { SignupResult } from "../signup.usecase";
 import InMemoryAuthUserRepository from "@infrastructure/persistence/InMemoryAuthUserRepository";
 import SignupCommand from "../signup.command";
 import SignupCommandFixture from "./fixtures/SignupCommandFixture";
 
+//@ts-ignore
+import featureContent from "../../../../../features/signup.feature?raw";
 const feature = await loadFeatureFromText(featureContent);
 
 const errorMessageMappedToErrorCode = {
@@ -31,7 +31,7 @@ setVitestCucumberConfiguration({
 
 describeFeature(
   feature,
-  ({ BeforeEachScenario, ScenarioOutline, Scenario, Background, Given }) => {
+  ({ BeforeEachScenario, ScenarioOutline, Scenario, Background }) => {
     let harness: SignupUnitTestHarness;
 
     BeforeEachScenario(() => {
@@ -96,32 +96,41 @@ describeFeature(
       }
     );
 
-    Scenario("Cannot sign up with duplicate email", ({ Given, When, Then, And }) => {
-      const existingCommand = SignupCommandFixture.aValidCommand({
-        email: "john@example.com",
-      });
-      const duplicateCommand = SignupCommandFixture.aValidCommand({
-        email: "john@example.com",
-        password: "DifferentPass123!",
-      });
+    Scenario(
+      "Cannot sign up with duplicate email",
+      ({ Given, When, Then, And }) => {
+        const existingCommand = SignupCommandFixture.aValidCommand({
+          email: "john@example.com",
+        });
+        const duplicateCommand = SignupCommandFixture.aValidCommand({
+          email: "john@example.com",
+          password: "DifferentPass123!",
+        });
 
-      Given('a user with email "john@example.com" already exists', async () => {
-        await harness.signup(existingCommand);
-        expect(harness.didSignupSucceed()).toBe(true);
-      });
+        Given(
+          'a user with email "john@example.com" already exists',
+          async () => {
+            await harness.signup(existingCommand);
+            expect(harness.didSignupSucceed()).toBe(true);
+          }
+        );
 
-      When("I attempt to sign up with the same email", async () => {
-        await harness.signup(duplicateCommand);
-      });
+        When("I attempt to sign up with the same email", async () => {
+          await harness.signup(duplicateCommand);
+        });
 
-      Then('I am notified it went wrong because "Email already in use"', () => {
-        expect(harness.didSignupSucceed()).toBe(false);
-      });
+        Then(
+          'I am notified it went wrong because "Email already in use"',
+          () => {
+            expect(harness.didSignupSucceed()).toBe(false);
+          }
+        );
 
-      And("I must use a different email to proceed", () => {
-        harness.expectSignupFailedWithError("EmailAlreadyInUseError");
-      });
-    });
+        And("I must use a different email to proceed", () => {
+          harness.expectSignupFailedWithError("EmailAlreadyInUseError");
+        });
+      }
+    );
   }
 );
 
@@ -150,7 +159,7 @@ class SignupUnitTestHarness {
     return false;
   }
 
-  expectSignupFailedWithError(error: DomainError) {
+  expectSignupFailedWithError(error: string) {
     expect((this.status as Failure).error.name).toBe(error);
   }
 

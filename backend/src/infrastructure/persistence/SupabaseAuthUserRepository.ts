@@ -13,19 +13,10 @@ export class SupabaseAuthUserRepository implements AuthUserRepository {
   constructor(private readonly supabase: SupabaseClient) {}
 
   async createUser(authUser: AuthUserWrite): Promise<void> {
-    const { error } = await this.supabase.auth.admin.createUser({
+    const { error } = await this.supabase.auth.signInWithOtp({
       email: authUser.email,
-      password: authUser.password,
-      phone: authUser.phoneNumber,
-      email_confirm: false,
-      user_metadata: {
-        firstname: authUser.firstname,
-        lastname: authUser.lastname,
-        birthdate: authUser.birthdate?.toISOString(),
-        placeOfBirth: authUser.placeOfBirth,
-        professions: authUser.professions,
-        residence: authUser.residence,
-        criminalRecordCertificateId: authUser.criminalRecordCertificateId,
+      options: {
+        shouldCreateUser: true,
       },
     });
 
@@ -76,16 +67,7 @@ export class SupabaseAuthUserRepository implements AuthUserRepository {
     return {
       id: user.id,
       email: user.email!,
-      firstname: user.user_metadata.firstname,
-      lastname: user.user_metadata.lastname,
-      phoneNumber: user.phone!,
-      birthdate: user.user_metadata.birthdate,
-      placeOfBirth: user.user_metadata.placeOfBirth,
-      professions: user.user_metadata.professions,
-      residence: user.user_metadata.residence,
       emailConfirmed: !!user.email_confirmed_at,
-      criminalRecordCertificateId:
-        user.user_metadata.criminalRecordCertificateId,
     };
   }
 

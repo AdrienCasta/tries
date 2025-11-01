@@ -4,11 +4,12 @@ import {
   loadFeatureFromText,
   setVitestCucumberConfiguration,
 } from "@amiceli/vitest-cucumber";
-import featureContent from "../../../../../features/resend-otp.feature?raw";
 import { Result } from "@shared/infrastructure/Result";
 import ResendOtp from "../resend-otp.usecase";
 import InMemoryAuthUserRepository from "@infrastructure/persistence/InMemoryAuthUserRepository";
 import ResendOtpCommandFixture from "./fixtures/ResendOtpCommandFixture";
+// @ts-ignore
+import featureContent from "../../../../../features/resend-otp.feature?raw";
 import ResendOtpCommand from "../resend-otp.command";
 
 const feature = await loadFeatureFromText(featureContent);
@@ -22,34 +23,34 @@ setVitestCucumberConfiguration({
   mappedExamples: errorMessageMappedToErrorCode,
 });
 
-describeFeature(
-  feature,
-  ({ BeforeEachScenario, Scenario, Background, Given }) => {
-    let harness: ResendOtpTestHarness;
+describeFeature(feature, ({ BeforeEachScenario, Scenario, Background }) => {
+  let harness: ResendOtpTestHarness;
 
-    BeforeEachScenario(async () => {
-      harness = await ResendOtpTestHarness.setup();
+  BeforeEachScenario(async () => {
+    harness = await ResendOtpTestHarness.setup();
+  });
+
+  Background(({ Given }) => {
+    Given("I have signed up with an email address", () => {});
+  });
+
+  Scenario("User requests new OTP successfully", ({ When, Then, And }) => {
+    When("I request a new OTP code", async () => {
+      await harness.resendOtp();
     });
 
-    Background(({ Given }) => {
-      Given("I have signed up with an email address", () => {});
+    Then("a new OTP is sent to my email", () => {
+      expect(harness.wasOtpSent()).toBe(true);
     });
 
-    Scenario("User requests new OTP successfully", ({ When, Then, And }) => {
-      When("I request a new OTP code", async () => {
-        await harness.resendOtp();
-      });
-
-      Then("a new OTP is sent to my email", () => {
-        expect(harness.wasOtpSent()).toBe(true);
-      });
-
-      And("I am notified to check my inbox", () => {
-        expect(harness.didResendSucceed()).toBe(true);
-      });
+    And("I am notified to check my inbox", () => {
+      expect(harness.didResendSucceed()).toBe(true);
     });
+  });
 
-    Scenario("Cannot request OTP for non-existent user", ({ Given, When, Then }) => {
+  Scenario(
+    "Cannot request OTP for non-existent user",
+    ({ Given, When, Then }) => {
       Given("I use an email that is not registered", () => {
         harness.useNonExistentEmail();
       });
@@ -62,9 +63,12 @@ describeFeature(
         expect(harness.didResendSucceed()).toBe(false);
         harness.expectResendFailedWithError("UserNotFoundError");
       });
-    });
+    }
+  );
 
-    Scenario("New OTP invalidates previous OTP", ({ Given, When, And, Then, But }) => {
+  Scenario(
+    "New OTP invalidates previous OTP",
+    ({ Given, When, And, Then, But }) => {
       Given("I have received an OTP code", async () => {
         await harness.sendInitialOtp();
       });
@@ -85,9 +89,9 @@ describeFeature(
         await harness.verifyWithNewOtp();
         expect(harness.didNewOtpVerificationSucceed()).toBe(true);
       });
-    });
-  }
-);
+    }
+  );
+});
 
 class ResendOtpTestHarness {
   private resendResult: any;
@@ -173,7 +177,7 @@ class ResendOtpTestHarness {
 
   expectResendFailedWithError(errorCode: string) {
     if (this.resendResult && Result.isFailure(this.resendResult)) {
-      expect(this.resendResult.error.name).toBe(errorCode);
+      expect((this.resendResult.error as Error).name).toBe(errorCode);
     } else {
       throw new Error("Expected resend to fail but it succeeded");
     }

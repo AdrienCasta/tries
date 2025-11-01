@@ -40,11 +40,12 @@ export default interface AuthUserRepository {
   createUser(authUser: AuthUserWrite): Promise<void>;
   getUserByEmail(email: string): Promise<AuthUserRead | null>;
   existsByEmail(email: string): Promise<boolean>;
-  existsByPhoneNumber(phoneNumber: string): Promise<boolean>;
 
   verifyOtp(
     email: string,
     otpCode: string
   ): Promise<Result<void, OtpVerificationError>>;
-  sendOtp(email: string): Promise<Result<void, UserNotFoundError | SendOtpError>>;
+  sendOtp(
+    email: string
+  ): Promise<Result<void, UserNotFoundError | SendOtpError>>;
 }

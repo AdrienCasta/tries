@@ -37,13 +37,19 @@ export default function SignupForm({ onSubmit, isLoading }: SignupFormProps) {
 
   return (
     <Form {...form}>
+      <div className="flex justify-center py-8">
+        <img className="size-40" src="/tries.png" alt="" />
+      </div>
       <Card className="w-full sm:max-w-md">
-        <CardHeader>
-          <CardTitle>Sign Up</CardTitle>
-        </CardHeader>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent>
             <FieldGroup>
+              <div className="flex flex-col items-center gap-1 text-center">
+                <h1 className="text-2xl font-bold">Create your account</h1>
+                <p className="text-muted-foreground text-sm text-balance">
+                  Fill in the form below to create your account
+                </p>
+              </div>
               <Controller
                 name="email"
                 control={form.control}
@@ -80,7 +86,8 @@ export default function SignupForm({ onSubmit, isLoading }: SignupFormProps) {
                       placeholder="Enter your password"
                     />
                     <FieldDescription>
-                      Must be at least 8 characters with uppercase, number, and special character
+                      Must be at least 8 characters with uppercase, number, and
+                      special character
                     </FieldDescription>
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
@@ -93,7 +100,9 @@ export default function SignupForm({ onSubmit, isLoading }: SignupFormProps) {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="confirmPassword">Confirm Password</FieldLabel>
+                    <FieldLabel htmlFor="confirmPassword">
+                      Confirm Password
+                    </FieldLabel>
                     <Input
                       {...field}
                       type="password"
@@ -110,13 +119,16 @@ export default function SignupForm({ onSubmit, isLoading }: SignupFormProps) {
                   </Field>
                 )}
               />
+              <Field>
+                <Button
+                  type="submit"
+                  disabled={isLoading || form.formState.isSubmitting}
+                >
+                  {isLoading ? "Signing up..." : "Sign Up"}
+                </Button>
+              </Field>
             </FieldGroup>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isLoading || form.formState.isSubmitting}>
-              {isLoading ? "Signing up..." : "Sign Up"}
-            </Button>
-          </CardFooter>
         </form>
       </Card>
     </Form>
