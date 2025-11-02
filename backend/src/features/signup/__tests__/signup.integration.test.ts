@@ -2,7 +2,8 @@ import { expect } from "vitest";
 import { describeFeature, loadFeatureFromText } from "@amiceli/vitest-cucumber";
 import { FastifyHttpServer } from "@infrastructure/http/FastifyHttpServer";
 import { SupabaseTestHelper } from "@__tests__/helpers/SupabaseTestHelper";
-import { SupabaseAuthUserRepository } from "@infrastructure/persistence/SupabaseAuthUserRepository";
+import { SupabaseAuthService } from "@infrastructure/auth/SupabaseAuthService";
+import { SupabaseUserRepository } from "@infrastructure/persistence/SupabaseUserRepository";
 import { AppDependencies, createApp } from "@app/createApp";
 import { EmailFixtures } from "@shared/__tests__/fixtures/EmailFixtures";
 
@@ -29,7 +30,8 @@ describeFeature(
       const supabase = context.supabaseHelper.getClient();
 
       const dependencies: AppDependencies = {
-        authUserRepository: new SupabaseAuthUserRepository(supabase),
+        authService: new SupabaseAuthService(supabase),
+        userRepository: new SupabaseUserRepository(supabase),
       };
 
       context.server = new FastifyHttpServer();
@@ -54,7 +56,7 @@ describeFeature(
           url: "/api/auth/signup",
           payload: {
             email: context.testEmail,
-            password: "SecurePass123!",
+            
           },
         });
       });
@@ -86,7 +88,7 @@ describeFeature(
               url: "/api/auth/signup",
               payload: {
                 email: "john@example.com",
-                password: "FirstPass123!",
+                
               },
             });
           }
@@ -98,7 +100,7 @@ describeFeature(
             url: "/api/auth/signup",
             payload: {
               email: "john@example.com",
-              password: "SecondPass456!",
+              
             },
           });
         });

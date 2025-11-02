@@ -1,10 +1,10 @@
 import { HttpServer } from "@infrastructure/http/HttpServer.js";
-import InMemoryAuthUserRepository from "@infrastructure/persistence/InMemoryAuthUserRepository";
-import AuthUserRepository from "@shared/domain/repositories/AuthUserRepository.js";
+import InMemoryAuthService from "@infrastructure/auth/InMemoryAuthService.js";
+import AuthService from "@shared/domain/services/AuthService.js";
 
 export function registerTestHelperRoutes(
   server: HttpServer,
-  authUserRepository: AuthUserRepository
+  authService: AuthService
 ) {
   if (process.env.NODE_ENV !== "test") {
     return;
@@ -18,8 +18,8 @@ export function registerTestHelperRoutes(
       return;
     }
 
-    if (authUserRepository instanceof InMemoryAuthUserRepository) {
-      const otpCode = authUserRepository.getLastOtpCode(
+    if (authService instanceof InMemoryAuthService) {
+      const otpCode = authService.getLastOtpCode(
         decodeURIComponent(email)
       );
 
@@ -32,7 +32,7 @@ export function registerTestHelperRoutes(
     } else {
       response.status(501).send({
         error:
-          "Test OTP retrieval only available with InMemoryAuthUserRepository",
+          "Test OTP retrieval only available with InMemoryAuthService",
       });
     }
   });

@@ -6,7 +6,7 @@ import {
 } from "@amiceli/vitest-cucumber";
 import { Result } from "@shared/infrastructure/Result";
 import VerifyOtp from "../verify-otp.usecase";
-import InMemoryAuthUserRepository from "@infrastructure/persistence/InMemoryAuthUserRepository";
+import InMemoryAuthService from "@infrastructure/auth/InMemoryAuthService.js";
 import VerifyOtpCommandFixture from "./fixtures/VerifyOtpCommandFixture";
 import VerifyOtpCommand from "../verify-otp.command";
 
@@ -123,12 +123,12 @@ class VerifyOtpTestHarness {
   private validOtp: string = "";
 
   private constructor(
-    private readonly repository: InMemoryAuthUserRepository,
+    private readonly repository: InMemoryAuthService,
     private readonly useCase: VerifyOtp
   ) {}
 
   static async setup() {
-    const repository = new InMemoryAuthUserRepository();
+    const repository = new InMemoryAuthService();
     const useCase = new VerifyOtp(repository);
     const harness = new this(repository, useCase);
     await harness.createUnconfirmedUser();
@@ -136,14 +136,14 @@ class VerifyOtpTestHarness {
   }
 
   async createUnconfirmedUser() {
-    await this.repository.createUser({
+    await this.repository.signUp(
       email: this.testEmail,
-      password: "Test123!",
+      
     });
   }
 
   async sendOtpToUser() {
-    await this.repository.sendOtp(this.testEmail);
+    await this.repository.signInWithOtp(this.testEmail);
     this.validOtp = this.repository.getLastOtpCode(this.testEmail);
   }
 

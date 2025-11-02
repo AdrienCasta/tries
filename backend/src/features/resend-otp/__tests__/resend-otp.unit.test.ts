@@ -6,7 +6,7 @@ import {
 } from "@amiceli/vitest-cucumber";
 import { Result } from "@shared/infrastructure/Result";
 import ResendOtp from "../resend-otp.usecase";
-import InMemoryAuthUserRepository from "@infrastructure/persistence/InMemoryAuthUserRepository";
+import InMemoryAuthService from "@infrastructure/auth/InMemoryAuthService.js";
 import ResendOtpCommandFixture from "./fixtures/ResendOtpCommandFixture";
 // @ts-ignore
 import featureContent from "../../../../../features/resend-otp.feature?raw";
@@ -103,12 +103,12 @@ class ResendOtpTestHarness {
   private newOtp: string = "";
 
   private constructor(
-    private readonly repository: InMemoryAuthUserRepository,
+    private readonly repository: InMemoryAuthService,
     private readonly useCase: ResendOtp
   ) {}
 
   static async setup() {
-    const repository = new InMemoryAuthUserRepository();
+    const repository = new InMemoryAuthService();
     const useCase = new ResendOtp(repository);
     const harness = new this(repository, useCase);
     await harness.createUser();
@@ -116,10 +116,7 @@ class ResendOtpTestHarness {
   }
 
   async createUser() {
-    await this.repository.createUser({
-      email: this.testEmail,
-      password: "Test123!",
-    });
+    await this.repository.signUp(this.testEmail);
   }
 
   async resendOtp() {
@@ -137,7 +134,7 @@ class ResendOtpTestHarness {
   }
 
   async sendInitialOtp() {
-    await this.repository.sendOtp(this.testEmail);
+    await this.repository.signInWithOtp(this.testEmail);
     this.oldOtp = this.repository.getLastOtpCode(this.testEmail);
   }
 

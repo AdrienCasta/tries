@@ -7,7 +7,8 @@ import {
 import { Failure, Result } from "@shared/infrastructure/Result";
 
 import Signup, { SignupResult } from "../signup.usecase";
-import InMemoryAuthUserRepository from "@infrastructure/persistence/InMemoryAuthUserRepository";
+import InMemoryAuthService from "@infrastructure/auth/InMemoryAuthService.js";
+import InMemoryUserRepository from "@infrastructure/persistence/InMemoryUserRepository.js";
 import SignupCommand from "../signup.command";
 import SignupCommandFixture from "./fixtures/SignupCommandFixture";
 
@@ -104,7 +105,7 @@ describeFeature(
         });
         const duplicateCommand = SignupCommandFixture.aValidCommand({
           email: "john@example.com",
-          password: "DifferentPass123!",
+          
         });
 
         Given(
@@ -138,14 +139,16 @@ class SignupUnitTestHarness {
   status: Awaited<SignupResult> | undefined;
 
   private constructor(
-    private readonly authUserRepository: InMemoryAuthUserRepository,
+    private readonly authService: InMemoryAuthService,
+    private readonly userRepository: InMemoryUserRepository,
     private readonly signupUsecase: Signup
   ) {}
 
   static setup() {
-    const authUserRepository = new InMemoryAuthUserRepository();
-    const signup = new Signup(authUserRepository);
-    return new this(authUserRepository, signup);
+    const authService = new InMemoryAuthService();
+    const userRepository = new InMemoryUserRepository();
+    const signup = new Signup(authService, userRepository);
+    return new this(authService, userRepository, signup);
   }
 
   async signup(command: SignupCommand) {
@@ -164,6 +167,6 @@ class SignupUnitTestHarness {
   }
 
   isEmailConfirmed(email: string) {
-    return this.authUserRepository.authUsers.get(email)?.emailConfirmed;
+    return this.authService.authUsers.get(email)?.emailConfirmed;
   }
 }

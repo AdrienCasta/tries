@@ -1,15 +1,15 @@
 import { Result } from "@shared/infrastructure/Result";
 import ResendOtpCommand from "./resend-otp.command";
-import AuthUserRepository, {
+import AuthService, {
   UserNotFoundError,
   SendOtpError,
-} from "@shared/domain/repositories/AuthUserRepository";
+} from "@shared/domain/services/AuthService";
 import HelperEmail from "@shared/domain/value-objects/HelperEmail";
 
 export type ResendOtpResult = Result<void, Error>;
 
 export default class ResendOtp {
-  constructor(private readonly authUserRepository: AuthUserRepository) {}
+  constructor(private readonly authService: AuthService) {}
 
   async execute(command: ResendOtpCommand): Promise<ResendOtpResult> {
     const emailValidation = HelperEmail.create(command.email);
@@ -18,7 +18,7 @@ export default class ResendOtp {
       return emailValidation;
     }
 
-    const sendResult = await this.authUserRepository.sendOtp(command.email);
+    const sendResult = await this.authService.signInWithOtp(command.email);
 
     if (Result.isFailure(sendResult)) {
       return sendResult;

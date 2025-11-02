@@ -32,8 +32,6 @@ export default function SignupForm({ onSubmit, isLoading }: SignupFormProps) {
       email: "",
       firstname: "",
       lastname: "",
-      password: "",
-      confirmPassword: "",
     },
   });
 
@@ -109,52 +107,6 @@ export default function SignupForm({ onSubmit, isLoading }: SignupFormProps) {
                     />
                     <FieldDescription>
                       Veuillez entrer votre nom légal.
-                    </FieldDescription>
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-              <Controller
-                name="password"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="password">Mot de passe</FieldLabel>
-                    <Input
-                      {...field}
-                      type="password"
-                      id="password"
-                      aria-invalid={fieldState.invalid}
-                      placeholder="Entrez votre mot de passe"
-                    />
-                    <FieldDescription>
-                      Doit contenir au moins 8 caractères avec majuscule, chiffre et caractère spécial
-                    </FieldDescription>
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-              <Controller
-                name="confirmPassword"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="confirmPassword">
-                      Confirmer le mot de passe
-                    </FieldLabel>
-                    <Input
-                      {...field}
-                      type="password"
-                      id="confirmPassword"
-                      aria-invalid={fieldState.invalid}
-                      placeholder="Resaisissez votre mot de passe"
-                    />
-                    <FieldDescription>
-                      Doit correspondre au mot de passe ci-dessus
                     </FieldDescription>
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />

@@ -2,7 +2,8 @@ import Signup from "@features/signup/signup.usecase.js";
 import VerifyOtp from "@features/verify-email/verify-otp.usecase.js";
 import ResendOtp from "@features/resend-otp/resend-otp.usecase.js";
 import { HelperRepository } from "@shared/domain/repositories/HelperRepository.js";
-import AuthUserRepository from "@shared/domain/repositories/AuthUserRepository.js";
+import AuthService from "@shared/domain/services/AuthService.js";
+import UserRepository from "@shared/domain/repositories/UserRepository.js";
 import { EmailConfirmationService } from "@shared/domain/services/EmailConfirmationService.js";
 import { Clock } from "@shared/domain/services/Clock.js";
 import EventBus from "@shared/infrastructure/EventBus.js";
@@ -16,29 +17,30 @@ import { registerTestHelperRoutes } from "@features/test-helpers/test-helpers.ro
 import { HttpServer } from "@infrastructure/http/HttpServer.js";
 
 export interface AppDependencies {
-  authUserRepository: AuthUserRepository;
+  authService: AuthService;
+  userRepository: UserRepository;
 }
 
 export function createApp(
   server: HttpServer,
   dependencies: AppDependencies
 ): HttpServer {
-  const signup = new Signup(dependencies.authUserRepository);
+  const signup = new Signup(dependencies.authService, dependencies.userRepository);
 
   const signupController = new SignupController(signup);
 
-  const verifyOtp = new VerifyOtp(dependencies.authUserRepository);
+  const verifyOtp = new VerifyOtp(dependencies.authService);
 
   const verifyOtpController = new VerifyOtpController(verifyOtp);
 
-  const resendOtp = new ResendOtp(dependencies.authUserRepository);
+  const resendOtp = new ResendOtp(dependencies.authService);
 
   const resendOtpController = new ResendOtpController(resendOtp);
 
   registerSignupRoutes(server, signupController);
   registerVerifyOtpRoutes(server, verifyOtpController);
   registerResendOtpRoutes(server, resendOtpController);
-  registerTestHelperRoutes(server, dependencies.authUserRepository);
+  registerTestHelperRoutes(server, dependencies.authService);
 
   server.get("/health", async (request, response) => {
     response.status(200).send({

@@ -1,15 +1,15 @@
 import { Result } from "@shared/infrastructure/Result";
 import VerifyOtpCommand from "./verify-otp.command";
-import AuthUserRepository, {
+import AuthService, {
   OtpVerificationError,
-} from "@shared/domain/repositories/AuthUserRepository";
+} from "@shared/domain/services/AuthService";
 import HelperEmail from "@shared/domain/value-objects/HelperEmail";
 import OtpCode from "@shared/domain/value-objects/OtpCode";
 
 export type VerifyOtpResult = Result<void, Error>;
 
 export default class VerifyOtp {
-  constructor(private readonly authUserRepository: AuthUserRepository) {}
+  constructor(private readonly authService: AuthService) {}
 
   async execute(command: VerifyOtpCommand): Promise<VerifyOtpResult> {
     const guard = Result.combineObject({
@@ -21,7 +21,7 @@ export default class VerifyOtp {
       return guard;
     }
 
-    const verificationResult = await this.authUserRepository.verifyOtp(
+    const verificationResult = await this.authService.verifyOtp(
       command.email,
       command.otpCode
     );

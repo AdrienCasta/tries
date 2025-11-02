@@ -1,4 +1,5 @@
 export default interface SignupCommand {
   email: string;
-  password: string;
+  firstname: string;
+  lastname: string;
 }

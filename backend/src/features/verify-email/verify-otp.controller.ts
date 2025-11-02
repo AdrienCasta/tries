@@ -1,7 +1,7 @@
 import VerifyOtp from "./verify-otp.usecase";
 import VerifyOtpCommand from "./verify-otp.command";
 import { Result } from "@shared/infrastructure/Result";
-import { OtpExpiredError } from "@shared/domain/repositories/AuthUserRepository";
+import { OtpExpiredError } from "@shared/domain/services/AuthService";
 
 export interface VerifyOtpRequest {
   email: string;

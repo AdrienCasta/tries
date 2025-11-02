@@ -1,9 +1,11 @@
 import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 import { FastifyHttpServer } from "@infrastructure/http/FastifyHttpServer.js";
-import { SupabaseAuthUserRepository } from "@infrastructure/persistence/SupabaseAuthUserRepository.js";
+import { SupabaseAuthService } from "@infrastructure/auth/SupabaseAuthService.js";
+import { SupabaseUserRepository } from "@infrastructure/persistence/SupabaseUserRepository.js";
 import { createApp } from "./app/createApp";
-import InMemoryAuthUserRepository from "@infrastructure/persistence/InMemoryAuthUserRepository";
+import InMemoryAuthService from "@infrastructure/auth/InMemoryAuthService.js";
+import InMemoryUserRepository from "@infrastructure/persistence/InMemoryUserRepository.js";
 
 dotenv.config();
 
@@ -14,10 +16,12 @@ let dependencies;
 
 if (IS_TEST_MODE) {
   console.log("Running in TEST mode with InMemory repositories");
-  const authUserRepository = new InMemoryAuthUserRepository();
+  const authService = new InMemoryAuthService();
+  const userRepository = new InMemoryUserRepository();
 
   dependencies = {
-    authUserRepository: authUserRepository,
+    authService: authService,
+    userRepository: userRepository,
   };
 } else {
   const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -32,7 +36,8 @@ if (IS_TEST_MODE) {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   dependencies = {
-    authUserRepository: new SupabaseAuthUserRepository(supabase),
+    authService: new SupabaseAuthService(supabase),
+    userRepository: new SupabaseUserRepository(supabase),
   };
 }
 
