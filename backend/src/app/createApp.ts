@@ -34,7 +34,7 @@ export function createApp(
   const login = new Login(dependencies.authService);
   const loginController = new LoginController(login);
 
-  const verifyOtp = new VerifyOtp(dependencies.authService);
+  const verifyOtp = new VerifyOtp(dependencies.authService, dependencies.userRepository);
   const verifyOtpController = new VerifyOtpController(verifyOtp);
 
   const resendOtp = new ResendOtp(dependencies.authService);

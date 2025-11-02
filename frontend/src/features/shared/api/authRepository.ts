@@ -104,6 +104,7 @@ export class AuthRepository implements IAuthRepository {
       return {
         success: true,
         message: result.message || "Email verified successfully",
+        user: result.user,
       };
     } catch (error) {
       console.error("Error verifying OTP:", error);

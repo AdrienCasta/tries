@@ -8,6 +8,7 @@ import {
   resendCompleted,
   resendFailed,
 } from "./EmailVerification.slice";
+import { setUser } from "../auth/auth.slice";
 import {
   emailVerificationSchema,
   type EmailVerificationFormData,
@@ -32,7 +33,8 @@ export function verifyEmailUsecase(
         otpCode: validation.data.otpCode,
       });
 
-      if (result.success) {
+      if (result.success && result.user) {
+        dispatch(setUser(result.user));
         dispatch(verificationCompleted());
       } else {
         dispatch(verificationFailed(result.error || "Échec de la vérification"));

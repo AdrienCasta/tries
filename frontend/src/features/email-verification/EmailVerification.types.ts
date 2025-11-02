@@ -7,6 +7,12 @@ export interface VerifyEmailResponse {
   success: boolean;
   message?: string;
   error?: string;
+  user?: {
+    id: string;
+    email: string;
+    firstname: string;
+    lastname: string;
+  };
 }
 
 export interface ResendOtpRequest {

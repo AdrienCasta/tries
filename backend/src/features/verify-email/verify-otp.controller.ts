@@ -10,6 +10,12 @@ export interface VerifyOtpRequest {
 
 export interface VerifyOtpSuccessResponse {
   message: string;
+  user: {
+    id: string;
+    email: string;
+    firstname: string;
+    lastname: string;
+  };
 }
 
 export interface VerifyOtpErrorResponse {
@@ -41,7 +47,15 @@ export default class VerifyOtpController {
     if (Result.isSuccess(result)) {
       return {
         status: HTTP_STATUS.OK,
-        body: { message: "Email verified successfully" },
+        body: {
+          message: "Email verified successfully",
+          user: {
+            id: result.value.id,
+            email: result.value.email,
+            firstname: result.value.firstname,
+            lastname: result.value.lastname,
+          },
+        },
       };
     }
 
