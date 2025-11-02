@@ -19,9 +19,6 @@ const feature = await loadFeatureFromText(featureContent);
 const errorMessageMappedToErrorCode = {
   "Email is required": "InvalidEmailError",
   "Invalid email format": "InvalidEmailError",
-  "Password is required": "PasswordEmptyError",
-  "Password too short": "PasswordTooShortError",
-  "Password format invalid": "PasswordFormatError",
   "Email already in use": "EmailAlreadyInUseError",
 };
 
@@ -78,24 +75,7 @@ describeFeature(
       }
     );
 
-    ScenarioOutline(
-      "Cannot sign up with invalid password",
-      ({ When, Then, And }, { password, error }) => {
-        const command = SignupCommandFixture.aValidCommand({ password });
-
-        When('I submit signup with password "<password>"', () => {
-          harness.signup(command);
-        });
-
-        Then("I am notified it went wrong because of <error>", () => {
-          expect(harness.didSignupSucceed()).toBe(false);
-        });
-
-        And("notified I have to provide a valid password", () => {
-          harness.expectSignupFailedWithError(error);
-        });
-      }
-    );
+    // Password validation test removed - signup is now passwordless with OTP
 
     Scenario(
       "Cannot sign up with duplicate email",

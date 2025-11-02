@@ -7,6 +7,7 @@ import {
 import { Result } from "@shared/infrastructure/Result";
 import VerifyOtp from "../verify-otp.usecase";
 import InMemoryAuthService from "@infrastructure/auth/InMemoryAuthService.js";
+import InMemoryUserRepository from "@infrastructure/persistence/InMemoryUserRepository.js";
 import VerifyOtpCommandFixture from "./fixtures/VerifyOtpCommandFixture";
 import VerifyOtpCommand from "../verify-otp.command";
 
@@ -123,28 +124,33 @@ class VerifyOtpTestHarness {
   private validOtp: string = "";
 
   private constructor(
-    private readonly repository: InMemoryAuthService,
+    private readonly authService: InMemoryAuthService,
+    private readonly userRepository: InMemoryUserRepository,
     private readonly useCase: VerifyOtp
   ) {}
 
   static async setup() {
-    const repository = new InMemoryAuthService();
-    const useCase = new VerifyOtp(repository);
-    const harness = new this(repository, useCase);
+    const authService = new InMemoryAuthService();
+    const userRepository = new InMemoryUserRepository();
+    const useCase = new VerifyOtp(authService, userRepository);
+    const harness = new this(authService, userRepository, useCase);
     await harness.createUnconfirmedUser();
     return harness;
   }
 
   async createUnconfirmedUser() {
-    await this.repository.signUp(
+    const signUpResult = await this.authService.signUp(this.testEmail);
+    await this.userRepository.create({
+      id: signUpResult.userId,
       email: this.testEmail,
-      
+      firstname: "John",
+      lastname: "Doe",
     });
   }
 
   async sendOtpToUser() {
-    await this.repository.signInWithOtp(this.testEmail);
-    this.validOtp = this.repository.getLastOtpCode(this.testEmail);
+    await this.authService.signInWithOtp(this.testEmail);
+    this.validOtp = this.authService.getLastOtpCode(this.testEmail);
   }
 
   async verifyWithValidOtp() {
@@ -160,7 +166,7 @@ class VerifyOtpTestHarness {
   }
 
   expireOtp() {
-    this.repository.expireOtp(this.testEmail);
+    this.authService.expireOtp(this.testEmail);
   }
 
   async verifyWithExpiredOtp() {
@@ -176,7 +182,7 @@ class VerifyOtpTestHarness {
   }
 
   isEmailVerified() {
-    const user = this.repository.authUsers.get(this.testEmail);
+    const user = this.authService.authUsers.get(this.testEmail);
     return user?.emailConfirmed === true;
   }
 

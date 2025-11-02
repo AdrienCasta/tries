@@ -11,10 +11,7 @@ describe("AuthUserRepository - OTP Operations", () => {
 
   describe("verifyOtp", () => {
     it("should verify OTP successfully for valid code", async () => {
-      await repository.signUp(
-        email: "test@example.com",
-        
-      });
+      await repository.signUp("test@example.com");
 
       await repository.signInWithOtp("test@example.com");
       const otpCode = repository.getLastOtpCode("test@example.com");
@@ -28,10 +25,7 @@ describe("AuthUserRepository - OTP Operations", () => {
     });
 
     it("should fail when OTP code is invalid", async () => {
-      await repository.signUp(
-        email: "test@example.com",
-        
-      });
+      await repository.signUp("test@example.com");
 
       await repository.signInWithOtp("test@example.com");
 
@@ -44,10 +38,7 @@ describe("AuthUserRepository - OTP Operations", () => {
     });
 
     it("should fail when OTP has expired", async () => {
-      await repository.signUp(
-        email: "test@example.com",
-        
-      });
+      await repository.signUp("test@example.com");
 
       await repository.signInWithOtp("test@example.com");
       const otpCode = repository.getLastOtpCode("test@example.com");
@@ -63,10 +54,7 @@ describe("AuthUserRepository - OTP Operations", () => {
     });
 
     it("should fail when no OTP exists for email", async () => {
-      await repository.signUp(
-        email: "test@example.com",
-        
-      });
+      await repository.signUp("test@example.com");
 
       const result = await repository.verifyOtp("test@example.com", "123456");
 
@@ -77,10 +65,7 @@ describe("AuthUserRepository - OTP Operations", () => {
     });
 
     it("should invalidate OTP after successful verification", async () => {
-      await repository.signUp(
-        email: "test@example.com",
-        
-      });
+      await repository.signUp("test@example.com");
 
       await repository.signInWithOtp("test@example.com");
       const otpCode = repository.getLastOtpCode("test@example.com");
@@ -97,10 +82,7 @@ describe("AuthUserRepository - OTP Operations", () => {
 
   describe("sendOtp", () => {
     it("should send OTP successfully for existing user", async () => {
-      await repository.signUp(
-        email: "test@example.com",
-        
-      });
+      await repository.signUp("test@example.com");
 
       const result = await repository.signInWithOtp("test@example.com");
 
@@ -121,10 +103,7 @@ describe("AuthUserRepository - OTP Operations", () => {
     });
 
     it("should generate 6-digit numeric OTP code", async () => {
-      await repository.signUp(
-        email: "test@example.com",
-        
-      });
+      await repository.signUp("test@example.com");
 
       await repository.signInWithOtp("test@example.com");
       const otpCode = repository.getLastOtpCode("test@example.com");
@@ -134,10 +113,7 @@ describe("AuthUserRepository - OTP Operations", () => {
     });
 
     it("should invalidate previous OTP when sending new one", async () => {
-      await repository.signUp(
-        email: "test@example.com",
-        
-      });
+      await repository.signUp("test@example.com");
 
       await repository.signInWithOtp("test@example.com");
       const firstOtp = repository.getLastOtpCode("test@example.com");

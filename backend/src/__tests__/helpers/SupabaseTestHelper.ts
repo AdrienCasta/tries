@@ -47,6 +47,7 @@ export class SupabaseTestHelper {
     }
 
     await this.client.from("helpers").delete().eq("id", user.id);
+    await this.client.from("users").delete().eq("id", user.id);
 
     await this.client.auth.admin.deleteUser(user.id);
   }

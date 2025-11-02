@@ -5,26 +5,32 @@ import VerifyOtpController, {
 } from "../verify-otp.controller";
 import VerifyOtp from "../verify-otp.usecase";
 import InMemoryAuthService from "@infrastructure/auth/InMemoryAuthService.js";
+import InMemoryUserRepository from "@infrastructure/persistence/InMemoryUserRepository.js";
 
 describe("VerifyOtpController", () => {
   let controller: VerifyOtpController;
-  let service: InMemoryAuthService;
+  let authService: InMemoryAuthService;
+  let userRepository: InMemoryUserRepository;
   let useCase: VerifyOtp;
 
   beforeEach(() => {
-    service = new InMemoryAuthService();
-    useCase = new VerifyOtp(service);
+    authService = new InMemoryAuthService();
+    userRepository = new InMemoryUserRepository();
+    useCase = new VerifyOtp(authService, userRepository);
     controller = new VerifyOtpController(useCase);
   });
 
   describe("handle", () => {
     it("should return 200 on successful verification", async () => {
-      await service.signUp(
+      const signUpResult = await authService.signUp("test@example.com");
+      await userRepository.create({
+        id: signUpResult.userId,
         email: "test@example.com",
-        
+        firstname: "John",
+        lastname: "Doe",
       });
-      await service.signInWithOtp("test@example.com");
-      const otpCode = service.getLastOtpCode("test@example.com");
+      await authService.signInWithOtp("test@example.com");
+      const otpCode = authService.getLastOtpCode("test@example.com");
 
       const response = await controller.handle({
         email: "test@example.com",
@@ -38,9 +44,12 @@ describe("VerifyOtpController", () => {
     });
 
     it("should return 400 on invalid OTP format", async () => {
-      await service.signUp(
+      const signUpResult = await authService.signUp("test@example.com");
+      await userRepository.create({
+        id: signUpResult.userId,
         email: "test@example.com",
-        
+        firstname: "John",
+        lastname: "Doe",
       });
 
       const response = await controller.handle({
@@ -56,11 +65,14 @@ describe("VerifyOtpController", () => {
     });
 
     it("should return 400 on invalid OTP code", async () => {
-      await service.signUp(
+      const signUpResult = await authService.signUp("test@example.com");
+      await userRepository.create({
+        id: signUpResult.userId,
         email: "test@example.com",
-        
+        firstname: "John",
+        lastname: "Doe",
       });
-      await service.signInWithOtp("test@example.com");
+      await authService.signInWithOtp("test@example.com");
 
       const response = await controller.handle({
         email: "test@example.com",
@@ -72,13 +84,16 @@ describe("VerifyOtpController", () => {
     });
 
     it("should return 410 on expired OTP", async () => {
-      await service.signUp(
+      const signUpResult = await authService.signUp("test@example.com");
+      await userRepository.create({
+        id: signUpResult.userId,
         email: "test@example.com",
-        
+        firstname: "John",
+        lastname: "Doe",
       });
-      await service.signInWithOtp("test@example.com");
-      const otpCode = service.getLastOtpCode("test@example.com");
-      service.expireOtp("test@example.com");
+      await authService.signInWithOtp("test@example.com");
+      const otpCode = authService.getLastOtpCode("test@example.com");
+      authService.expireOtp("test@example.com");
 
       const response = await controller.handle({
         email: "test@example.com",
@@ -102,11 +117,14 @@ describe("VerifyOtpController", () => {
     });
 
     it("should include error code in response", async () => {
-      await service.signUp(
+      const signUpResult = await authService.signUp("test@example.com");
+      await userRepository.create({
+        id: signUpResult.userId,
         email: "test@example.com",
-        
+        firstname: "John",
+        lastname: "Doe",
       });
-      await service.signInWithOtp("test@example.com");
+      await authService.signInWithOtp("test@example.com");
 
       const response = await controller.handle({
         email: "test@example.com",
