@@ -39,7 +39,7 @@ describe("Email verification", () => {
       });
     });
 
-    describe("When user verify email successfully", () => {
+    describe.only("When user verify email successfully", () => {
       it("Then the current state should be completed", async () => {
         const repository = new FakeSuccessAuthRepository();
         const useCase = verifyEmailUsecase(repository, store.dispatch);

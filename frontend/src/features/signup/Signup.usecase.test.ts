@@ -92,22 +92,5 @@ describe("User Signup", () => {
         expect(state.status).toBe("failed");
       });
     });
-
-    describe("When command has invalid password", () => {
-      it("Then the current state should be failed", async () => {
-        const repository = new FakeSuccessAuthRepository();
-        const useCase = signupUsecase(repository, store.dispatch);
-        const invalidCommand = {
-          ...command,
-          password: "short",
-          confirmPassword: "short",
-        };
-
-        await useCase.execute(invalidCommand);
-
-        const state = store.getState().signup;
-        expect(state.status).toBe("failed");
-      });
-    });
   });
 });

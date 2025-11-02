@@ -9,6 +9,7 @@ import type {
   VerifyEmailRequest,
   VerifyEmailResponse,
 } from "@/features/email-verification/EmailVerification.types";
+import type { LoginRequest, LoginResponse } from "@/features/login/Login.types";
 
 export class FakeSuccessAuthRepository implements IAuthRepository {
   slow = false;
@@ -25,12 +26,24 @@ export class FakeSuccessAuthRepository implements IAuthRepository {
     return {
       success: true,
       message: "Your email is verified",
+      user: {
+        id: "123456",
+        email: "adrie@castagliola@example.com",
+        firstname: "Adrien",
+        lastname: "Castagliola",
+      },
     };
   }
   async resendOtp(_data: ResendOtpRequest): Promise<ResendOtpResponse> {
     return {
       success: true,
       message: "Un code vous a été envoyé par email",
+    };
+  }
+  async login(_data: LoginRequest): Promise<LoginResponse> {
+    return {
+      success: true,
+      message: "Connecté",
     };
   }
 
@@ -56,6 +69,12 @@ export class FakeFailureAuthRepository implements IAuthRepository {
     return {
       success: false,
       message: "L'envoie du code de vérification à échoué",
+    };
+  }
+  async login(_data: LoginRequest): Promise<LoginResponse> {
+    return {
+      success: false,
+      message: "L'authentification a échoué",
     };
   }
 }

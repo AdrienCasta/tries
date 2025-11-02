@@ -33,11 +33,13 @@ export function verifyEmailUsecase(
         otpCode: validation.data.otpCode,
       });
 
-      if (result.success && result.user) {
+      if (result.success) {
         dispatch(setUser(result.user));
         dispatch(verificationCompleted());
       } else {
-        dispatch(verificationFailed(result.error || "Échec de la vérification"));
+        dispatch(
+          verificationFailed(result.error || "Échec de la vérification")
+        );
       }
     },
   };
