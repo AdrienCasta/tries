@@ -7,6 +7,36 @@ on:
     branches: [main]
 
 jobs:
+  lint-and-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint frontend
+        run: npm run lint --workspace=frontend
+
+      - name: Type check frontend
+        run: npm run tsc --workspace=frontend
+
+      - name: Lint backend
+        run: npm run lint --workspace=backend
+
+      - name: Type check backend
+        run: npm run tsc --workspace=backend
+
   frontend-tests:
     name: Frontend Tests & Build
     runs-on: ubuntu-latest

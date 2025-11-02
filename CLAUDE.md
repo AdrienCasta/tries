@@ -1,1 +1,2 @@
 - commit with proper message after refactor phase w/o mentionning claude involvement. Keep clear and consice, no footer, avoid body. Commit after green phase, commit amend --no-edit after repfactor phase.
+- run tsc and lint before commit
