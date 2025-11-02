@@ -1,5 +1,6 @@
 import type { IAuthRepository, SignupResult } from "./types";
 import type SignupRequest from "../../signup/Signup.types";
+import type { LoginRequest, LoginResponse } from "../../login/Login.types";
 import type {
   VerifyEmailRequest,
   VerifyEmailResponse,
@@ -42,6 +43,38 @@ export class AuthRepository implements IAuthRepository {
       };
     } catch (error) {
       console.error("Error signing up:", error);
+      return {
+        success: false,
+        error: "System unavailable. Please try again.",
+      };
+    }
+  }
+
+  async login(data: LoginRequest): Promise<LoginResponse> {
+    try {
+      const response = await fetch(`${this.baseUrl}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        return {
+          success: false,
+          error: errorData.error || "Failed to login",
+        };
+      }
+
+      const result = await response.json();
+      return {
+        success: true,
+        message: result.message || "OTP sent successfully",
+      };
+    } catch (error) {
+      console.error("Error logging in:", error);
       return {
         success: false,
         error: "System unavailable. Please try again.",
