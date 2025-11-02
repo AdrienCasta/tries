@@ -1,5 +1,4 @@
 import { configureStore } from "@reduxjs/toolkit";
-import onboardHelperReducer from "../features/register-helper/RegisterHelper.slice";
 import signupReducer from "../features/signup/Signup.slice";
 import loginReducer from "../features/login/Login.slice";
 import authReducer from "../features/auth/auth.slice";
@@ -7,7 +6,6 @@ import emailVerificationReducer from "../features/email-verification/EmailVerifi
 
 export const store = configureStore({
   reducer: {
-    onboardHelper: onboardHelperReducer,
     signup: signupReducer,
     login: loginReducer,
     auth: authReducer,
