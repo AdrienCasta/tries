@@ -3,14 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { signupUsecase } from "./Signup.usecase";
-import { AuthRepository } from "../shared/api/authRepository";
+import { AuthService } from "../shared/api/authService";
 import type SignupRequest from "./Signup.types";
 
 export function useSignup() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const status = useAppSelector((state) => state.signup.status);
-  const repository = new AuthRepository();
+  const repository = new AuthService();
   const handler = signupUsecase(repository, dispatch);
   const [signupEmail, setSignupEmail] = useState<string>("");
 

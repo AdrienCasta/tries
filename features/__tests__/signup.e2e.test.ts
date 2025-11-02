@@ -8,6 +8,7 @@ import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
 dotenv.config({ path: path.join(__dirname, "../../backend/.env.test") });
 
+//@ts-ignore
 import featureContent from "../signup.feature?raw";
 
 const feature = await loadFeatureFromText(featureContent);
@@ -126,38 +127,26 @@ describeFeature(
     Scenario("User signs up successfully", ({ When, Then, And }) => {
       When("I submit my signup information", async () => {
         await context.page.goto(FRONTEND_URL + "/signup");
-        await context.page.getByLabel(/email/i).waitFor({ timeout: 10000 });
 
-        await context.page.getByLabel(/email/i).fill(context.testEmail);
-        await context.page
-          .getByLabel(/password/i)
-          .fill("SecurePass123!");
+        await context.page.fill('input[type="email"]', context.testEmail);
+        await context.page.fill("input#firstname", "Test");
+        await context.page.fill("input#lastname", "User");
 
         await context.page
-          .getByRole("button", { name: /sign up|signup/i })
+          .getByRole("button", { name: /s'inscrire|inscrire/i })
           .click();
       });
 
       Then("I am notified signup was successful", async () => {
-        const successMessage = await context.page.waitForSelector(
-          "text=/successfully|success|signed up/i",
-          { timeout: 15000 }
-        );
-        expect(successMessage).toBeTruthy();
+        await context.page.waitForURL(/\/verify-email/);
+        expect(context.page.url()).toContain("/verify-email?email=");
       });
 
-      And("notified I have to confirm my email", async () => {
-        const emailConfirmationMessage = await context.page.waitForSelector(
-          "text=/confirm.*email|email.*confirm/i",
-          { timeout: 15000 }
+      And("notified I have enter otp code to confirm my email", async () => {
+        expect(context.page.url()).toContain("/verify-email");
+        expect(context.page.url()).toContain(
+          `email=${encodeURIComponent(context.testEmail)}`
         );
-        expect(emailConfirmationMessage).toBeTruthy();
-
-        const { data } = await context.supabaseClient.auth.admin.listUsers();
-        const user = data?.users?.find((u) => u.email === context.testEmail);
-        expect(user).toBeDefined();
-        expect(user?.email).toBe(context.testEmail);
-        expect(user?.email_confirmed_at).toBeFalsy();
       });
     });
   },

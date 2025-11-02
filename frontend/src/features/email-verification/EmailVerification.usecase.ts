@@ -1,4 +1,4 @@
-import type { IAuthRepository } from "../shared/api/types";
+import type { AuthService } from "../shared/api/types";
 import type { AppDispatch } from "@/store";
 import {
   verificationStarted,
@@ -15,7 +15,7 @@ import {
 } from "./EmailVerification.schema";
 
 export function verifyEmailUsecase(
-  repository: IAuthRepository,
+  repository: AuthService,
   dispatch: AppDispatch
 ) {
   return {
@@ -46,7 +46,7 @@ export function verifyEmailUsecase(
 }
 
 export function resendOtpUsecase(
-  repository: IAuthRepository,
+  repository: AuthService,
   dispatch: AppDispatch
 ) {
   return {

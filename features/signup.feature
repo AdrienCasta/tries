@@ -10,7 +10,7 @@ Background:
 Scenario: User signs up successfully
   When I submit my signup information
   Then I am notified signup was successful
-  And notified I have to confirm my email
+  And notified I have enter otp code to confirm my email
 
 Scenario Outline: Cannot sign up with invalid email
   When I submit signup with email "<email>"

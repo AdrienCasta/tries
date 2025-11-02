@@ -51,7 +51,7 @@ describeFeature(
         expect(harness.didSignupSucceed()).toBe(true);
       });
 
-      And("notified I have to confirm my email", () => {
+      And("notified I have enter otp code to confirm my email", () => {
         expect(harness.isEmailConfirmed(command.email)).toBe(false);
       });
     });
@@ -85,7 +85,6 @@ describeFeature(
         });
         const duplicateCommand = SignupCommandFixture.aValidCommand({
           email: "john@example.com",
-          
         });
 
         Given(

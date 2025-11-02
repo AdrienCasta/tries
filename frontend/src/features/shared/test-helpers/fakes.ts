@@ -2,7 +2,7 @@ import type {
   SignupRequest,
   SignupResponse,
 } from "@/features/signup/Signup.types";
-import type { IAuthRepository } from "../api/types";
+import type { AuthService } from "../api/types";
 import type {
   ResendOtpRequest,
   ResendOtpResponse,
@@ -11,7 +11,7 @@ import type {
 } from "@/features/email-verification/EmailVerification.types";
 import type { LoginRequest, LoginResponse } from "@/features/login/Login.types";
 
-export class FakeSuccessAuthRepository implements IAuthRepository {
+export class FakeSuccessAuthService implements AuthService {
   slow = false;
   async signup(_data: SignupRequest): Promise<SignupResponse> {
     return {
@@ -52,7 +52,7 @@ export class FakeSuccessAuthRepository implements IAuthRepository {
   }
 }
 
-export class FakeFailureAuthRepository implements IAuthRepository {
+export class FakeFailureAuthService implements AuthService {
   async signup(_data: SignupRequest): Promise<SignupResponse> {
     return {
       success: false,
@@ -85,7 +85,7 @@ export class FakeFailureAuthRepository implements IAuthRepository {
  *  const repository = new FakeSuccessAuthRepository();
     repository.slow = true;
  */
-export class FakeSlowAuthRepository implements IAuthRepository {
+export class FakeSlowAuthRepository implements AuthService {
   async signup(_data: SignupRequest): Promise<SignupResponse> {
     await new Promise((resolve) => setTimeout(resolve, 100));
     return {

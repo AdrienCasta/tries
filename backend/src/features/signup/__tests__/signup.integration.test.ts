@@ -68,7 +68,7 @@ describeFeature(
         expect(body.message).toBe("User signed up successfully");
       });
 
-      And("notified I have to confirm my email", async () => {
+      And("notified I have enter otp code to confirm my email", async () => {
         const user = await context.supabaseHelper.getUserByEmail(
           context.testEmail
         );

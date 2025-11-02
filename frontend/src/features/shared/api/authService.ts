@@ -1,5 +1,3 @@
-import type { IAuthRepository, SignupResult } from "./types";
-import type SignupRequest from "../../signup/Signup.types";
 import type { LoginRequest, LoginResponse } from "../../login/Login.types";
 import type {
   VerifyEmailRequest,
@@ -7,8 +5,12 @@ import type {
   ResendOtpRequest,
   ResendOtpResponse,
 } from "../../email-verification/EmailVerification.types";
+import type {
+  SignupRequest,
+  SignupResponse,
+} from "@/features/signup/Signup.types";
 
-export class AuthRepository implements IAuthRepository {
+export class AuthService implements AuthService {
   private readonly baseUrl: string;
 
   constructor(
@@ -18,7 +20,7 @@ export class AuthRepository implements IAuthRepository {
     this.baseUrl = baseUrl;
   }
 
-  async signup(data: SignupRequest): Promise<SignupResult> {
+  async signup(data: SignupRequest): Promise<SignupResponse> {
     try {
       const response = await fetch(`${this.baseUrl}/signup`, {
         method: "POST",

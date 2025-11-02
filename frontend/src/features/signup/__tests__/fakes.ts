@@ -1,7 +1,7 @@
-import type { IAuthRepository } from "@/features/shared/api/types";
+import type { AuthService } from "@/features/shared/api/types";
 import type { SignupRequest, SignupResponse } from "../Signup.types";
 
-export class FakeSuccessSignup implements Pick<IAuthRepository, "signup"> {
+export class FakeSuccessSignup implements Pick<AuthService, "signup"> {
   async signup(_data: SignupRequest): Promise<SignupResponse> {
     return {
       success: true,
@@ -10,7 +10,7 @@ export class FakeSuccessSignup implements Pick<IAuthRepository, "signup"> {
   }
 }
 
-export class FakeFailureSignup implements Pick<IAuthRepository, "signup"> {
+export class FakeFailureSignup implements Pick<AuthService, "signup"> {
   async signup(_data: SignupRequest): Promise<SignupResponse> {
     return {
       success: false,
@@ -19,7 +19,7 @@ export class FakeFailureSignup implements Pick<IAuthRepository, "signup"> {
   }
 }
 
-export class FakeSlowSignup implements Pick<IAuthRepository, "signup"> {
+export class FakeSlowSignup implements Pick<AuthService, "signup"> {
   async signup(_data: SignupRequest): Promise<SignupResponse> {
     await new Promise((resolve) => setTimeout(resolve, 100));
     return {

@@ -7,11 +7,18 @@ import {
   emailVerificationSchema,
   type EmailVerificationFormData,
 } from "./EmailVerification.schema";
-import { verifyEmailUsecase, resendOtpUsecase } from "./EmailVerification.usecase";
-import { AuthRepository } from "../shared/api/authRepository";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import {
+  verifyEmailUsecase,
+  resendOtpUsecase,
+} from "./EmailVerification.usecase";
+import { AuthService } from "../shared/api/authService";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 
-const authRepository = new AuthRepository();
+const authRepository = new AuthService();
 
 export default function EmailVerificationForm() {
   const dispatch = useAppDispatch();
@@ -100,7 +107,9 @@ export default function EmailVerificationForm() {
   if (!email) {
     return (
       <div className="text-center">
-        <p className="text-red-500">Aucun email fourni. Veuillez vous inscrire d'abord.</p>
+        <p className="text-red-500">
+          Aucun email fourni. Veuillez vous inscrire d'abord.
+        </p>
       </div>
     );
   }
@@ -116,7 +125,10 @@ export default function EmailVerificationForm() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="space-y-2">
-          <label htmlFor="otp" className="block text-sm font-medium text-center">
+          <label
+            htmlFor="otp"
+            className="block text-sm font-medium text-center"
+          >
             Entrez le code de vérification
           </label>
           <div className="flex justify-center">
@@ -137,10 +149,14 @@ export default function EmailVerificationForm() {
             </InputOTP>
           </div>
           {errors.otpCode && (
-            <p className="text-sm text-red-500 text-center">{errors.otpCode.message}</p>
+            <p className="text-sm text-red-500 text-center">
+              {errors.otpCode.message}
+            </p>
           )}
           {verificationError && (
-            <p className="text-sm text-red-500 text-center">{verificationError}</p>
+            <p className="text-sm text-red-500 text-center">
+              {verificationError}
+            </p>
           )}
         </div>
 
@@ -151,7 +167,9 @@ export default function EmailVerificationForm() {
         )}
 
         <div className="text-center space-y-2">
-          <p className="text-sm text-muted-foreground">Vous n'avez pas reçu le code ?</p>
+          <p className="text-sm text-muted-foreground">
+            Vous n'avez pas reçu le code ?
+          </p>
           <button
             type="button"
             onClick={handleResendOtp}
@@ -164,9 +182,7 @@ export default function EmailVerificationForm() {
               ? "Renvoyer le code"
               : `Renvoyer dans ${resendCooldown}s`}
           </button>
-          {resendError && (
-            <p className="text-sm text-red-500">{resendError}</p>
-          )}
+          {resendError && <p className="text-sm text-red-500">{resendError}</p>}
         </div>
       </form>
     </div>

@@ -4,8 +4,8 @@ import emailVerificationReducer, {
   emailVerificationInitialState,
 } from "./EmailVerification.slice";
 import {
-  FakeSuccessAuthRepository,
-  FakeFailureAuthRepository,
+  FakeSuccessAuthService,
+  FakeFailureAuthService,
 } from "../shared/test-helpers/fakes";
 import { verifyEmailUsecase } from "./EmailVerification.usecase";
 
@@ -41,7 +41,7 @@ describe("Email verification", () => {
 
     describe.only("When user verify email successfully", () => {
       it("Then the current state should be completed", async () => {
-        const repository = new FakeSuccessAuthRepository();
+        const repository = new FakeSuccessAuthService();
         const useCase = verifyEmailUsecase(repository, store.dispatch);
 
         await useCase.execute(validCommand);
@@ -55,7 +55,7 @@ describe("Email verification", () => {
 
     describe("When verification fails", () => {
       it("Then the current state should be failed", async () => {
-        const repository = new FakeFailureAuthRepository();
+        const repository = new FakeFailureAuthService();
         const useCase = verifyEmailUsecase(repository, store.dispatch);
 
         await useCase.execute(validCommand);
@@ -69,7 +69,7 @@ describe("Email verification", () => {
 
     describe("When verification is in progress", () => {
       it("Then the current state should be started", async () => {
-        const repository = new FakeSuccessAuthRepository();
+        const repository = new FakeSuccessAuthService();
         repository.slow = true;
         const useCase = verifyEmailUsecase(repository, store.dispatch);
 
@@ -86,7 +86,7 @@ describe("Email verification", () => {
 
     describe("When command has invalid email or otp code", () => {
       it("Then the current state should be failed", async () => {
-        const repository = new FakeSuccessAuthRepository();
+        const repository = new FakeSuccessAuthService();
         const useCase = verifyEmailUsecase(repository, store.dispatch);
         const invalidCommand = {
           ...validCommand,

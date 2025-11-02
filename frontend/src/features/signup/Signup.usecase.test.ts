@@ -3,8 +3,8 @@ import { configureStore } from "@reduxjs/toolkit";
 import { signupUsecase } from "./Signup.usecase";
 import signupReducer from "./Signup.slice";
 import {
-  FakeSuccessAuthRepository,
-  FakeFailureAuthRepository,
+  FakeSuccessAuthService,
+  FakeFailureAuthService,
   FakeSlowAuthRepository,
 } from "../shared/test-helpers/fakes";
 
@@ -40,7 +40,7 @@ describe("User Signup", () => {
 
     describe("When user signs up successfully", () => {
       it("Then the current state should be completed", async () => {
-        const repository = new FakeSuccessAuthRepository();
+        const repository = new FakeSuccessAuthService();
         const useCase = signupUsecase(repository, store.dispatch);
 
         await useCase.execute(command);
@@ -52,7 +52,7 @@ describe("User Signup", () => {
 
     describe("When signup fails", () => {
       it("Then the current state should be failed", async () => {
-        const repository = new FakeFailureAuthRepository();
+        const repository = new FakeFailureAuthService();
         const useCase = signupUsecase(repository, store.dispatch);
 
         await useCase.execute(command);
@@ -78,7 +78,7 @@ describe("User Signup", () => {
 
     describe("When command has invalid email", () => {
       it("Then the current state should be failed", async () => {
-        const repository = new FakeSuccessAuthRepository();
+        const repository = new FakeSuccessAuthService();
         const useCase = signupUsecase(repository, store.dispatch);
         const invalidCommand = {
           ...command,

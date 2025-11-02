@@ -1,12 +1,9 @@
-import type { IAuthRepository } from "../shared/api/types";
+import type { AuthService } from "../shared/api/types";
 import type { AppDispatch } from "@/store";
 import { loginStarted, loginCompleted, loginFailed } from "./Login.slice";
 import { loginSchema, type LoginCommand } from "./Login.schema";
 
-export function loginUsecase(
-  repository: IAuthRepository,
-  dispatch: AppDispatch
-) {
+export function loginUsecase(repository: AuthService, dispatch: AppDispatch) {
   return {
     execute: async (command: LoginCommand) => {
       dispatch(loginStarted());
