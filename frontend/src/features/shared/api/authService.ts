@@ -9,6 +9,7 @@ import type {
   SignupRequest,
   SignupResponse,
 } from "@/features/signup/Signup.types";
+import type { AuthRequest, AuthResponse } from "../../auth/Auth.types";
 
 export class AuthService implements AuthService {
   private readonly baseUrl: string;
@@ -142,6 +143,38 @@ export class AuthService implements AuthService {
       };
     } catch (error) {
       console.error("Error resending OTP:", error);
+      return {
+        success: false,
+        error: "System unavailable. Please try again.",
+      };
+    }
+  }
+
+  async authenticate(data: AuthRequest): Promise<AuthResponse> {
+    try {
+      const response = await fetch(this.baseUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        return {
+          success: false,
+          error: errorData.error || "Failed to authenticate",
+        };
+      }
+
+      const result = await response.json();
+      return {
+        success: true,
+        message: result.message || "Authentication code sent successfully",
+      };
+    } catch (error) {
+      console.error("Error authenticating:", error);
       return {
         success: false,
         error: "System unavailable. Please try again.",

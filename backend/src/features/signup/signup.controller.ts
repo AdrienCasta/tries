@@ -50,7 +50,7 @@ export default class SignupController {
     return {
       status: HTTP_STATUS.CREATED,
       body: {
-        message: "User signed up successfully",
+        message: "Authentication code sent successfully",
       },
     };
   }

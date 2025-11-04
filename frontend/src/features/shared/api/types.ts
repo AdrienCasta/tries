@@ -6,10 +6,12 @@ import type {
 } from "../../email-verification/EmailVerification.types";
 import type { SignupRequest, SignupResponse } from "../../signup/Signup.types";
 import type { LoginRequest, LoginResponse } from "../../login/Login.types";
+import type { AuthRequest, AuthResponse } from "../../auth/Auth.types";
 
 export interface AuthService {
   signup(data: SignupRequest): Promise<SignupResponse>;
   login(data: LoginRequest): Promise<LoginResponse>;
   verifyOtp(data: VerifyEmailRequest): Promise<VerifyEmailResponse>;
   resendOtp(data: ResendOtpRequest): Promise<ResendOtpResponse>;
+  authenticate(data: AuthRequest): Promise<AuthResponse>;
 }

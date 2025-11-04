@@ -1,7 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import signupReducer from "../features/signup/Signup.slice";
 import loginReducer from "../features/login/Login.slice";
-import authReducer from "../features/auth/auth.slice";
+import authReducer from "../features/auth/Auth.slice";
 import emailVerificationReducer from "../features/email-verification/EmailVerification.slice";
 
 export const store = configureStore({

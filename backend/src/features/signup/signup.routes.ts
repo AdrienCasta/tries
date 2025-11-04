@@ -5,7 +5,7 @@ export function registerSignupRoutes(
   server: HttpServer,
   signupController: SignupController
 ): void {
-  server.post("/api/auth/signup", async (request, response) => {
+  server.post("/api/auth", async (request, response) => {
     try {
       const result = await signupController.handle(request.body);
       response.status(result.status).send(result.body);
