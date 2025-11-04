@@ -13,8 +13,7 @@ export interface VerifyOtpSuccessResponse {
   user: {
     id: string;
     email: string;
-    firstname: string;
-    lastname: string;
+    emailConfirmed: boolean;
   };
 }
 
@@ -52,8 +51,7 @@ export default class VerifyOtpController {
           user: {
             id: result.value.id,
             email: result.value.email,
-            firstname: result.value.firstname,
-            lastname: result.value.lastname,
+            emailConfirmed: result.value.emailConfirmed,
           },
         },
       };

@@ -5,7 +5,6 @@ import AuthService, {
   InvalidOtpError,
   UserNotFoundError,
   SendOtpError,
-  SignUpResult,
 } from "@shared/domain/services/AuthService";
 import { AuthUserRead } from "@shared/domain/entities/AuthUser";
 import { Result } from "@shared/infrastructure/Result";
@@ -13,23 +12,24 @@ import { Result } from "@shared/infrastructure/Result";
 export class SupabaseAuthService implements AuthService {
   constructor(private readonly supabase: SupabaseClient) {}
 
-  async signUp(email: string): Promise<SignUpResult> {
-    const { data, error } = await this.supabase.auth.signUp({
+  async signUp(email: string): Promise<Result<void, Error>> {
+    const { data, error } = await this.supabase.auth.signInWithOtp({
       email,
-      password: crypto.randomUUID(),
+      // password: crypto.randomUUID(),
       options: {
-        emailRedirectTo: undefined,
+        shouldCreateUser: true,
       },
     });
 
+    console.log({ data, error });
+
     if (error || !data.user) {
-      throw new Error(`Failed to sign up user: ${error?.message}`);
+      return Result.fail(
+        new Error(`Failed to sign up user: ${error?.message}`)
+      );
     }
 
-    return {
-      userId: data.user.id,
-      email: data.user.email!,
-    };
+    return Result.ok();
   }
 
   async existsByEmail(email: string): Promise<boolean> {
@@ -65,12 +65,14 @@ export class SupabaseAuthService implements AuthService {
   async verifyOtp(
     email: string,
     otpCode: string
-  ): Promise<Result<void, OtpVerificationError>> {
+  ): Promise<Result<AuthUserRead, OtpVerificationError>> {
     const { data, error } = await this.supabase.auth.verifyOtp({
       email,
       token: otpCode,
       type: "email",
     });
+
+    console.log({ data, error });
 
     if (error) {
       if (error.code === "otp_expired") {
@@ -91,7 +93,11 @@ export class SupabaseAuthService implements AuthService {
       );
     }
 
-    return Result.ok();
+    return Result.ok({
+      id: data.user.id,
+      email: data.user.email!,
+      emailConfirmed: !!data.user.email_confirmed_at,
+    });
   }
 
   async signInWithOtp(

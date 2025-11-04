@@ -1,20 +1,14 @@
 import { Result } from "@shared/infrastructure/Result";
 import VerifyOtpCommand from "./verify-otp.command";
-import AuthService, {
-  OtpVerificationError,
-} from "@shared/domain/services/AuthService";
-import UserRepository from "@shared/domain/repositories/UserRepository";
-import { UserProps } from "@shared/domain/entities/User";
+import AuthService from "@shared/domain/services/AuthService";
+import { AuthUserRead } from "@shared/domain/entities/AuthUser";
 import HelperEmail from "@shared/domain/value-objects/HelperEmail";
 import OtpCode from "@shared/domain/value-objects/OtpCode";
 
-export type VerifyOtpResult = Result<UserProps, Error>;
+export type VerifyOtpResult = Result<AuthUserRead, Error>;
 
 export default class VerifyOtp {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly userRepository: UserRepository
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   async execute(command: VerifyOtpCommand): Promise<VerifyOtpResult> {
     const guard = Result.combineObject({
@@ -35,11 +29,6 @@ export default class VerifyOtp {
       return verificationResult;
     }
 
-    const user = await this.userRepository.findByEmail(command.email);
-    if (!user) {
-      return Result.fail(new Error("User not found after verification"));
-    }
-
-    return Result.ok(user);
+    return Result.ok(verificationResult.value);
   }
 }

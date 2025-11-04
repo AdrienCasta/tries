@@ -5,7 +5,6 @@ import AuthService, {
   OtpExpiredError,
   UserNotFoundError,
   SendOtpError,
-  SignUpResult,
 } from "@shared/domain/services/AuthService";
 import { Result } from "@shared/infrastructure/Result";
 import crypto from "node:crypto";
@@ -19,7 +18,7 @@ export default class InMemoryAuthService implements AuthService {
   authUsers: Map<string, AuthUserRead> = new Map();
   private otpStore: Map<string, StoredOtp> = new Map();
 
-  async signUp(email: string): Promise<SignUpResult> {
+  async signUp(email: string): Promise<Result<void, Error>> {
     const userId = crypto.randomUUID();
     this.authUsers.set(email, {
       id: userId,
@@ -31,10 +30,7 @@ export default class InMemoryAuthService implements AuthService {
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
     this.otpStore.set(email, { code: otpCode, expiresAt });
 
-    return {
-      userId,
-      email,
-    };
+    return Result.ok();
   }
 
   async getUserByEmail(email: string): Promise<AuthUserRead | null> {
@@ -48,7 +44,7 @@ export default class InMemoryAuthService implements AuthService {
   async verifyOtp(
     email: string,
     otpCode: string
-  ): Promise<Result<void, OtpVerificationError>> {
+  ): Promise<Result<AuthUserRead, OtpVerificationError>> {
     const storedOtp = this.otpStore.get(email);
 
     if (!storedOtp) {
@@ -67,10 +63,12 @@ export default class InMemoryAuthService implements AuthService {
     this.otpStore.delete(email);
     const user = this.authUsers.get(email);
     if (user) {
-      this.authUsers.set(email, { ...user, emailConfirmed: true });
+      const updatedUser = { ...user, emailConfirmed: true };
+      this.authUsers.set(email, updatedUser);
+      return Result.ok(updatedUser);
     }
 
-    return Result.ok();
+    return Result.fail(new OtpVerificationError("User not found"));
   }
 
   async signInWithOtp(

@@ -4,8 +4,6 @@ export default class SignupCommandFixture {
   static aValidCommand(overrides?: Partial<SignupCommand>): SignupCommand {
     return {
       email: "john.doe@example.com",
-      firstname: "John",
-      lastname: "Doe",
       ...overrides,
     };
   }

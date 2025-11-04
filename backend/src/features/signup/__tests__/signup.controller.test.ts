@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import SignupController, {
   SignupErrorResponse,
   SignupRequest,
@@ -6,14 +6,13 @@ import SignupController, {
 import Signup from "../signup.usecase";
 
 import InMemoryAuthService from "@infrastructure/auth/InMemoryAuthService.js";
-import InMemoryUserRepository from "@infrastructure/persistence/InMemoryUserRepository.js";
 
 describe("SignupController", () => {
   let controller: SignupController;
 
   beforeEach(() => {
     controller = new SignupController(
-      new Signup(new InMemoryAuthService(), new InMemoryUserRepository())
+      new Signup(new InMemoryAuthService())
     );
   });
 
@@ -21,8 +20,6 @@ describe("SignupController", () => {
     it("should return 201 with success message when signup succeeds", async () => {
       const request: SignupRequest = {
         email: "john@example.com",
-        firstname: "John",
-        lastname: "Doe",
       };
 
       const response = await controller.handle(request);
@@ -38,8 +35,6 @@ describe("SignupController", () => {
     it("should return 400 with error details when email is invalid", async () => {
       const request: SignupRequest = {
         email: "invalid-email",
-        firstname: "John",
-        lastname: "Doe",
       };
 
       const response = await controller.handle(request);
@@ -56,8 +51,6 @@ describe("SignupController", () => {
     it("should return 409 when email already exists", async () => {
       const request: SignupRequest = {
         email: "john@example.com",
-        firstname: "John",
-        lastname: "Doe",
       };
 
       await controller.handle(request);

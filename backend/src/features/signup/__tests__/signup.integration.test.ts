@@ -3,7 +3,6 @@ import { describeFeature, loadFeatureFromText } from "@amiceli/vitest-cucumber";
 import { FastifyHttpServer } from "@infrastructure/http/FastifyHttpServer";
 import { SupabaseTestHelper } from "@__tests__/helpers/SupabaseTestHelper";
 import { SupabaseAuthService } from "@infrastructure/auth/SupabaseAuthService";
-import { SupabaseUserRepository } from "@infrastructure/persistence/SupabaseUserRepository";
 import { AppDependencies, createApp } from "@app/createApp";
 import { EmailFixtures } from "@shared/__tests__/fixtures/EmailFixtures";
 
@@ -31,7 +30,6 @@ describeFeature(
 
       const dependencies: AppDependencies = {
         authService: new SupabaseAuthService(supabase),
-        userRepository: new SupabaseUserRepository(supabase),
       };
 
       context.server = new FastifyHttpServer();
@@ -56,8 +54,6 @@ describeFeature(
           url: "/api/auth/signup",
           payload: {
             email: context.testEmail,
-            firstname: "John",
-            lastname: "Doe",
           },
         });
       });
@@ -89,8 +85,6 @@ describeFeature(
               url: "/api/auth/signup",
               payload: {
                 email: "john@example.com",
-                firstname: "John",
-                lastname: "Doe",
               },
             });
           }
@@ -102,8 +96,6 @@ describeFeature(
             url: "/api/auth/signup",
             payload: {
               email: "john@example.com",
-              firstname: "Jane",
-              lastname: "Smith",
             },
           });
         });

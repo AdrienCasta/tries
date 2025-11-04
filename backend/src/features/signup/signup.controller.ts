@@ -4,8 +4,6 @@ import { Result } from "@shared/infrastructure/Result";
 
 export interface SignupRequest {
   email: string;
-  firstname: string;
-  lastname: string;
 }
 
 export interface SignupSuccessResponse {
@@ -45,8 +43,6 @@ export default class SignupController {
   private buildCommandFromRequest(request: SignupRequest): SignupCommand {
     return {
       email: request.email,
-      firstname: request.firstname,
-      lastname: request.lastname,
     };
   }
 

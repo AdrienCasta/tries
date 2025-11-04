@@ -7,7 +7,6 @@ import {
 import { Result } from "@shared/infrastructure/Result";
 import VerifyOtp from "../verify-otp.usecase";
 import InMemoryAuthService from "@infrastructure/auth/InMemoryAuthService.js";
-import InMemoryUserRepository from "@infrastructure/persistence/InMemoryUserRepository.js";
 import VerifyOtpCommandFixture from "./fixtures/VerifyOtpCommandFixture";
 import VerifyOtpCommand from "../verify-otp.command";
 
@@ -125,27 +124,19 @@ class VerifyOtpTestHarness {
 
   private constructor(
     private readonly authService: InMemoryAuthService,
-    private readonly userRepository: InMemoryUserRepository,
     private readonly useCase: VerifyOtp
   ) {}
 
   static async setup() {
     const authService = new InMemoryAuthService();
-    const userRepository = new InMemoryUserRepository();
-    const useCase = new VerifyOtp(authService, userRepository);
-    const harness = new this(authService, userRepository, useCase);
+    const useCase = new VerifyOtp(authService);
+    const harness = new this(authService, useCase);
     await harness.createUnconfirmedUser();
     return harness;
   }
 
   async createUnconfirmedUser() {
-    const signUpResult = await this.authService.signUp(this.testEmail);
-    await this.userRepository.create({
-      id: signUpResult.userId,
-      email: this.testEmail,
-      firstname: "John",
-      lastname: "Doe",
-    });
+    await this.authService.signUp(this.testEmail);
   }
 
   async sendOtpToUser() {

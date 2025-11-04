@@ -42,14 +42,14 @@ export interface SignUpResult {
 }
 
 export default interface AuthService {
-  signUp(email: string): Promise<SignUpResult>;
+  signUp(email: string): Promise<Result<void, Error>>;
   getUserByEmail(email: string): Promise<AuthUserRead | null>;
   existsByEmail(email: string): Promise<boolean>;
 
   verifyOtp(
     email: string,
     otpCode: string
-  ): Promise<Result<void, OtpVerificationError>>;
+  ): Promise<Result<AuthUserRead, OtpVerificationError>>;
   signInWithOtp(
     email: string
   ): Promise<Result<void, UserNotFoundError | SendOtpError>>;

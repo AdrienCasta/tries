@@ -8,7 +8,6 @@ import { Failure, Result } from "@shared/infrastructure/Result";
 
 import Signup, { SignupResult } from "../signup.usecase";
 import InMemoryAuthService from "@infrastructure/auth/InMemoryAuthService.js";
-import InMemoryUserRepository from "@infrastructure/persistence/InMemoryUserRepository.js";
 import SignupCommand from "../signup.command";
 import SignupCommandFixture from "./fixtures/SignupCommandFixture";
 
@@ -119,15 +118,13 @@ class SignupUnitTestHarness {
 
   private constructor(
     private readonly authService: InMemoryAuthService,
-    private readonly userRepository: InMemoryUserRepository,
     private readonly signupUsecase: Signup
   ) {}
 
   static setup() {
     const authService = new InMemoryAuthService();
-    const userRepository = new InMemoryUserRepository();
-    const signup = new Signup(authService, userRepository);
-    return new this(authService, userRepository, signup);
+    const signup = new Signup(authService);
+    return new this(authService, signup);
   }
 
   async signup(command: SignupCommand) {

@@ -5,30 +5,21 @@ import VerifyOtpController, {
 } from "../verify-otp.controller";
 import VerifyOtp from "../verify-otp.usecase";
 import InMemoryAuthService from "@infrastructure/auth/InMemoryAuthService.js";
-import InMemoryUserRepository from "@infrastructure/persistence/InMemoryUserRepository.js";
 
 describe("VerifyOtpController", () => {
   let controller: VerifyOtpController;
   let authService: InMemoryAuthService;
-  let userRepository: InMemoryUserRepository;
   let useCase: VerifyOtp;
 
   beforeEach(() => {
     authService = new InMemoryAuthService();
-    userRepository = new InMemoryUserRepository();
-    useCase = new VerifyOtp(authService, userRepository);
+    useCase = new VerifyOtp(authService);
     controller = new VerifyOtpController(useCase);
   });
 
   describe("handle", () => {
     it("should return 200 on successful verification", async () => {
-      const signUpResult = await authService.signUp("test@example.com");
-      await userRepository.create({
-        id: signUpResult.userId,
-        email: "test@example.com",
-        firstname: "John",
-        lastname: "Doe",
-      });
+      await authService.signUp("test@example.com");
       await authService.signInWithOtp("test@example.com");
       const otpCode = authService.getLastOtpCode("test@example.com");
 
@@ -44,13 +35,7 @@ describe("VerifyOtpController", () => {
     });
 
     it("should return 400 on invalid OTP format", async () => {
-      const signUpResult = await authService.signUp("test@example.com");
-      await userRepository.create({
-        id: signUpResult.userId,
-        email: "test@example.com",
-        firstname: "John",
-        lastname: "Doe",
-      });
+      await authService.signUp("test@example.com");
 
       const response = await controller.handle({
         email: "test@example.com",
@@ -65,13 +50,7 @@ describe("VerifyOtpController", () => {
     });
 
     it("should return 400 on invalid OTP code", async () => {
-      const signUpResult = await authService.signUp("test@example.com");
-      await userRepository.create({
-        id: signUpResult.userId,
-        email: "test@example.com",
-        firstname: "John",
-        lastname: "Doe",
-      });
+      await authService.signUp("test@example.com");
       await authService.signInWithOtp("test@example.com");
 
       const response = await controller.handle({
@@ -84,13 +63,7 @@ describe("VerifyOtpController", () => {
     });
 
     it("should return 410 on expired OTP", async () => {
-      const signUpResult = await authService.signUp("test@example.com");
-      await userRepository.create({
-        id: signUpResult.userId,
-        email: "test@example.com",
-        firstname: "John",
-        lastname: "Doe",
-      });
+      await authService.signUp("test@example.com");
       await authService.signInWithOtp("test@example.com");
       const otpCode = authService.getLastOtpCode("test@example.com");
       authService.expireOtp("test@example.com");
@@ -117,13 +90,7 @@ describe("VerifyOtpController", () => {
     });
 
     it("should include error code in response", async () => {
-      const signUpResult = await authService.signUp("test@example.com");
-      await userRepository.create({
-        id: signUpResult.userId,
-        email: "test@example.com",
-        firstname: "John",
-        lastname: "Doe",
-      });
+      await authService.signUp("test@example.com");
       await authService.signInWithOtp("test@example.com");
 
       const response = await controller.handle({
