@@ -17,7 +17,7 @@ export function useSignup() {
   useEffect(() => {
     if (status === "completed" && signupEmail) {
       toast.success(
-        "Utilisateur inscrit avec succès ! Veuillez confirmer votre email pour activer votre compte."
+        "Inscription réussie ! Nous vous avons envoyé un code de vérification par email."
       );
       navigate(`/verify-email?email=${encodeURIComponent(signupEmail)}`);
     }

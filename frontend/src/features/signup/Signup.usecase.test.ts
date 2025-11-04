@@ -19,10 +19,6 @@ function createStore() {
 describe("User Signup", () => {
   const command = {
     email: "john@example.com",
-    password: "SecurePass123!",
-    confirmPassword: "SecurePass123!",
-    firstname: "John",
-    lastname: "Doe",
   };
   let store: ReturnType<typeof createStore>;
 
@@ -83,7 +79,6 @@ describe("User Signup", () => {
         const invalidCommand = {
           ...command,
           email: "invalid-email",
-          confirmPassword: "SecurePass123!",
         };
 
         await useCase.execute(invalidCommand);

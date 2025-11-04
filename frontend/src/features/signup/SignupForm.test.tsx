@@ -11,8 +11,6 @@ describe("Signup Form", () => {
       render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
 
       await user.type(screen.getByLabelText(/email/i), "john@example.com");
-      await user.type(screen.getByLabelText("Prénom"), "John");
-      await user.type(screen.getByLabelText("Nom"), "Doe");
 
       const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
       await user.click(submitBtn);
@@ -20,8 +18,6 @@ describe("Signup Form", () => {
       expect(handleSubmit).toHaveBeenCalled();
       expect(handleSubmit.mock.calls[0][0]).toEqual({
         email: "john@example.com",
-        firstname: "John",
-        lastname: "Doe",
       });
     });
   });
@@ -44,62 +40,6 @@ describe("Signup Form", () => {
       const user = userEvent.setup();
       const handleSubmit = vi.fn();
       render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
-
-      const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
-      await user.click(submitBtn);
-
-      expect(handleSubmit).not.toHaveBeenCalled();
-    });
-
-    it("does not submit with empty firstname", async () => {
-      const user = userEvent.setup();
-      const handleSubmit = vi.fn();
-      render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
-
-      await user.type(screen.getByLabelText(/email/i), "john@example.com");
-
-      const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
-      await user.click(submitBtn);
-
-      expect(handleSubmit).not.toHaveBeenCalled();
-    });
-
-    it("does not submit with firstname too short", async () => {
-      const user = userEvent.setup();
-      const handleSubmit = vi.fn();
-      render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
-
-      await user.type(screen.getByLabelText(/email/i), "john@example.com");
-      await user.type(screen.getByLabelText("Prénom"), "J");
-
-      const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
-      await user.click(submitBtn);
-
-      expect(handleSubmit).not.toHaveBeenCalled();
-    });
-
-    it("does not submit with empty lastname", async () => {
-      const user = userEvent.setup();
-      const handleSubmit = vi.fn();
-      render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
-
-      await user.type(screen.getByLabelText(/email/i), "john@example.com");
-      await user.type(screen.getByLabelText("Prénom"), "John");
-
-      const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
-      await user.click(submitBtn);
-
-      expect(handleSubmit).not.toHaveBeenCalled();
-    });
-
-    it("does not submit with lastname too short", async () => {
-      const user = userEvent.setup();
-      const handleSubmit = vi.fn();
-      render(<SignupForm onSubmit={handleSubmit} isLoading={false} />);
-
-      await user.type(screen.getByLabelText(/email/i), "john@example.com");
-      await user.type(screen.getByLabelText("Prénom"), "John");
-      await user.type(screen.getByLabelText("Nom"), "D");
 
       const submitBtn = screen.getByRole("button", { name: /s'inscrire/i });
       await user.click(submitBtn);

@@ -30,14 +30,6 @@ export default function DashboardPage() {
               <span className="font-medium">Email:</span>
               <span>{user.email}</span>
             </div>
-            <div className="flex justify-between py-2 border-b">
-              <span className="font-medium">Prénom:</span>
-              <span>{user.firstname}</span>
-            </div>
-            <div className="flex justify-between py-2 border-b">
-              <span className="font-medium">Nom:</span>
-              <span>{user.lastname}</span>
-            </div>
           </div>
           <div className="pt-4">
             <Button onClick={handleLogout} variant="outline" className="w-full">

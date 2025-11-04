@@ -17,8 +17,6 @@ export function signupUsecase(repository: AuthService, dispatch: AppDispatch) {
 
       const result = await repository.signup({
         email: validation.data.email,
-        firstname: validation.data.firstname,
-        lastname: validation.data.lastname,
       });
 
       if (result.success) {
