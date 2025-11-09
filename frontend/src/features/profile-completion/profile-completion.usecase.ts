@@ -5,17 +5,13 @@ import {
   profileCompletionSucceeded,
   profileCompletionFailed,
 } from "./ProfileCompletion.slice";
-
-type ProfileUpdateResponse = {
-  success: boolean;
-  message: string;
-};
+import { Result } from "@/shared/infrastructure/Result";
 
 export interface ProfileRepository {
   update(
     profileId: string,
     request: ProfileCompletionCommand
-  ): Promise<ProfileUpdateResponse>;
+  ): Promise<Result<void, Error>>;
 }
 
 export function completeProfile(
@@ -26,10 +22,10 @@ export function completeProfile(
     async execute(userId: string, command: ProfileCompletionCommand) {
       dispatch(profileCompletionStarted());
       const result = await profileRepository.update(userId, command);
-      if (result.success) {
+      if (Result.isSuccess(result)) {
         dispatch(profileCompletionSucceeded());
       } else {
-        dispatch(profileCompletionFailed(result.message));
+        dispatch(profileCompletionFailed(result.error.message));
       }
     },
   };

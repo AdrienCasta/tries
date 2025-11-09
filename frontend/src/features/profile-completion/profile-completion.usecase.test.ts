@@ -7,6 +7,8 @@ import {
   completeProfile,
   type ProfileRepository,
 } from "./profile-completion.usecase";
+import { Result } from "@/shared/infrastructure/Result";
+import type { Result as ResultType } from "@/shared/infrastructure/Result";
 
 type TestStore = Store<RootState> & { dispatch: AppDispatch };
 
@@ -107,26 +109,15 @@ describe("Profile Completion Use Case", () => {
   });
 });
 
-type ProfileUpdateResponse = {
-  success: boolean;
-  message: string;
-};
-
 class FakeFailedProfileRepository implements ProfileRepository {
-  async update(): Promise<ProfileUpdateResponse> {
-    return {
-      success: false,
-      message: "Fail completing profile",
-    };
+  async update(): Promise<ResultType<void, Error>> {
+    return Result.fail(new Error("Fail completing profile"));
   }
 }
 
 class FakeSuccessProfileRepository implements ProfileRepository {
-  async update(): Promise<ProfileUpdateResponse> {
-    return {
-      success: true,
-      message: "",
-    };
+  async update(): Promise<ResultType<void, Error>> {
+    return Result.ok();
   }
 }
 
@@ -139,11 +130,8 @@ class FakeSlowProfileRepository implements ProfileRepository {
     );
   }
 
-  async update(): Promise<ProfileUpdateResponse> {
+  async update(): Promise<ResultType<void, Error>> {
     await this.delay();
-    return {
-      success: true,
-      message: "",
-    };
+    return Result.ok();
   }
 }

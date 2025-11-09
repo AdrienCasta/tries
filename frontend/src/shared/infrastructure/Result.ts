@@ -1,0 +1,66 @@
+export type Success<T> = { success: true; value: T };
+
+export type Failure<E = Error> = { success: false; error: E };
+
+export type Result<T, E = Error> = Success<T> | Failure<E>;
+
+function ok<E = Error>(): Result<void, E>;
+function ok<T, E = Error>(value: T): Result<T, E>;
+function ok<T, E = Error>(value?: T): Result<T, E> {
+  return { success: true, value: value as T };
+}
+
+function fail<T, E = Error>(error: E): Result<T, E> {
+  return { success: false, error };
+}
+
+export const Result = {
+  ok,
+  fail,
+
+  isSuccess<T, E>(result: Result<T, E>): result is Success<T> {
+    return result.success === true;
+  },
+
+  isFailure<T, E>(result: Result<T, E>): result is Failure<E> {
+    return result.success === false;
+  },
+
+  combine<T, E>(results: Result<T, E>[]): Result<T[], E> {
+    const values: T[] = [];
+
+    for (const result of results) {
+      if (Result.isFailure(result)) {
+        return Result.fail(result.error);
+      }
+      values.push(result.value);
+    }
+
+    return Result.ok(values);
+  },
+
+  combineObject<T extends Record<string, Result<unknown, unknown>>>(
+    results: T
+  ): Result<
+    { [K in keyof T]: T[K] extends Result<infer V, unknown> ? V : never },
+    T[keyof T] extends Result<unknown, infer E> ? E : never
+  > {
+    const values: Record<string, unknown> = {};
+
+    for (const key in results) {
+      const result = results[key];
+      if (Result.isFailure(result)) {
+        return Result.fail(result.error) as Result<
+          { [K in keyof T]: T[K] extends Result<infer V, unknown> ? V : never },
+          T[keyof T] extends Result<unknown, infer E> ? E : never
+        >;
+      }
+      values[key] = result.value;
+    }
+
+    return Result.ok(values) as Result<
+      { [K in keyof T]: T[K] extends Result<infer V, unknown> ? V : never },
+      T[keyof T] extends Result<unknown, infer E> ? E : never
+    >;
+  },
+};
