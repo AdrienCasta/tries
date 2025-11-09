@@ -3,6 +3,8 @@ export interface VerifyEmailRequest {
   otpCode: string;
 }
 
+export type ProfileStatus = "incomplete" | "completed";
+
 export interface VerifyEmailResponse {
   success: boolean;
   message?: string;
@@ -11,7 +13,7 @@ export interface VerifyEmailResponse {
     id: string;
     email: string;
     emailConfirmed: boolean;
-    hasCompletedProfile: boolean;
+    profileStatus: ProfileStatus;
     firstname?: string;
     lastname?: string;
   };

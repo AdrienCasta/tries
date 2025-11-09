@@ -9,14 +9,15 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isAuthenticated, user } = useAppSelector((state) => state.authState);
+  console.log(user);
   const { status } = useAppSelector((state) => state.profileCompletion);
   const [showDialog, setShowDialog] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      if (user.hasCompletedProfile) {
+      if (user.profileStatus === "completed") {
         setShowDialog(false);
-      } else if (status === "skipped" || status === "completed") {
+      } else if (status === "skipped" || status === "success") {
         setShowDialog(false);
       } else {
         setShowDialog(true);
@@ -33,7 +34,10 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   return (
     <>
       {children}
-      <ProfileCompletionDialog open={showDialog} onClose={() => setShowDialog(false)} />
+      <ProfileCompletionDialog
+        open={showDialog}
+        onClose={() => setShowDialog(false)}
+      />
     </>
   );
 }

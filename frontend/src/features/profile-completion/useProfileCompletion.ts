@@ -31,7 +31,7 @@ export function useProfileCompletion() {
         updateUserProfile({
           firstname: data.firstname,
           lastname: data.lastname,
-          hasCompletedProfile: true,
+          profileStatus: "completed",
         })
       );
       dispatch(profileCompletionSucceeded());

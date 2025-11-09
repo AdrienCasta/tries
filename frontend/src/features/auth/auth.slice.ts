@@ -1,10 +1,12 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
+export type ProfileStatus = "incomplete" | "completed";
+
 export interface User {
   id: string;
   email: string;
   emailConfirmed: boolean;
-  hasCompletedProfile: boolean;
+  profileStatus: ProfileStatus;
   firstname?: string;
   lastname?: string;
 }
@@ -22,7 +24,7 @@ const loadUserFromStorage = (): User | null => {
       return {
         ...parsed,
         emailConfirmed: parsed.emailConfirmed ?? false,
-        hasCompletedProfile: parsed.hasCompletedProfile ?? false,
+        profileStatus: parsed.profileStatus ?? "incomplete",
       };
     } catch {
       return null;

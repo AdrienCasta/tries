@@ -2,6 +2,7 @@ import VerifyOtp from "./verify-otp.usecase";
 import VerifyOtpCommand from "./verify-otp.command";
 import { Result } from "@shared/infrastructure/Result";
 import { OtpExpiredError } from "@shared/domain/services/AuthService";
+import { ProfileStatus } from "@shared/domain/entities/User";
 
 export interface VerifyOtpRequest {
   email: string;
@@ -14,6 +15,7 @@ export interface VerifyOtpSuccessResponse {
     id: string;
     email: string;
     emailConfirmed: boolean;
+    profileStatus: ProfileStatus;
   };
 }
 
@@ -52,6 +54,7 @@ export default class VerifyOtpController {
             id: result.value.id,
             email: result.value.email,
             emailConfirmed: result.value.emailConfirmed,
+            profileStatus: result.value.profileStatus,
           },
         },
       };

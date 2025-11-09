@@ -26,7 +26,7 @@ class UpdateProfileTestHarness {
     await this.userRepository.create({
       id: this.testUserId,
       email: this.testEmail,
-      hasCompletedProfile: false,
+      profileStatus: "incomplete",
     });
   }
 
@@ -75,7 +75,7 @@ describe("Given a user wants to update their profile", () => {
       expect(harness.didUpdateSucceed()).toBe(true);
     });
 
-    it("Then hasCompletedProfile should be set to true", async () => {
+    it("Then profileStatus should be set to completed", async () => {
       await harness.updateProfile({
         userId: harness.getTestUserId(),
         firstname: "John",
@@ -83,7 +83,7 @@ describe("Given a user wants to update their profile", () => {
       });
 
       const user = await harness.getUserProfile();
-      expect(user?.hasCompletedProfile).toBe(true);
+      expect(user?.profileStatus).toBe("completed");
     });
 
     it("Then the firstname should be stored in the database", async () => {
