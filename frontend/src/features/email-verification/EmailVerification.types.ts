@@ -10,8 +10,10 @@ export interface VerifyEmailResponse {
   user?: {
     id: string;
     email: string;
-    firstname: string;
-    lastname: string;
+    emailConfirmed: boolean;
+    hasCompletedProfile: boolean;
+    firstname?: string;
+    lastname?: string;
   };
 }
 

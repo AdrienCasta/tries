@@ -3,8 +3,10 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 export interface User {
   id: string;
   email: string;
-  firstname: string;
-  lastname: string;
+  emailConfirmed: boolean;
+  hasCompletedProfile: boolean;
+  firstname?: string;
+  lastname?: string;
 }
 
 interface AuthState {
@@ -16,7 +18,12 @@ const loadUserFromStorage = (): User | null => {
   const storedUser = localStorage.getItem("user");
   if (storedUser) {
     try {
-      return JSON.parse(storedUser);
+      const parsed = JSON.parse(storedUser);
+      return {
+        ...parsed,
+        emailConfirmed: parsed.emailConfirmed ?? false,
+        hasCompletedProfile: parsed.hasCompletedProfile ?? false,
+      };
     } catch {
       return null;
     }
@@ -38,6 +45,12 @@ const authSlice = createSlice({
       state.isAuthenticated = true;
       localStorage.setItem("user", JSON.stringify(action.payload));
     },
+    updateUserProfile: (state, action: PayloadAction<Partial<User>>) => {
+      if (state.user) {
+        state.user = { ...state.user, ...action.payload };
+        localStorage.setItem("user", JSON.stringify(state.user));
+      }
+    },
     logout: (state) => {
       state.user = null;
       state.isAuthenticated = false;
@@ -46,5 +59,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { setUser, logout } = authSlice.actions;
+export const { setUser, updateUserProfile, logout } = authSlice.actions;
 export default authSlice.reducer;

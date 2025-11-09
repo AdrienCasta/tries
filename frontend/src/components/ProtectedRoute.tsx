@@ -1,17 +1,39 @@
 import { Navigate } from "react-router-dom";
 import { useAppSelector } from "@/store/hooks";
-import { ReactNode } from "react";
+import { ReactNode, useState, useEffect } from "react";
+import ProfileCompletionDialog from "@/features/profile-completion/ProfileCompletionDialog";
 
 interface ProtectedRouteProps {
   children: ReactNode;
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { isAuthenticated, user } = useAppSelector((state) => state.authState);
+  const { status } = useAppSelector((state) => state.profileCompletion);
+  const [showDialog, setShowDialog] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      if (user.hasCompletedProfile) {
+        setShowDialog(false);
+      } else if (status === "skipped" || status === "completed") {
+        setShowDialog(false);
+      } else {
+        setShowDialog(true);
+      }
+    } else {
+      setShowDialog(false);
+    }
+  }, [isAuthenticated, user, status]);
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/auth" replace />;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <ProfileCompletionDialog open={showDialog} onClose={() => setShowDialog(false)} />
+    </>
+  );
 }

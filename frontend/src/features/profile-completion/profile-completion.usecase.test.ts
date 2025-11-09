@@ -1,4 +1,4 @@
-import { describe, expect, test, beforeEach } from "vitest";
+import { describe, expect, test, beforeEach, beforeAll } from "vitest";
 import type { ProfileCompletionCommand } from "./ProfileCompletion.schema";
 import type { AppDispatch, RootState } from "@/store";
 import { configureStore, type Store } from "@reduxjs/toolkit";
@@ -9,6 +9,7 @@ import {
 } from "./profile-completion.usecase";
 import { Result } from "@/shared/infrastructure/Result";
 import type { Result as ResultType } from "@/shared/infrastructure/Result";
+import { skipCompleteProfile } from "./skip-profile-completion.usecase";
 
 type TestStore = Store<RootState> & { dispatch: AppDispatch };
 
@@ -66,7 +67,7 @@ describe("Profile Completion Use Case", () => {
     });
   });
 
-  describe("When profile update fails", () => {
+  describe("When the profile has failed completed", () => {
     test("status should be failed", async () => {
       await completeProfile(
         new FakeFailedProfileRepository(),
@@ -88,7 +89,7 @@ describe("Profile Completion Use Case", () => {
     });
   });
 
-  describe("When profile update succeeds", () => {
+  describe("When the profile has been successfully completed", () => {
     test("status should be success", async () => {
       await completeProfile(
         new FakeSuccessProfileRepository(),
@@ -106,6 +107,22 @@ describe("Profile Completion Use Case", () => {
 
       expect(store.getState().profileCompletion.error).toBeUndefined();
     });
+  });
+});
+
+describe("When the profile update has been skipped", () => {
+  let store: TestStore;
+
+  beforeAll(async () => {
+    store = createTestStore();
+    await skipCompleteProfile(store.dispatch).execute();
+  });
+  test("status should be skipped", async () => {
+    expect(store.getState().profileCompletion.status).toBe("skipped");
+  });
+
+  test("error should be undefined", async () => {
+    expect(store.getState().profileCompletion.error).toBeUndefined();
   });
 });
 
