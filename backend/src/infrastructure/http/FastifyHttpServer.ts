@@ -17,13 +17,12 @@ import {
  */
 export class FastifyHttpServer implements HttpServer {
   private app: FastifyInstance;
-  private pluginsReady: ReturnType<typeof this.app.register>;
 
   constructor() {
     this.app = Fastify({
       logger: false,
     });
-    this.pluginsReady = this.app.register(cors, {
+    this.app.register(cors, {
       origin: true,
     });
   }
@@ -49,6 +48,12 @@ export class FastifyHttpServer implements HttpServer {
     });
   }
 
+  patch(path: string, handler: RouteHandler): void {
+    this.app.patch(path, async (request: FastifyRequest, reply: FastifyReply) => {
+      await handler(this.adaptRequest(request), this.adaptResponse(reply));
+    });
+  }
+
   delete(path: string, handler: RouteHandler): void {
     this.app.delete(
       path,
@@ -59,7 +64,7 @@ export class FastifyHttpServer implements HttpServer {
   }
 
   async listen(port: number): Promise<void> {
-    await this.pluginsReady;
+    await this.app.ready();
     await this.app.listen({ port, host: "0.0.0.0" });
   }
 
