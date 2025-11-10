@@ -3,10 +3,11 @@ import { describeFeature, loadFeatureFromText } from "@amiceli/vitest-cucumber";
 import { FastifyHttpServer } from "@infrastructure/http/FastifyHttpServer";
 import { SupabaseTestHelper } from "@__tests__/helpers/SupabaseTestHelper";
 import { SupabaseAuthService } from "@infrastructure/auth/SupabaseAuthService";
+import { SupabaseUserRepository } from "@infrastructure/persistence/SupabaseUserRepository";
 import { AppDependencies, createApp } from "@app/createApp";
 import { EmailFixtures } from "@shared/__tests__/fixtures/EmailFixtures";
 
-//@ts-ignore
+//@ts-expect-error
 import featureContent from "../../../../../features/signup.feature?raw";
 
 const feature = await loadFeatureFromText(featureContent);
@@ -30,6 +31,7 @@ describeFeature(
 
       const dependencies: AppDependencies = {
         authService: new SupabaseAuthService(supabase),
+        userRepository: new SupabaseUserRepository(supabase),
       };
 
       context.server = new FastifyHttpServer();

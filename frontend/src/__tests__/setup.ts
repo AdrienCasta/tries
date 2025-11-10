@@ -35,7 +35,7 @@ if (!Element.prototype.scrollIntoView) {
   Element.prototype.scrollIntoView = function () {};
 }
 
-global.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+global.fetch = async (input: RequestInfo | URL) => {
   const url = input.toString();
 
   if (url.includes('/api/helpers/onboard')) {

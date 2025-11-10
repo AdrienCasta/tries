@@ -18,26 +18,50 @@ export default function DashboardPage() {
     return null;
   }
 
+  const displayName = user.firstname && user.lastname
+    ? `${user.firstname} ${user.lastname}`
+    : user.email;
+
+  const profileStatusLabel = user.profileStatus === "completed" ? "Complet" : "Incomplet";
+
   return (
-    <div className="flex items-center justify-center min-h-screen p-4">
-      <Card className="w-full max-w-2xl">
-        <CardHeader>
-          <CardTitle className="text-2xl">Tableau de bord</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <div className="flex justify-between py-2 border-b">
-              <span className="font-medium">Email:</span>
-              <span>{user.email}</span>
+    <div className="min-h-screen p-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-2xl font-semibold">
+            Bonjour {displayName}
+          </h1>
+          <Button onClick={handleLogout} variant="outline">
+            Se déconnecter
+          </Button>
+        </div>
+
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle className="text-xl">Informations personnelles</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex justify-between py-2 border-b">
+                <span className="font-medium">Prénom:</span>
+                <span>{user.firstname || "Non renseigné"}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b">
+                <span className="font-medium">Nom:</span>
+                <span>{user.lastname || "Non renseigné"}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b">
+                <span className="font-medium">Email:</span>
+                <span>{user.email}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b">
+                <span className="font-medium">Statut du profil:</span>
+                <span>{profileStatusLabel}</span>
+              </div>
             </div>
-          </div>
-          <div className="pt-4">
-            <Button onClick={handleLogout} variant="outline" className="w-full">
-              Se déconnecter
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
