@@ -5,15 +5,18 @@ import VerifyOtpController, {
 } from "../verify-otp.controller";
 import VerifyOtp from "../verify-otp.usecase";
 import InMemoryAuthService from "@infrastructure/auth/InMemoryAuthService.js";
+import InMemoryUserRepository from "@infrastructure/persistence/InMemoryUserRepository.js";
 
 describe("VerifyOtpController", () => {
   let controller: VerifyOtpController;
   let authService: InMemoryAuthService;
+  let userRepository: InMemoryUserRepository;
   let useCase: VerifyOtp;
 
   beforeEach(() => {
     authService = new InMemoryAuthService();
-    useCase = new VerifyOtp(authService);
+    userRepository = new InMemoryUserRepository();
+    useCase = new VerifyOtp(authService, userRepository);
     controller = new VerifyOtpController(useCase);
   });
 

@@ -11,13 +11,15 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { profileCompletionSchema, type ProfileCompletionCommand } from "./ProfileCompletion.schema";
+import {
+  profileCompletionSchema,
+  type ProfileCompletionCommand,
+} from "./ProfileCompletion.schema";
 import { useProfileCompletion } from "./useProfileCompletion";
 
 interface ProfileCompletionDialogProps {
@@ -25,7 +27,10 @@ interface ProfileCompletionDialogProps {
   onClose: () => void;
 }
 
-export default function ProfileCompletionDialog({ open, onClose }: ProfileCompletionDialogProps) {
+export default function ProfileCompletionDialog({
+  open,
+  onClose,
+}: ProfileCompletionDialogProps) {
   const { completeProfile, skipCompletion, isLoading } = useProfileCompletion();
 
   const form = useForm<ProfileCompletionCommand>({
@@ -47,7 +52,10 @@ export default function ProfileCompletionDialog({ open, onClose }: ProfileComple
   };
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen: boolean) => !isOpen && onClose()}
+    >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Compléter votre profil</DialogTitle>

@@ -7,30 +7,33 @@ import { useNavigate } from "react-router-dom";
 export default function DashboardPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { user } = useAppSelector((state) => state.auth);
+  const { user } = useAppSelector((state) => state.authState);
 
   const handleLogout = () => {
     dispatch(logout());
     navigate("/login");
   };
 
+  console.log({ user });
+
   if (!user) {
     return null;
   }
 
-  const displayName = user.firstname && user.lastname
-    ? `${user.firstname} ${user.lastname}`
-    : user.email;
+  const displayName =
+    user.firstname && user.lastname
+      ? `${user.firstname} ${user.lastname}`
+      : user.email;
+  console.log({ displayName });
 
-  const profileStatusLabel = user.profileStatus === "completed" ? "Complet" : "Incomplet";
+  const profileStatusLabel =
+    user.profileStatus === "completed" ? "Complet" : "Incomplet";
 
   return (
     <div className="min-h-screen p-4">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-semibold">
-            Bonjour {displayName}
-          </h1>
+          <h1 className="text-2xl font-semibold">Bonjour {displayName}</h1>
           <Button onClick={handleLogout} variant="outline">
             Se déconnecter
           </Button>

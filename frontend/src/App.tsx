@@ -16,6 +16,7 @@ function App() {
         element={
           <ProtectedRoute>
             <DashboardPage />
+            -rfètgyjiopkl
           </ProtectedRoute>
         }
       />

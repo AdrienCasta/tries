@@ -32,12 +32,12 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   }
 
   return (
-    <>
+    <div>
       {children}
       <ProfileCompletionDialog
         open={showDialog}
         onClose={() => setShowDialog(false)}
       />
-    </>
+    </div>
   );
 }

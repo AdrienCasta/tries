@@ -7,6 +7,7 @@ import {
 import { Result } from "@shared/infrastructure/Result";
 import VerifyOtp from "../verify-otp.usecase";
 import InMemoryAuthService from "@infrastructure/auth/InMemoryAuthService.js";
+import InMemoryUserRepository from "@infrastructure/persistence/InMemoryUserRepository.js";
 import VerifyOtpCommandFixture from "./fixtures/VerifyOtpCommandFixture";
 import VerifyOtpCommand from "../verify-otp.command";
 
@@ -129,7 +130,8 @@ class VerifyOtpTestHarness {
 
   static async setup() {
     const authService = new InMemoryAuthService();
-    const useCase = new VerifyOtp(authService);
+    const userRepository = new InMemoryUserRepository();
+    const useCase = new VerifyOtp(authService, userRepository);
     const harness = new this(authService, useCase);
     await harness.createUnconfirmedUser();
     return harness;

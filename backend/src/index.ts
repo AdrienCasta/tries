@@ -2,8 +2,10 @@ import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 import { FastifyHttpServer } from "@infrastructure/http/FastifyHttpServer.js";
 import { SupabaseAuthService } from "@infrastructure/auth/SupabaseAuthService.js";
+import { SupabaseUserRepository } from "@infrastructure/persistence/SupabaseUserRepository.js";
 import { createApp } from "./app/createApp";
 import InMemoryAuthService from "@infrastructure/auth/InMemoryAuthService.js";
+import InMemoryUserRepository from "@infrastructure/persistence/InMemoryUserRepository.js";
 
 dotenv.config();
 
@@ -15,13 +17,17 @@ let dependencies;
 if (IS_TEST_MODE) {
   console.log("Running in TEST mode with InMemory repositories");
   const authService = new InMemoryAuthService();
+  const userRepository = new InMemoryUserRepository();
 
   dependencies = {
     authService: authService,
+    userRepository: userRepository,
   };
 } else {
   const SUPABASE_URL = process.env.SUPABASE_URL;
   const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  console.log({ SUPABASE_URL });
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     throw new Error(
@@ -33,6 +39,7 @@ if (IS_TEST_MODE) {
 
   dependencies = {
     authService: new SupabaseAuthService(supabase),
+    userRepository: new SupabaseUserRepository(supabase),
   };
 }
 
