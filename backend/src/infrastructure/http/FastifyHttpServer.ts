@@ -24,6 +24,7 @@ export class FastifyHttpServer implements HttpServer {
     });
     this.app.register(cors, {
       origin: true,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     });
   }
 
